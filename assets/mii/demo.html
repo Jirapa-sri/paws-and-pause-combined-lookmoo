@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Character Maker · Canvas Recolor</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh; padding: 1.25rem;
+      font-family: "Nunito", "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(160deg, #f5e9d3, #dceee8 50%, #eedcb8);
+      color: #3a2c22;
+    }
+    main { max-width: 520px; margin: 0 auto; }
+    h1 { font-size: 1.35rem; margin: 0 0 0.35rem; }
+    p { margin: 0 0 0.75rem; color: #6e5c49; line-height: 1.45; }
+    .nav {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem;
+    }
+    .nav a {
+      display: inline-block; text-decoration: none; font-weight: 700; font-size: 0.9rem;
+      padding: 0.55rem 0.95rem; border-radius: 999px;
+      background: #3e7c74; color: #fff;
+    }
+    .nav a.secondary {
+      background: rgba(255,255,255,0.7); color: #3a2c22;
+      border: 1px solid rgba(58,44,34,0.22);
+    }
+    character-maker {
+      display: block;
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(58,44,34,0.16);
+      border-radius: 20px;
+      padding: 0.85rem;
+      box-shadow: 0 14px 30px -16px rgba(42,30,18,0.45);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="nav">
+      <a href="/game_demo.html">← Back to Paws &amp; Pause</a>
+      <a class="secondary" href="/game_demo.html" title="Open the full game">Open game</a>
+    </div>
+    <h1>Sheet character maker</h1>
+    <p>Pick parts from the asset sheet. Colors are remapped on an HTML5 Canvas (grayscale → tint), so shading stays intact. This page is a sandbox — use the button above to return to the game anytime.</p>
+    <character-maker id="maker"></character-maker>
+  </main>
+  <script src="character-maker.js?v=13"></script>
+</body>
+</html>

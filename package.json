@@ -1,0 +1,21 @@
+{
+  "name": "hw2",
+  "version": "1.0.0",
+  "description": "Generate a **30–60 second** pitch reel for *Paws & Pause* from the project proposal and slide plan.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jirapa-sri/Paws-Pausegame.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jirapa-sri/Paws-Pausegame/issues"
+  },
+  "homepage": "https://github.com/Jirapa-sri/Paws-Pausegame#readme"
+}

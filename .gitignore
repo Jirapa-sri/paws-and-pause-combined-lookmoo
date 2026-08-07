@@ -42,3 +42,14 @@ test-results/
 .cache/
 
 .mplconfig/
+
+node_modules/
+scripts/_kaykit_render.html
+
+# Heavy source packs (game uses PNG sprites only)
+assets/kaykit/furniture/
+assets/kaykit/nature/
+assets/mii/debug/
+assets/mii/preview/
+assets/mii/character_sheet.jpg
+assets/mii/character_sheet_gray.png

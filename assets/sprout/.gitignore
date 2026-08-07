@@ -1,0 +1,5 @@
+# Keep free Basic pack art for local non-commercial demo.
+# Do not add Premium pack files here.
+premium/
+*.aseprite
+*.ase

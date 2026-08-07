@@ -1,0 +1,1661 @@
+{
+  "sheet": "character_sheet_gray.png",
+  "mode": "grayscale",
+  "categories": {
+    "hair_m": {
+      "items": [
+        {
+          "id": "hair_m_0",
+          "file": "sprites/hair_m/00.png",
+          "w": 65,
+          "h": 68,
+          "sx": 64,
+          "sy": 12,
+          "sw": 61,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_1",
+          "file": "sprites/hair_m/01.png",
+          "w": 64,
+          "h": 68,
+          "sx": 139,
+          "sy": 12,
+          "sw": 60,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_2",
+          "file": "sprites/hair_m/02.png",
+          "w": 65,
+          "h": 68,
+          "sx": 212,
+          "sy": 12,
+          "sw": 61,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_3",
+          "file": "sprites/hair_m/03.png",
+          "w": 67,
+          "h": 68,
+          "sx": 358,
+          "sy": 12,
+          "sw": 63,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_4",
+          "file": "sprites/hair_m/04.png",
+          "w": 65,
+          "h": 67,
+          "sx": 432,
+          "sy": 12,
+          "sw": 61,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_5",
+          "file": "sprites/hair_m/05.png",
+          "w": 68,
+          "h": 68,
+          "sx": 504,
+          "sy": 12,
+          "sw": 64,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_6",
+          "file": "sprites/hair_m/06.png",
+          "w": 66,
+          "h": 66,
+          "sx": 578,
+          "sy": 12,
+          "sw": 62,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_7",
+          "file": "sprites/hair_m/07.png",
+          "w": 65,
+          "h": 66,
+          "sx": 652,
+          "sy": 12,
+          "sw": 61,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_8",
+          "file": "sprites/hair_m/08.png",
+          "w": 65,
+          "h": 67,
+          "sx": 725,
+          "sy": 12,
+          "sw": 61,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_9",
+          "file": "sprites/hair_m/09.png",
+          "w": 71,
+          "h": 66,
+          "sx": 796,
+          "sy": 12,
+          "sw": 67,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_10",
+          "file": "sprites/hair_m/10.png",
+          "w": 66,
+          "h": 71,
+          "sx": 875,
+          "sy": 12,
+          "sw": 62,
+          "sh": 74
+        },
+        {
+          "id": "hair_m_11",
+          "file": "sprites/hair_m/11.png",
+          "w": 68,
+          "h": 70,
+          "sx": 949,
+          "sy": 12,
+          "sw": 64,
+          "sh": 74
+        }
+      ],
+      "count": 12
+    },
+    "hair_f": {
+      "items": [
+        {
+          "id": "hair_f_0",
+          "file": "sprites/hair_f/00.png",
+          "w": 65,
+          "h": 70,
+          "sx": 48,
+          "sy": 99,
+          "sw": 61,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_1",
+          "file": "sprites/hair_f/01.png",
+          "w": 63,
+          "h": 81,
+          "sx": 126,
+          "sy": 99,
+          "sw": 59,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_2",
+          "file": "sprites/hair_f/02.png",
+          "w": 69,
+          "h": 71,
+          "sx": 202,
+          "sy": 99,
+          "sw": 65,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_3",
+          "file": "sprites/hair_f/03.png",
+          "w": 70,
+          "h": 70,
+          "sx": 279,
+          "sy": 99,
+          "sw": 66,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_4",
+          "file": "sprites/hair_f/04.png",
+          "w": 63,
+          "h": 74,
+          "sx": 356,
+          "sy": 99,
+          "sw": 59,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_5",
+          "file": "sprites/hair_f/05.png",
+          "w": 68,
+          "h": 72,
+          "sx": 426,
+          "sy": 99,
+          "sw": 64,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_6",
+          "file": "sprites/hair_f/06.png",
+          "w": 66,
+          "h": 74,
+          "sx": 500,
+          "sy": 99,
+          "sw": 62,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_7",
+          "file": "sprites/hair_f/07.png",
+          "w": 67,
+          "h": 76,
+          "sx": 573,
+          "sy": 99,
+          "sw": 63,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_8",
+          "file": "sprites/hair_f/08.png",
+          "w": 66,
+          "h": 72,
+          "sx": 648,
+          "sy": 99,
+          "sw": 62,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_9",
+          "file": "sprites/hair_f/09.png",
+          "w": 71,
+          "h": 71,
+          "sx": 794,
+          "sy": 99,
+          "sw": 67,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_10",
+          "file": "sprites/hair_f/10.png",
+          "w": 68,
+          "h": 80,
+          "sx": 872,
+          "sy": 99,
+          "sw": 64,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_11",
+          "file": "sprites/hair_f/11.png",
+          "w": 70,
+          "h": 75,
+          "sx": 947,
+          "sy": 99,
+          "sw": 66,
+          "sh": 82
+        },
+        {
+          "id": "hair_f_12",
+          "file": "sprites/hair_f/12.png",
+          "w": 82,
+          "h": 115,
+          "sx": 0,
+          "sy": 0,
+          "sw": 82,
+          "sh": 115
+        },
+        {
+          "id": "hair_f_13",
+          "file": "sprites/hair_f/13.png",
+          "w": 85,
+          "h": 126,
+          "sx": 0,
+          "sy": 0,
+          "sw": 85,
+          "sh": 126
+        },
+        {
+          "id": "hair_f_14",
+          "file": "sprites/hair_f/14.png",
+          "w": 83,
+          "h": 129,
+          "sx": 0,
+          "sy": 0,
+          "sw": 83,
+          "sh": 129
+        },
+        {
+          "id": "hair_f_15",
+          "file": "sprites/hair_f/15.png",
+          "w": 88,
+          "h": 124,
+          "sx": 0,
+          "sy": 0,
+          "sw": 88,
+          "sh": 124
+        },
+        {
+          "id": "hair_f_16",
+          "file": "sprites/hair_f/16.png",
+          "w": 83,
+          "h": 125,
+          "sx": 0,
+          "sy": 0,
+          "sw": 83,
+          "sh": 125
+        },
+        {
+          "id": "hair_f_17",
+          "file": "sprites/hair_f/17.png",
+          "w": 84,
+          "h": 128,
+          "sx": 0,
+          "sy": 0,
+          "sw": 84,
+          "sh": 128
+        },
+        {
+          "id": "hair_f_18",
+          "file": "sprites/hair_f/18.png",
+          "w": 87,
+          "h": 128,
+          "sx": 0,
+          "sy": 0,
+          "sw": 87,
+          "sh": 128
+        },
+        {
+          "id": "hair_f_19",
+          "file": "sprites/hair_f/19.png",
+          "w": 80,
+          "h": 130,
+          "sx": 0,
+          "sy": 0,
+          "sw": 80,
+          "sh": 130
+        },
+        {
+          "id": "hair_f_20",
+          "file": "sprites/hair_f/20.png",
+          "w": 88,
+          "h": 134,
+          "sx": 0,
+          "sy": 0,
+          "sw": 88,
+          "sh": 134
+        },
+        {
+          "id": "hair_f_21",
+          "file": "sprites/hair_f/21.png",
+          "w": 87,
+          "h": 118,
+          "sx": 0,
+          "sy": 0,
+          "sw": 87,
+          "sh": 118
+        }
+      ],
+      "count": 22
+    },
+    "face": {
+      "items": [
+        {
+          "id": "face_0",
+          "file": "sprites/face/00.png",
+          "w": 69,
+          "h": 63,
+          "sx": 74,
+          "sy": 190,
+          "sw": 65,
+          "sh": 63
+        },
+        {
+          "id": "face_1",
+          "file": "sprites/face/01.png",
+          "w": 71,
+          "h": 63,
+          "sx": 149,
+          "sy": 190,
+          "sw": 67,
+          "sh": 63
+        },
+        {
+          "id": "face_2",
+          "file": "sprites/face/02.png",
+          "w": 71,
+          "h": 63,
+          "sx": 227,
+          "sy": 190,
+          "sw": 67,
+          "sh": 63
+        },
+        {
+          "id": "face_3",
+          "file": "sprites/face/03.png",
+          "w": 70,
+          "h": 63,
+          "sx": 306,
+          "sy": 190,
+          "sw": 66,
+          "sh": 63
+        },
+        {
+          "id": "face_4",
+          "file": "sprites/face/04.png",
+          "w": 73,
+          "h": 63,
+          "sx": 384,
+          "sy": 190,
+          "sw": 69,
+          "sh": 63
+        },
+        {
+          "id": "face_5",
+          "file": "sprites/face/05.png",
+          "w": 70,
+          "h": 63,
+          "sx": 463,
+          "sy": 190,
+          "sw": 66,
+          "sh": 63
+        },
+        {
+          "id": "face_6",
+          "file": "sprites/face/06.png",
+          "w": 70,
+          "h": 63,
+          "sx": 543,
+          "sy": 190,
+          "sw": 66,
+          "sh": 63
+        },
+        {
+          "id": "face_7",
+          "file": "sprites/face/07.png",
+          "w": 71,
+          "h": 63,
+          "sx": 621,
+          "sy": 190,
+          "sw": 67,
+          "sh": 63
+        },
+        {
+          "id": "face_8",
+          "file": "sprites/face/08.png",
+          "w": 70,
+          "h": 63,
+          "sx": 701,
+          "sy": 190,
+          "sw": 66,
+          "sh": 63
+        },
+        {
+          "id": "face_9",
+          "file": "sprites/face/09.png",
+          "w": 72,
+          "h": 63,
+          "sx": 779,
+          "sy": 190,
+          "sw": 68,
+          "sh": 63
+        },
+        {
+          "id": "face_10",
+          "file": "sprites/face/10.png",
+          "w": 73,
+          "h": 63,
+          "sx": 859,
+          "sy": 190,
+          "sw": 69,
+          "sh": 63
+        },
+        {
+          "id": "face_11",
+          "file": "sprites/face/11.png",
+          "w": 74,
+          "h": 63,
+          "sx": 938,
+          "sy": 190,
+          "sw": 70,
+          "sh": 63
+        }
+      ],
+      "count": 12
+    },
+    "eyes": {
+      "items": [
+        {
+          "id": "eyes_0",
+          "file": "sprites/eyes/00.png",
+          "w": 57,
+          "h": 21,
+          "sx": 61,
+          "sy": 280,
+          "sw": 53,
+          "sh": 21
+        },
+        {
+          "id": "eyes_1",
+          "file": "sprites/eyes/01.png",
+          "w": 57,
+          "h": 21,
+          "sx": 147,
+          "sy": 280,
+          "sw": 54,
+          "sh": 21
+        },
+        {
+          "id": "eyes_2",
+          "file": "sprites/eyes/02.png",
+          "w": 58,
+          "h": 21,
+          "sx": 230,
+          "sy": 280,
+          "sw": 54,
+          "sh": 21
+        },
+        {
+          "id": "eyes_3",
+          "file": "sprites/eyes/03.png",
+          "w": 61,
+          "h": 21,
+          "sx": 307,
+          "sy": 280,
+          "sw": 57,
+          "sh": 21
+        },
+        {
+          "id": "eyes_4",
+          "file": "sprites/eyes/04.png",
+          "w": 61,
+          "h": 21,
+          "sx": 387,
+          "sy": 280,
+          "sw": 57,
+          "sh": 21
+        },
+        {
+          "id": "eyes_5",
+          "file": "sprites/eyes/05.png",
+          "w": 56,
+          "h": 21,
+          "sx": 468,
+          "sy": 280,
+          "sw": 52,
+          "sh": 21
+        },
+        {
+          "id": "eyes_6",
+          "file": "sprites/eyes/06.png",
+          "w": 52,
+          "h": 17,
+          "sx": 547,
+          "sy": 280,
+          "sw": 48,
+          "sh": 21
+        },
+        {
+          "id": "eyes_7",
+          "file": "sprites/eyes/07.png",
+          "w": 53,
+          "h": 18,
+          "sx": 623,
+          "sy": 280,
+          "sw": 49,
+          "sh": 21
+        },
+        {
+          "id": "eyes_8",
+          "file": "sprites/eyes/08.png",
+          "w": 60,
+          "h": 21,
+          "sx": 697,
+          "sy": 280,
+          "sw": 56,
+          "sh": 21
+        },
+        {
+          "id": "eyes_9",
+          "file": "sprites/eyes/09.png",
+          "w": 61,
+          "h": 21,
+          "sx": 776,
+          "sy": 280,
+          "sw": 57,
+          "sh": 21
+        },
+        {
+          "id": "eyes_10",
+          "file": "sprites/eyes/10.png",
+          "w": 60,
+          "h": 21,
+          "sx": 862,
+          "sy": 280,
+          "sw": 57,
+          "sh": 21
+        },
+        {
+          "id": "eyes_11",
+          "file": "sprites/eyes/11.png",
+          "w": 57,
+          "h": 17,
+          "sx": 945,
+          "sy": 280,
+          "sw": 53,
+          "sh": 21
+        }
+      ],
+      "count": 12
+    },
+    "brows": {
+      "items": [
+        {
+          "id": "brows_0",
+          "file": "sprites/brows/00.png",
+          "w": 18,
+          "h": 13,
+          "sx": 102,
+          "sy": 327,
+          "sw": 14,
+          "sh": 15
+        },
+        {
+          "id": "brows_1",
+          "file": "sprites/brows/01.png",
+          "w": 14,
+          "h": 13,
+          "sx": 144,
+          "sy": 327,
+          "sw": 10,
+          "sh": 15
+        },
+        {
+          "id": "brows_2",
+          "file": "sprites/brows/02.png",
+          "w": 18,
+          "h": 13,
+          "sx": 181,
+          "sy": 327,
+          "sw": 14,
+          "sh": 15
+        },
+        {
+          "id": "brows_3",
+          "file": "sprites/brows/03.png",
+          "w": 16,
+          "h": 12,
+          "sx": 227,
+          "sy": 327,
+          "sw": 12,
+          "sh": 15
+        },
+        {
+          "id": "brows_4",
+          "file": "sprites/brows/04.png",
+          "w": 13,
+          "h": 13,
+          "sx": 271,
+          "sy": 327,
+          "sw": 9,
+          "sh": 15
+        },
+        {
+          "id": "brows_5",
+          "file": "sprites/brows/05.png",
+          "w": 16,
+          "h": 13,
+          "sx": 314,
+          "sy": 327,
+          "sw": 12,
+          "sh": 15
+        },
+        {
+          "id": "brows_6",
+          "file": "sprites/brows/06.png",
+          "w": 12,
+          "h": 9,
+          "sx": 360,
+          "sy": 327,
+          "sw": 8,
+          "sh": 15
+        },
+        {
+          "id": "brows_7",
+          "file": "sprites/brows/07.png",
+          "w": 18,
+          "h": 12,
+          "sx": 401,
+          "sy": 327,
+          "sw": 14,
+          "sh": 15
+        },
+        {
+          "id": "brows_8",
+          "file": "sprites/brows/08.png",
+          "w": 20,
+          "h": 13,
+          "sx": 445,
+          "sy": 327,
+          "sw": 16,
+          "sh": 15
+        },
+        {
+          "id": "brows_9",
+          "file": "sprites/brows/09.png",
+          "w": 23,
+          "h": 13,
+          "sx": 490,
+          "sy": 327,
+          "sw": 19,
+          "sh": 15
+        },
+        {
+          "id": "brows_10",
+          "file": "sprites/brows/10.png",
+          "w": 16,
+          "h": 14,
+          "sx": 545,
+          "sy": 327,
+          "sw": 12,
+          "sh": 15
+        },
+        {
+          "id": "brows_11",
+          "file": "sprites/brows/11.png",
+          "w": 20,
+          "h": 15,
+          "sx": 586,
+          "sy": 327,
+          "sw": 16,
+          "sh": 15
+        },
+        {
+          "id": "brows_12",
+          "file": "sprites/brows/12.png",
+          "w": 17,
+          "h": 12,
+          "sx": 633,
+          "sy": 327,
+          "sw": 13,
+          "sh": 15
+        },
+        {
+          "id": "brows_13",
+          "file": "sprites/brows/13.png",
+          "w": 21,
+          "h": 14,
+          "sx": 678,
+          "sy": 327,
+          "sw": 17,
+          "sh": 15
+        }
+      ],
+      "count": 14
+    },
+    "glasses": {
+      "items": [
+        {
+          "id": "glasses_0",
+          "file": "sprites/glasses/00.png",
+          "w": 36,
+          "h": 26,
+          "sx": 92,
+          "sy": 371,
+          "sw": 32,
+          "sh": 26
+        },
+        {
+          "id": "glasses_1",
+          "file": "sprites/glasses/01.png",
+          "w": 38,
+          "h": 26,
+          "sx": 184,
+          "sy": 371,
+          "sw": 34,
+          "sh": 26
+        },
+        {
+          "id": "glasses_2",
+          "file": "sprites/glasses/02.png",
+          "w": 38,
+          "h": 26,
+          "sx": 222,
+          "sy": 371,
+          "sw": 34,
+          "sh": 26
+        },
+        {
+          "id": "glasses_3",
+          "file": "sprites/glasses/03.png",
+          "w": 77,
+          "h": 26,
+          "sx": 275,
+          "sy": 371,
+          "sw": 73,
+          "sh": 26
+        },
+        {
+          "id": "glasses_4",
+          "file": "sprites/glasses/04.png",
+          "w": 73,
+          "h": 26,
+          "sx": 368,
+          "sy": 371,
+          "sw": 69,
+          "sh": 26
+        },
+        {
+          "id": "glasses_5",
+          "file": "sprites/glasses/05.png",
+          "w": 38,
+          "h": 26,
+          "sx": 456,
+          "sy": 371,
+          "sw": 35,
+          "sh": 26
+        },
+        {
+          "id": "glasses_6",
+          "file": "sprites/glasses/06.png",
+          "w": 39,
+          "h": 26,
+          "sx": 496,
+          "sy": 371,
+          "sw": 35,
+          "sh": 26
+        },
+        {
+          "id": "glasses_7",
+          "file": "sprites/glasses/07.png",
+          "w": 66,
+          "h": 26,
+          "sx": 550,
+          "sy": 371,
+          "sw": 62,
+          "sh": 26
+        },
+        {
+          "id": "glasses_8",
+          "file": "sprites/glasses/08.png",
+          "w": 36,
+          "h": 26,
+          "sx": 633,
+          "sy": 371,
+          "sw": 32,
+          "sh": 26
+        },
+        {
+          "id": "glasses_9",
+          "file": "sprites/glasses/09.png",
+          "w": 41,
+          "h": 26,
+          "sx": 667,
+          "sy": 371,
+          "sw": 37,
+          "sh": 26
+        },
+        {
+          "id": "glasses_10",
+          "file": "sprites/glasses/10.png",
+          "w": 36,
+          "h": 26,
+          "sx": 722,
+          "sy": 371,
+          "sw": 32,
+          "sh": 26
+        },
+        {
+          "id": "glasses_11",
+          "file": "sprites/glasses/11.png",
+          "w": 40,
+          "h": 26,
+          "sx": 756,
+          "sy": 371,
+          "sw": 36,
+          "sh": 26
+        }
+      ],
+      "count": 12
+    },
+    "facial": {
+      "items": [
+        {
+          "id": "facial_0",
+          "file": "sprites/facial/00.png",
+          "w": 42,
+          "h": 17,
+          "sx": 87,
+          "sy": 435,
+          "sw": 38,
+          "sh": 22
+        },
+        {
+          "id": "facial_1",
+          "file": "sprites/facial/01.png",
+          "w": 34,
+          "h": 16,
+          "sx": 143,
+          "sy": 435,
+          "sw": 30,
+          "sh": 22
+        },
+        {
+          "id": "facial_2",
+          "file": "sprites/facial/02.png",
+          "w": 43,
+          "h": 22,
+          "sx": 208,
+          "sy": 435,
+          "sw": 39,
+          "sh": 22
+        },
+        {
+          "id": "facial_3",
+          "file": "sprites/facial/03.png",
+          "w": 47,
+          "h": 22,
+          "sx": 271,
+          "sy": 435,
+          "sw": 43,
+          "sh": 22
+        },
+        {
+          "id": "facial_4",
+          "file": "sprites/facial/04.png",
+          "w": 40,
+          "h": 22,
+          "sx": 337,
+          "sy": 435,
+          "sw": 36,
+          "sh": 22
+        },
+        {
+          "id": "facial_5",
+          "file": "sprites/facial/05.png",
+          "w": 15,
+          "h": 14,
+          "sx": 396,
+          "sy": 435,
+          "sw": 11,
+          "sh": 22
+        },
+        {
+          "id": "facial_6",
+          "file": "sprites/facial/06.png",
+          "w": 45,
+          "h": 22,
+          "sx": 423,
+          "sy": 435,
+          "sw": 41,
+          "sh": 22
+        },
+        {
+          "id": "facial_7",
+          "file": "sprites/facial/07.png",
+          "w": 39,
+          "h": 21,
+          "sx": 531,
+          "sy": 435,
+          "sw": 35,
+          "sh": 22
+        }
+      ],
+      "count": 8
+    },
+    "mouth": {
+      "items": [
+        {
+          "id": "mouth_0",
+          "file": "sprites/mouth/00.png",
+          "w": 42,
+          "h": 17,
+          "sx": 87,
+          "sy": 435,
+          "sw": 38,
+          "sh": 22
+        },
+        {
+          "id": "mouth_1",
+          "file": "sprites/mouth/01.png",
+          "w": 34,
+          "h": 16,
+          "sx": 143,
+          "sy": 435,
+          "sw": 30,
+          "sh": 22
+        },
+        {
+          "id": "mouth_2",
+          "file": "sprites/mouth/02.png",
+          "w": 43,
+          "h": 22,
+          "sx": 208,
+          "sy": 435,
+          "sw": 39,
+          "sh": 22
+        },
+        {
+          "id": "mouth_3",
+          "file": "sprites/mouth/03.png",
+          "w": 47,
+          "h": 22,
+          "sx": 271,
+          "sy": 435,
+          "sw": 43,
+          "sh": 22
+        },
+        {
+          "id": "mouth_4",
+          "file": "sprites/mouth/04.png",
+          "w": 40,
+          "h": 22,
+          "sx": 337,
+          "sy": 435,
+          "sw": 36,
+          "sh": 22
+        },
+        {
+          "id": "mouth_5",
+          "file": "sprites/mouth/05.png",
+          "w": 15,
+          "h": 14,
+          "sx": 396,
+          "sy": 435,
+          "sw": 11,
+          "sh": 22
+        },
+        {
+          "id": "mouth_6",
+          "file": "sprites/mouth/06.png",
+          "w": 45,
+          "h": 22,
+          "sx": 423,
+          "sy": 435,
+          "sw": 41,
+          "sh": 22
+        },
+        {
+          "id": "mouth_7",
+          "file": "sprites/mouth/07.png",
+          "w": 39,
+          "h": 21,
+          "sx": 531,
+          "sy": 435,
+          "sw": 35,
+          "sh": 22
+        }
+      ],
+      "count": 8
+    },
+    "nose": {
+      "items": [
+        {
+          "id": "nose_0",
+          "file": "sprites/nose/00.png",
+          "w": 18,
+          "h": 12,
+          "sx": 102,
+          "sy": 328,
+          "sw": 14,
+          "sh": 14
+        },
+        {
+          "id": "nose_1",
+          "file": "sprites/nose/01.png",
+          "w": 14,
+          "h": 12,
+          "sx": 144,
+          "sy": 328,
+          "sw": 10,
+          "sh": 14
+        },
+        {
+          "id": "nose_2",
+          "file": "sprites/nose/02.png",
+          "w": 18,
+          "h": 12,
+          "sx": 181,
+          "sy": 328,
+          "sw": 14,
+          "sh": 14
+        },
+        {
+          "id": "nose_3",
+          "file": "sprites/nose/03.png",
+          "w": 16,
+          "h": 12,
+          "sx": 227,
+          "sy": 328,
+          "sw": 12,
+          "sh": 14
+        },
+        {
+          "id": "nose_4",
+          "file": "sprites/nose/04.png",
+          "w": 13,
+          "h": 13,
+          "sx": 271,
+          "sy": 328,
+          "sw": 9,
+          "sh": 14
+        },
+        {
+          "id": "nose_5",
+          "file": "sprites/nose/05.png",
+          "w": 16,
+          "h": 12,
+          "sx": 314,
+          "sy": 328,
+          "sw": 12,
+          "sh": 14
+        },
+        {
+          "id": "nose_6",
+          "file": "sprites/nose/06.png",
+          "w": 12,
+          "h": 8,
+          "sx": 360,
+          "sy": 328,
+          "sw": 8,
+          "sh": 14
+        },
+        {
+          "id": "nose_7",
+          "file": "sprites/nose/07.png",
+          "w": 18,
+          "h": 12,
+          "sx": 401,
+          "sy": 328,
+          "sw": 14,
+          "sh": 14
+        },
+        {
+          "id": "nose_8",
+          "file": "sprites/nose/08.png",
+          "w": 20,
+          "h": 13,
+          "sx": 445,
+          "sy": 328,
+          "sw": 16,
+          "sh": 14
+        },
+        {
+          "id": "nose_9",
+          "file": "sprites/nose/09.png",
+          "w": 23,
+          "h": 12,
+          "sx": 490,
+          "sy": 328,
+          "sw": 19,
+          "sh": 14
+        }
+      ],
+      "count": 10
+    },
+    "tops": {
+      "items": [
+        {
+          "id": "tops_0",
+          "file": "sprites/tops/00.png",
+          "w": 53,
+          "h": 49,
+          "sx": 18,
+          "sy": 482,
+          "sw": 49,
+          "sh": 50
+        },
+        {
+          "id": "tops_1",
+          "file": "sprites/tops/01.png",
+          "w": 51,
+          "h": 49,
+          "sx": 74,
+          "sy": 482,
+          "sw": 47,
+          "sh": 50
+        },
+        {
+          "id": "tops_2",
+          "file": "sprites/tops/02.png",
+          "w": 53,
+          "h": 46,
+          "sx": 127,
+          "sy": 482,
+          "sw": 49,
+          "sh": 50
+        },
+        {
+          "id": "tops_3",
+          "file": "sprites/tops/03.png",
+          "w": 52,
+          "h": 46,
+          "sx": 183,
+          "sy": 482,
+          "sw": 48,
+          "sh": 50
+        },
+        {
+          "id": "tops_4",
+          "file": "sprites/tops/04.png",
+          "w": 55,
+          "h": 45,
+          "sx": 236,
+          "sy": 482,
+          "sw": 51,
+          "sh": 50
+        },
+        {
+          "id": "tops_5",
+          "file": "sprites/tops/05.png",
+          "w": 56,
+          "h": 45,
+          "sx": 292,
+          "sy": 482,
+          "sw": 52,
+          "sh": 50
+        },
+        {
+          "id": "tops_6",
+          "file": "sprites/tops/06.png",
+          "w": 56,
+          "h": 46,
+          "sx": 349,
+          "sy": 482,
+          "sw": 52,
+          "sh": 50
+        },
+        {
+          "id": "tops_7",
+          "file": "sprites/tops/07.png",
+          "w": 58,
+          "h": 50,
+          "sx": 427,
+          "sy": 482,
+          "sw": 54,
+          "sh": 50
+        },
+        {
+          "id": "tops_8",
+          "file": "sprites/tops/08.png",
+          "w": 56,
+          "h": 50,
+          "sx": 492,
+          "sy": 482,
+          "sw": 52,
+          "sh": 50
+        },
+        {
+          "id": "tops_9",
+          "file": "sprites/tops/09.png",
+          "w": 56,
+          "h": 50,
+          "sx": 555,
+          "sy": 482,
+          "sw": 52,
+          "sh": 50
+        },
+        {
+          "id": "tops_10",
+          "file": "sprites/tops/10.png",
+          "w": 58,
+          "h": 50,
+          "sx": 617,
+          "sy": 482,
+          "sw": 54,
+          "sh": 50
+        },
+        {
+          "id": "tops_11",
+          "file": "sprites/tops/11.png",
+          "w": 50,
+          "h": 50,
+          "sx": 680,
+          "sy": 482,
+          "sw": 46,
+          "sh": 50
+        }
+      ],
+      "count": 12
+    },
+    "dresses": {
+      "items": [
+        {
+          "id": "dresses_0",
+          "file": "sprites/dresses/00.png",
+          "w": 52,
+          "h": 45,
+          "sx": 18,
+          "sy": 598,
+          "sw": 50,
+          "sh": 52
+        },
+        {
+          "id": "dresses_1",
+          "file": "sprites/dresses/01.png",
+          "w": 46,
+          "h": 43,
+          "sx": 76,
+          "sy": 598,
+          "sw": 44,
+          "sh": 52
+        },
+        {
+          "id": "dresses_2",
+          "file": "sprites/dresses/02.png",
+          "w": 53,
+          "h": 44,
+          "sx": 126,
+          "sy": 598,
+          "sw": 51,
+          "sh": 52
+        },
+        {
+          "id": "dresses_3",
+          "file": "sprites/dresses/03.png",
+          "w": 52,
+          "h": 44,
+          "sx": 182,
+          "sy": 598,
+          "sw": 50,
+          "sh": 52
+        },
+        {
+          "id": "dresses_4",
+          "file": "sprites/dresses/04.png",
+          "w": 52,
+          "h": 45,
+          "sx": 235,
+          "sy": 598,
+          "sw": 50,
+          "sh": 52
+        },
+        {
+          "id": "dresses_5",
+          "file": "sprites/dresses/05.png",
+          "w": 51,
+          "h": 45,
+          "sx": 290,
+          "sy": 598,
+          "sw": 49,
+          "sh": 52
+        },
+        {
+          "id": "dresses_6",
+          "file": "sprites/dresses/06.png",
+          "w": 53,
+          "h": 45,
+          "sx": 345,
+          "sy": 598,
+          "sw": 51,
+          "sh": 52
+        }
+      ],
+      "count": 7
+    },
+    "outer": {
+      "items": [
+        {
+          "id": "outer_0",
+          "file": "sprites/outer/00.png",
+          "w": 53,
+          "h": 46,
+          "sx": 17,
+          "sy": 545,
+          "sw": 51,
+          "sh": 53
+        },
+        {
+          "id": "outer_1",
+          "file": "sprites/outer/01.png",
+          "w": 52,
+          "h": 43,
+          "sx": 73,
+          "sy": 545,
+          "sw": 50,
+          "sh": 53
+        },
+        {
+          "id": "outer_2",
+          "file": "sprites/outer/02.png",
+          "w": 52,
+          "h": 47,
+          "sx": 127,
+          "sy": 545,
+          "sw": 50,
+          "sh": 53
+        },
+        {
+          "id": "outer_3",
+          "file": "sprites/outer/03.png",
+          "w": 52,
+          "h": 46,
+          "sx": 183,
+          "sy": 545,
+          "sw": 50,
+          "sh": 53
+        },
+        {
+          "id": "outer_4",
+          "file": "sprites/outer/04.png",
+          "w": 52,
+          "h": 46,
+          "sx": 237,
+          "sy": 545,
+          "sw": 50,
+          "sh": 53
+        },
+        {
+          "id": "outer_5",
+          "file": "sprites/outer/05.png",
+          "w": 52,
+          "h": 47,
+          "sx": 292,
+          "sy": 545,
+          "sw": 50,
+          "sh": 53
+        },
+        {
+          "id": "outer_6",
+          "file": "sprites/outer/06.png",
+          "w": 51,
+          "h": 46,
+          "sx": 350,
+          "sy": 545,
+          "sw": 49,
+          "sh": 53
+        },
+        {
+          "id": "outer_7",
+          "file": "sprites/outer/07.png",
+          "w": 61,
+          "h": 53,
+          "sx": 427,
+          "sy": 545,
+          "sw": 59,
+          "sh": 53
+        },
+        {
+          "id": "outer_8",
+          "file": "sprites/outer/08.png",
+          "w": 67,
+          "h": 53,
+          "sx": 495,
+          "sy": 545,
+          "sw": 65,
+          "sh": 53
+        },
+        {
+          "id": "outer_9",
+          "file": "sprites/outer/09.png",
+          "w": 59,
+          "h": 53,
+          "sx": 569,
+          "sy": 545,
+          "sw": 57,
+          "sh": 53
+        }
+      ],
+      "count": 10
+    },
+    "bottoms": {
+      "items": [
+        {
+          "id": "bottoms_0",
+          "file": "sprites/bottoms/00.png",
+          "w": 37,
+          "h": 28,
+          "sx": 749,
+          "sy": 481,
+          "sw": 37,
+          "sh": 28
+        },
+        {
+          "id": "bottoms_1",
+          "file": "sprites/bottoms/01.png",
+          "w": 39,
+          "h": 33,
+          "sx": 804,
+          "sy": 479,
+          "sw": 39,
+          "sh": 33
+        },
+        {
+          "id": "bottoms_2",
+          "file": "sprites/bottoms/02.png",
+          "w": 40,
+          "h": 34,
+          "sx": 863,
+          "sy": 481,
+          "sw": 40,
+          "sh": 34
+        },
+        {
+          "id": "bottoms_3",
+          "file": "sprites/bottoms/03.png",
+          "w": 42,
+          "h": 33,
+          "sx": 913,
+          "sy": 486,
+          "sw": 42,
+          "sh": 33
+        },
+        {
+          "id": "bottoms_4",
+          "file": "sprites/bottoms/04.png",
+          "w": 45,
+          "h": 36,
+          "sx": 639,
+          "sy": 553,
+          "sw": 45,
+          "sh": 36
+        }
+      ],
+      "count": 5
+    },
+    "shoes": {
+      "items": [
+        {
+          "id": "shoes_0",
+          "file": "sprites/shoes/00.png",
+          "w": 43,
+          "h": 17,
+          "sx": 28,
+          "sy": 650,
+          "sw": 41,
+          "sh": 26
+        },
+        {
+          "id": "shoes_1",
+          "file": "sprites/shoes/01.png",
+          "w": 40,
+          "h": 18,
+          "sx": 79,
+          "sy": 650,
+          "sw": 38,
+          "sh": 26
+        },
+        {
+          "id": "shoes_2",
+          "file": "sprites/shoes/02.png",
+          "w": 45,
+          "h": 24,
+          "sx": 132,
+          "sy": 650,
+          "sw": 43,
+          "sh": 26
+        },
+        {
+          "id": "shoes_3",
+          "file": "sprites/shoes/03.png",
+          "w": 44,
+          "h": 23,
+          "sx": 185,
+          "sy": 650,
+          "sw": 42,
+          "sh": 26
+        },
+        {
+          "id": "shoes_4",
+          "file": "sprites/shoes/04.png",
+          "w": 46,
+          "h": 24,
+          "sx": 237,
+          "sy": 650,
+          "sw": 44,
+          "sh": 26
+        },
+        {
+          "id": "shoes_5",
+          "file": "sprites/shoes/05.png",
+          "w": 46,
+          "h": 24,
+          "sx": 291,
+          "sy": 650,
+          "sw": 44,
+          "sh": 26
+        },
+        {
+          "id": "shoes_6",
+          "file": "sprites/shoes/06.png",
+          "w": 44,
+          "h": 23,
+          "sx": 345,
+          "sy": 650,
+          "sw": 42,
+          "sh": 26
+        },
+        {
+          "id": "shoes_7",
+          "file": "sprites/shoes/07.png",
+          "w": 51,
+          "h": 24,
+          "sx": 444,
+          "sy": 650,
+          "sw": 49,
+          "sh": 26
+        },
+        {
+          "id": "shoes_8",
+          "file": "sprites/shoes/08.png",
+          "w": 43,
+          "h": 23,
+          "sx": 509,
+          "sy": 650,
+          "sw": 41,
+          "sh": 26
+        },
+        {
+          "id": "shoes_9",
+          "file": "sprites/shoes/09.png",
+          "w": 48,
+          "h": 23,
+          "sx": 568,
+          "sy": 650,
+          "sw": 46,
+          "sh": 26
+        }
+      ],
+      "count": 10
+    },
+    "hats": {
+      "items": [
+        {
+          "id": "hats_0",
+          "file": "sprites/hats/00.png",
+          "w": 52,
+          "h": 12,
+          "sx": 701,
+          "sy": 650,
+          "sw": 50,
+          "sh": 26
+        },
+        {
+          "id": "hats_1",
+          "file": "sprites/hats/01.png",
+          "w": 48,
+          "h": 13,
+          "sx": 769,
+          "sy": 650,
+          "sw": 46,
+          "sh": 26
+        },
+        {
+          "id": "hats_2",
+          "file": "sprites/hats/02.png",
+          "w": 45,
+          "h": 15,
+          "sx": 836,
+          "sy": 650,
+          "sw": 43,
+          "sh": 26
+        },
+        {
+          "id": "hats_3",
+          "file": "sprites/hats/03.png",
+          "w": 46,
+          "h": 15,
+          "sx": 888,
+          "sy": 650,
+          "sw": 44,
+          "sh": 26
+        }
+      ],
+      "count": 4
+    }
+  }
+}

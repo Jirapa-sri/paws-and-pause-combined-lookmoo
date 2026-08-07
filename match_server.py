@@ -125,26 +125,27 @@ def openai_chat_json(api_key: str, messages: list, *, max_tokens: int, temperatu
         # Newer models (gpt-5.x / o-series) reject max_tokens; use max_completion_tokens.
         use_completion_tokens = bool(re.search(r"(gpt-5|o[1-9]|luna)", model, re.I))
         token_key = "max_completion_tokens" if use_completion_tokens else "max_tokens"
-        bodies = [
-            {
-                "model": model,
-                "response_format": {"type": "json_object"},
-                "messages": messages,
-                token_key: max_tokens,
-                "temperature": temperature,
-            }
-        ]
+        base = {
+            "model": model,
+            "response_format": {"type": "json_object"},
+            "messages": messages,
+            token_key: max_tokens,
+        }
+        # Some gpt-5 / luna models only allow default temperature.
+        bodies = [dict(base)]
+        if not use_completion_tokens:
+            bodies = [dict(base, temperature=temperature)]
+        else:
+            bodies = [dict(base), dict(base, temperature=temperature)]
         # If we guessed wrong about the token param, retry once with the other key.
         alt_key = "max_tokens" if token_key == "max_completion_tokens" else "max_completion_tokens"
-        bodies.append(
-            {
-                "model": model,
-                "response_format": {"type": "json_object"},
-                "messages": messages,
-                alt_key: max_tokens,
-                "temperature": temperature,
-            }
-        )
+        alt_body = {
+            "model": model,
+            "response_format": {"type": "json_object"},
+            "messages": messages,
+            alt_key: max_tokens,
+        }
+        bodies.append(alt_body)
 
         for body in bodies:
             req = urllib.request.Request(
@@ -170,6 +171,8 @@ def openai_chat_json(api_key: str, messages: list, *, max_tokens: int, temperatu
                     msg = detail or str(err)
                 last_error = msg
                 low = msg.lower()
+                if "temperature" in low and "unsupported" in low:
+                    continue
                 if "max_tokens" in low and "max_completion_tokens" in low:
                     # Wrong token field for this model - try the alternate body.
                     continue

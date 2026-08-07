@@ -79,3 +79,12 @@ python reel_agent.py -v
 - Slides use HTML/CSS/inline SVG only (no stock photos / AI images).
 - Slide 2 includes a custom town + shelter illustration built entirely with SVG.
 - Do not commit `.env` or API keys.
+
+## Playable game (friends / collaborators)
+
+```bash
+python3 match_server.py
+# open http://127.0.0.1:8765/game_demo.html
+```
+
+Building map icons and interiors live in **one file each** under [`js/buildings/`](js/buildings/) — see that folder’s README to edit café, farm, cinema, etc. without touching the whole game.

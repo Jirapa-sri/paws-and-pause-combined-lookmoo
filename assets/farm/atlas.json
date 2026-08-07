@@ -1,0 +1,116 @@
+{
+  "tile": 16,
+  "crops": {
+    "seedling": {
+      "row": 2,
+      "cols": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "soil": {
+      "row": 1,
+      "cols": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "carrot": {
+      "row": 7,
+      "harvest": 0,
+      "stages": [
+        1,
+        2
+      ]
+    },
+    "corn": {
+      "row": 6,
+      "harvest": 0,
+      "stages": [
+        1,
+        2
+      ]
+    },
+    "tomato": {
+      "row": 13,
+      "harvest": 0,
+      "stages": [
+        1,
+        2
+      ]
+    },
+    "blueberry": {
+      "row": 12,
+      "harvest": 0,
+      "stages": [
+        1,
+        2
+      ]
+    },
+    "grape": {
+      "row": 4,
+      "harvest": 0,
+      "stages": [
+        2,
+        3
+      ]
+    },
+    "turnip": {
+      "row": 9,
+      "harvest": 0,
+      "stages": [
+        1,
+        2
+      ]
+    },
+    "beet": {
+      "row": 8,
+      "harvest": 0,
+      "stages": [
+        1,
+        2
+      ]
+    },
+    "pineapple": {
+      "row": 10,
+      "harvest": 0,
+      "stages": [
+        1,
+        2
+      ]
+    }
+  },
+  "barn": {
+    "w": 64,
+    "h": 80,
+    "variants": 6
+  },
+  "well": {
+    "w": 18,
+    "h": 28,
+    "frames": 4
+  },
+  "tools": {
+    "tile": 16,
+    "hoe": [
+      0,
+      0
+    ],
+    "axe": [
+      1,
+      0
+    ],
+    "pick": [
+      2,
+      0
+    ],
+    "can": [
+      3,
+      0
+    ]
+  }
+}

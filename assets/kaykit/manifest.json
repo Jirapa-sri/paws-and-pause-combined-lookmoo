@@ -1,0 +1,36 @@
+{
+  "furniture": {
+    "bed": "sprites/furniture/bed.png",
+    "cabinet": "sprites/furniture/cabinet.png",
+    "wardrobe": "sprites/furniture/wardrobe.png",
+    "table": "sprites/furniture/table.png",
+    "plant": "sprites/furniture/plant.png",
+    "rug": "sprites/furniture/rug.png",
+    "chair": "sprites/furniture/chair.png",
+    "bookshelf": "sprites/furniture/bookshelf.png",
+    "floorlamp": "sprites/furniture/floorlamp.png",
+    "nightstand": "sprites/furniture/nightstand.png",
+    "sofa": "sprites/furniture/sofa.png",
+    "painting": "sprites/furniture/painting.png",
+    "mirror": "sprites/furniture/mirror.png",
+    "desk": "sprites/furniture/desk.png",
+    "diydesk": "sprites/furniture/diydesk.png",
+    "armchair": "sprites/furniture/armchair.png",
+    "toybox": "sprites/furniture/toybox.png",
+    "dogbed": "sprites/furniture/dogbed.png"
+  },
+  "nature": {
+    "tree1": "sprites/nature/tree1.png",
+    "tree2": "sprites/nature/tree2.png",
+    "tree3": "sprites/nature/tree3.png",
+    "tree4": "sprites/nature/tree4.png",
+    "bush1": "sprites/nature/bush1.png",
+    "bush2": "sprites/nature/bush2.png",
+    "bush3": "sprites/nature/bush3.png",
+    "rock1": "sprites/nature/rock1.png",
+    "rock2": "sprites/nature/rock2.png",
+    "rock3": "sprites/nature/rock3.png",
+    "grass1": "sprites/nature/grass1.png",
+    "grass2": "sprites/nature/grass2.png"
+  }
+}
