@@ -1004,6 +1004,10 @@
     <div class="minimap-frame"><canvas id="minimap" width="150" height="103"></canvas></div>
     <div class="rearrange-banner" id="rearrange-banner">
       <span id="rearrange-hint">Pick up a building with <kbd style="font-family:var(--mono);font-size:0.68rem;opacity:0.85">E</kbd></span>
+      <button type="button" id="btn-map-path">Path</button>
+      <button type="button" id="btn-map-end-path">End Path</button>
+      <button type="button" id="btn-map-clear-paths">Clear Here</button>
+      <button type="button" id="btn-map-river">River</button>
       <button type="button" id="btn-map-place">Place</button>
       <button type="button" id="btn-map-bag">Bag</button>
       <button type="button" id="btn-map-done">Done</button>
@@ -1019,7 +1023,7 @@
   </div>
 
   <div class="controls-row">
-    <div class="hint">Move: <b>WASD</b> · <b>E</b> enter buildings · Edit Map to plant/remove trees & flowers · DIY Desk to craft fences</div>
+    <div class="hint">Move: <b>WASD</b> · <b>E</b> interact · Edit Map: bag scenery/rivers/decor (not buildings) · Place later</div>
     <div class="move-controls">
       <div class="dpad" aria-label="Move (touch)">
         <button class="up" data-dir="up">▲</button>
@@ -1078,6 +1082,7 @@
 <script src="js/buildings/concert.js"></script>
 <script src="js/buildings/farm.js"></script>
 <script src="js/buildings/lake.js"></script>
+<script src="js/buildings/airport.js"></script>
 <script src="assets/mii/character-maker.js?v=13"></script>
 <script>
 (function(){
@@ -1310,6 +1315,62 @@
   };
   KayKitAtlas.load();
 
+  /* ---------- Lisa (festival host) sprite atlas from character sheet ---------- */
+  const LisaAtlas = {
+    ready: false,
+    images: {},
+    keys: ["front", "talk", "idle", "side", "walk0", "walk1", "walk2", "expr_happy", "expr_excited"],
+    load(){
+      return Promise.all(this.keys.map((id) => new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => { LisaAtlas.images[id] = img; resolve(); };
+        img.onerror = () => resolve();
+        img.src = "assets/npc/lisa/" + id + ".png";
+      }))).then(() => {
+        LisaAtlas.ready = !!LisaAtlas.images.front;
+      });
+    },
+    has(id){ return !!(this.images[id] || this.images.front); },
+    draw(c, id, x, y, h){
+      const img = this.images[id] || this.images.front;
+      if(!img) return false;
+      const w = h * (img.width / img.height);
+      c.imageSmoothingEnabled = true;
+      c.drawImage(img, x - w/2, y - h, w, h);
+      return true;
+    },
+  };
+  LisaAtlas.load();
+
+  /* Cute airport airplane (checkerboard bg removed) */
+  const AirplaneArt = {
+    ready: false,
+    img: null,
+    load(){
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => { AirplaneArt.img = img; AirplaneArt.ready = true; resolve(); };
+        img.onerror = () => resolve();
+        img.src = "assets/decor/airplane.png";
+      });
+    },
+    draw(c, x, y, w, h){
+      if(!this.img) return false;
+      c.imageSmoothingEnabled = true;
+      // soft ground shadow
+      c.save();
+      c.fillStyle = "rgba(58,44,34,0.16)";
+      c.beginPath();
+      c.ellipse(x + w*0.52, y + h*0.88, w*0.38, h*0.1, 0, 0, Math.PI*2);
+      c.fill();
+      c.drawImage(this.img, x, y, w, h);
+      c.restore();
+      return true;
+    },
+  };
+  AirplaneArt.load();
+
+
   /* Tiny Farm Pack + TFP anim (pixel farm crops, barn, tools) */
   const FARM_PACK = {
     enabled: true,
@@ -1394,6 +1455,14 @@
       const f = Math.abs(frame || 0) % 6;
       const col = f % 2, row = Math.floor(f / 2);
       return FarmAtlas.blit(ctx, "chicken", col * fw, row * fh, dx, dy, fw * s, fh * s, fw, fh);
+    },
+    drawCow(ctx, dx, dy, frame, scale, row){
+      if(!FarmAtlas.has("cow")) return false;
+      const s = scale || 2;
+      const fw = 32, fh = 32;
+      const col = Math.abs(frame || 0) % 2;
+      const r = Math.abs(row == null ? 0 : row) % 5;
+      return FarmAtlas.blit(ctx, "cow", col * fw, r * fh, dx, dy, fw * s, fh * s, fw, fh);
     },
     /** Data-URL thumbnail for UI cards. */
     cropThumbDataUrl(cropId, stage){
@@ -1724,9 +1793,12 @@
       case "tree":
         return `<svg viewBox="0 0 64 44" aria-hidden="true">
           <ellipse cx="32" cy="40" rx="14" ry="3" fill="rgba(58,44,34,0.12)"/>
-          <rect x="29" y="24" width="6" height="14" fill="#8C5A3B"/>
-          <circle cx="24" cy="18" r="10" fill="#6B8E6B"/><circle cx="40" cy="18" r="10" fill="#6B8E6B"/>
-          <circle cx="32" cy="10" r="11" fill="#CFE1DC"/>
+          <rect x="29" y="22" width="6" height="16" rx="1" fill="#8C5A3B"/>
+          <circle cx="22" cy="18" r="10" fill="#6B8E6B"/><circle cx="42" cy="18" r="10" fill="#6B8E6B"/>
+          <circle cx="27" cy="10" r="9" fill="#8FB07A"/><circle cx="37" cy="11" r="8" fill="#8FB07A"/>
+          <circle cx="32" cy="6" r="9" fill="#CFE1DC"/>
+          <circle cx="28" cy="4" r="3" fill="rgba(255,255,255,0.35)"/>
+          <circle cx="24" cy="16" r="2" fill="#E3998A"/><circle cx="40" cy="14" r="2" fill="#D98F2B"/>
         </svg>`;
       case "bush":
         return `<svg viewBox="0 0 64 44" aria-hidden="true">
@@ -1793,6 +1865,23 @@
           <rect x="18" y="8" width="3" height="12" fill="#6E5C49"/>
           <rect x="40" y="8" width="10" height="8" rx="1" fill="#D98F2B"/>
           <text x="32" y="27" text-anchor="middle" font-size="8" font-weight="700" fill="#FBF0DE">DIY</text>
+        </svg>`;
+      case "airplane":
+        return `<img src="assets/decor/airplane.png" alt="" style="width:56px;height:36px;object-fit:contain">`;
+      case "cowpen":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <rect x="6" y="10" width="52" height="28" rx="3" fill="none" stroke="#A9784F" stroke-width="3"/>
+          <rect x="10" y="14" width="3" height="20" fill="#8C5A3B"/><rect x="51" y="14" width="3" height="20" fill="#8C5A3B"/>
+          <ellipse cx="28" cy="28" rx="10" ry="7" fill="#F7F2EA"/><circle cx="22" cy="24" r="3.5" fill="#3A2C22"/>
+          <circle cx="34" cy="24" r="3.5" fill="#3A2C22"/><circle cx="28" cy="22" r="4" fill="#F7F2EA"/>
+          <ellipse cx="46" cy="30" rx="7" ry="5" fill="#F7F2EA"/><circle cx="46" cy="26" r="3.2" fill="#F7F2EA"/>
+        </svg>`;
+      case "chickenpen":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <rect x="8" y="12" width="48" height="26" rx="3" fill="none" stroke="#A9784F" stroke-width="3"/>
+          <circle cx="24" cy="28" r="6" fill="#FBF0DE"/><path d="M24 20l2 5h-4z" fill="#D9705C"/>
+          <circle cx="40" cy="30" r="5" fill="#FBF0DE"/><path d="M40 23l1.8 4h-3.6z" fill="#D98F2B"/>
+          <circle cx="32" cy="24" r="4.5" fill="#FFF7EA"/>
         </svg>`;
       default:
         return `<svg viewBox="0 0 64 44"><rect x="12" y="10" width="40" height="24" rx="6" fill="#D9C199"/></svg>`;
@@ -1968,9 +2057,16 @@ const BREEDS = {
     { id:"flower",   name:"Flower Seeds",    price:10, w:40, h:28, flora:true, desc:"Scatter a flower patch on the grass." },
     { id:"bush",     name:"Bush Start",      price:14, w:44, h:40, flora:true, desc:"A leafy bush for paths and yards." },
     { id:"diydesk",  name:"DIY Desk",        price:60, w:70, h:50, desc:"Craft fences and more from wood & petals." },
+    { id:"airplane", name:"Island Airplane", price:120, w:140, h:90, desc:"Parked by the airport — ready for island hops." },
+    { id:"cowpen", name:"Cow Pen", price:95, w:170, h:120, desc:"Cute cows in a little fenced yard — move it anywhere." },
+    { id:"chickenpen", name:"Chicken Pen", price:75, w:140, h:110, desc:"Clucky friends behind a fence — place over grass or buildings." },
   ];
 
   const FLORA_TYPES = new Set(["tree","flower","bush"]);
+  const EXTRA_DECOR_CATALOG = {
+    rock:  { id:"rock",  name:"Rock",       w:44, h:40, desc:"A mossy island rock." },
+    grass: { id:"grass", name:"Grass tuft", w:36, h:32, desc:"A soft patch of grass." },
+  };
   const DIY_RECIPES = [
     { id:"fence",  name:"Garden Fence",  result:"fence",  qty:1, needs:{ wood:3 },           desc:"Post-and-rail border for paths." },
     { id:"sign",   name:"Welcome Sign",  result:"sign",   qty:1, needs:{ wood:2 },           desc:"A little hello for visitors." },
@@ -1988,13 +2084,14 @@ const BREEDS = {
     shelter: { label:"Puppy Shelter",   wall:"#D4C0D0", floor:"#E5D8C8", accent:"#8A5A8C", activity:"Visit puppies",blurb:"Soft beds and hopeful eyes." },
     stadium: { label:"Go-Kart Stadium", wall:"#D4A8A0", floor:"#C9B48A", accent:"#C0483E", activity:"Start a race", blurb:"Checkered flags and engine hum." },
     arcade:  { label:"Pixel Arcade",    wall:"#B8A8C8", floor:"#3A2C4A", accent:"#7B5EA7", activity:"Play games",   blurb:"Neon cabinets and coin chimes." },
-    concert: { label:"Concert Festival",wall:"#2A1840", floor:"#3A2550", accent:"#E8A33D", activity:"Join the show", blurb:"Lisa hosts under the festival lights." },
+    concert: { label:"Concert Festival",wall:"#1A0F28", floor:"#120818", accent:"#E8A33D", activity:"Cheer Lisa", blurb:"Front-row view — Lisa performs on stage." },
     school:  { label:"Willow School",   wall:"#D5C9B0", floor:"#E8DCC4", accent:"#5A7FB0", activity:"Study desk",   blurb:"Quiet desks, chalk dust, and soft focus." },
     boutique:{ label:"Willow Boutique", wall:"#E8D0DC", floor:"#F3E6EA", accent:"#C45A7A", activity:"Try outfits",  blurb:"Mirrors, racks, and a fresh look." },
-    guestLavender: { label:"Lavender Cottage", wall:"#D8C8E0", floor:"#EDE4F0", accent:"#8A6BAE", activity:"Visit Mara", blurb:"Lavender sachets and soft quilts." },
-    guestBlue:     { label:"Blue Cottage",     wall:"#C8D8EC", floor:"#E4ECF5", accent:"#4A7DBF", activity:"Visit Theo", blurb:"Sea glass jars and quiet reading." },
+    guestLavender: { label:"Mara's Home", wall:"#E8DCEC", floor:"#F4ECF6", accent:"#8A6BAE", activity:"Visit Mara", blurb:"Tea steam, lavender sachets, and a second cup waiting." },
+    guestBlue:     { label:"Theo's Home",  wall:"#DCE6F2", floor:"#EAF0F7", accent:"#4A7DBF", activity:"Visit Theo", blurb:"Salt air, sea glass jars, and quiet reading light." },
     farm:    { label:"Sunny Farm",    wall:"#E8F0D8", floor:"#C4A574", accent:"#6B8E4E", activity:"Tend crops",  blurb:"Plant, water, and harvest under the sun." },
     cinema:  { label:"Island Cinema", wall:"#2A2438", floor:"#3A3348", accent:"#E8A33D", activity:"Buy tickets", blurb:"Big lobby, ticket booth, and now showing." },
+    airport: { label:"Willow Airlines", wall:"#E8EEF4", floor:"#F4F7FA", accent:"#4AA3D9", activity:"Talk to Sky", blurb:"Gates, boarding pass smiles, and island hop dreams." },
   };
   // Prefer per-building modules in js/buildings/*.js (friend-editable)
   if(window.PawsBuildings){
@@ -2007,25 +2104,33 @@ const BREEDS = {
   const WORLD_W = 1900, WORLD_H = 1500;
 
   const ZONE_DEFAULTS = [
-    // Structured ring around central plaza (820, 620)
-    { id:"home",    label:"Home",     x:120,  y:180,  w:200, h:145, fill:"#B5654A", icon:"home" },
-    { id:"guestBlue", label:"Blue Cot.", x:380, y:160, w:160, h:125, fill:"#4A7DBF", icon:"guestBlue" },
-    { id:"stadium", label:"Stadium",  x:780,  y:80,   w:250, h:175, fill:"#C0483E", icon:"stadium" },
-    { id:"cafe",    label:"Café",     x:1480, y:180,  w:200, h:145, fill:"#8C5A3B", icon:"cafe" },
-    { id:"boutique",label:"Boutique", x:1520, y:400,  w:180, h:135, fill:"#C45A7A", icon:"boutique" },
-    { id:"store",   label:"Store",    x:1220, y:460,  w:180, h:140, fill:"#C07840", icon:"store" },
-    { id:"guestLavender", label:"Lavender", x:900, y:480, w:170, h:130, fill:"#8A6BAE", icon:"guestLavender" },
-    { id:"arcade",  label:"Arcade",   x:520,  y:460,  w:200, h:155, fill:"#4A2C6E", icon:"arcade" },
-    { id:"concert", label:"Festival", x:280,  y:640,  w:240, h:165, fill:"#C45A8C", icon:"concert" },
-    { id:"farm",    label:"Farm",     x:560,  y:820,  w:230, h:170, fill:"#6B8E4E", icon:"farm" },
-    { id:"lake",    label:"Lake",     x:160,  y:980,  w:280, h:210, fill:"#3E7C74", icon:"lake" },
-    { id:"cinema",  label:"Cinema",   x:1120, y:740,  w:320, h:240, fill:"#3A3A5C", icon:"cinema" },
-    { id:"school",  label:"School",   x:1520, y:700,  w:190, h:150, fill:"#5A7FB0", icon:"school" },
-    { id:"shelter", label:"Shelter",  x:1480, y:1020, w:200, h:145, fill:"#8A5A8C", icon:"shelter" },
+    // Animal Crossing–style neighborhoods around plaza (950, 640)
+    // Residential NW
+    { id:"home",    label:"Home",     x:140,  y:200,  w:190, h:140, fill:"#B5654A", icon:"home" },
+    { id:"guestBlue", label:"Theo's", x:380, y:180, w:160, h:130, fill:"#4A7DBF", icon:"guestBlue" },
+    { id:"guestLavender", label:"Mara's", x:360, y:360, w:170, h:135, fill:"#8A6BAE", icon:"guestLavender" },
+    // North recreation
+    { id:"stadium", label:"Stadium",  x:820,  y:70,   w:240, h:165, fill:"#C0483E", icon:"stadium" },
+    { id:"cinema",  label:"Cinema",   x:1120, y:160,  w:280, h:200, fill:"#3A3A5C", icon:"cinema" },
+    // NE shops / cafe lane
+    { id:"cafe",    label:"Café",     x:1520, y:200,  w:190, h:140, fill:"#8C5A3B", icon:"cafe" },
+    { id:"boutique",label:"Boutique", x:1480, y:420,  w:170, h:130, fill:"#C45A7A", icon:"boutique" },
+    { id:"store",   label:"Store",    x:1240, y:480,  w:170, h:135, fill:"#C07840", icon:"store" },
+    // Plaza / town services
+    { id:"school",  label:"School",   x:880,  y:700,  w:180, h:145, fill:"#5A7FB0", icon:"school" },
+    // West entertainment
+    { id:"arcade",  label:"Arcade",   x:520,  y:500,  w:190, h:150, fill:"#4A2C6E", icon:"arcade" },
+    { id:"concert", label:"Festival", x:240,  y:620,  w:230, h:160, fill:"#C45A8C", icon:"concert" },
+    // SW nature + campsite feel
+    { id:"farm",    label:"Farm",     x:480,  y:820,  w:220, h:165, fill:"#6B8E4E", icon:"farm" },
+    { id:"lake",    label:"Lake",     x:140,  y:980,  w:270, h:200, fill:"#3E7C74", icon:"lake" },
+    { id:"shelter", label:"Shelter",  x:1480, y:980,  w:190, h:140, fill:"#8A5A8C", icon:"shelter" },
+    // South pier — airport (AC-style dock terminal)
+    { id:"airport", label:"Airport",  x:860,  y:1180, w:240, h:170, fill:"#4AA3D9", icon:"airport" },
   ];
   let zones = ZONE_DEFAULTS.map(z => Object.assign({}, z));
-  let LAKE_CX = 300, LAKE_CY = 1085;
-  const LAKE_RX = 165, LAKE_RY = 120;
+  let LAKE_CX = 280, LAKE_CY = 1080;
+  let LAKE_RX = 165, LAKE_RY = 120;
 
   const UNLOCK_COSTS = {
     home: 0,
@@ -2040,12 +2145,13 @@ const BREEDS = {
     school: 30,
     farm: 30,
     cinema: 40,
+    airport: 45,
     guestLavender: 0,
     guestBlue: 0,
   };
 
   function defaultUnlocked(){
-    return { home:true, cafe:false, lake:true, shelter:false, stadium:false, arcade:false, store:true, boutique:true, concert:false, school:true, farm:true, cinema:true, guestLavender:true, guestBlue:true };
+    return { home:true, cafe:false, lake:true, shelter:false, stadium:false, arcade:false, store:true, boutique:true, concert:false, school:true, farm:true, cinema:true, airport:true, guestLavender:true, guestBlue:true };
   }
 
   const DECOR_HUTS = [
@@ -2067,6 +2173,10 @@ const BREEDS = {
     { x:300,  y:960,  rx:260, ry:210, seed:4.4, color:"#A9CE83" },
     { x:1520, y:950,  rx:280, ry:220, seed:5.2, color:"#B9D98C" },
     { x:900,  y:1310, rx:280, ry:170, seed:6.1, color:"#A9CE83" },
+    { x:620,  y:520,  rx:140, ry:90,  seed:7.2, color:"#C5DB96" },
+    { x:1180, y:820,  rx:150, ry:95,  seed:8.0, color:"#C5DB96" },
+    { x:1700, y:700,  rx:120, ry:80,  seed:8.8, color:"#BFD68E" },
+    { x:220,  y:700,  rx:130, ry:85,  seed:9.4, color:"#BFD68E" },
   ];
 
   const MOUNTAIN_CLUSTERS = [
@@ -2082,9 +2192,60 @@ const BREEDS = {
     { x: 170, y: 620, rx: 52, ry: 38 },
     { x: 1680, y: 560, rx: 58, ry: 42 },
     { x: 980, y: 1280, rx: 50, ry: 36 },
+    { x: 640, y: 360, rx: 40, ry: 28 },
+    { x: 1200, y: 1080, rx: 44, ry: 30 },
+    { x: 1760, y: 1080, rx: 42, ry: 30 },
   ];
 
-  const PLAZA_CX = 820, PLAZA_CY = 620;
+  const DEFAULT_MEADOWS = [
+    { x:520, y:480, rx:90, ry:55, seed:4.1, color:"#C9DF9A" },
+    { x:980, y:700, rx:110, ry:60, seed:5.2, color:"#C5DB96" },
+    { x:1280, y:560, rx:95, ry:50, seed:6.0, color:"#C9DF9A" },
+    { x:360, y:820, rx:100, ry:58, seed:3.3, color:"#BFD68E" },
+    { x:1100, y:980, rx:120, ry:65, seed:7.1, color:"#C9DF9A" },
+    { x:700, y:1120, rx:90, ry:48, seed:2.7, color:"#BFD68E" },
+    { x:1500, y:820, rx:85, ry:50, seed:8.2, color:"#C5DB96" },
+    { x:240, y:400, rx:70, ry:42, seed:1.8, color:"#C9DF9A" },
+  ];
+  const DEFAULT_GARDENS = [
+    { x:500, y:780, w:70, h:36 },
+    { x:620, y:800, w:60, h:30 },
+    { x:1180, y:520, w:55, h:28 },
+    { x:1340, y:540, w:50, h:26 },
+    { x:280, y:520, w:48, h:24 },
+    { x:1600, y:720, w:55, h:28 },
+  ];
+
+  let PLAZA_CX = 950, PLAZA_CY = 640;
+
+  function buildDefaultScenery(){
+    let uid = 1;
+    const list = [];
+    ELEVATION_BLOBS.forEach(b => {
+      list.push({ uid: uid++, kind:"hill", x:b.x, y:b.y, rx:b.rx, ry:b.ry, seed:b.seed, color:b.color });
+    });
+    DEFAULT_MEADOWS.forEach(m => {
+      list.push({ uid: uid++, kind:"meadow", x:m.x, y:m.y, rx:m.rx, ry:m.ry, seed:m.seed, color:m.color });
+    });
+    DEFAULT_GARDENS.forEach((g, i) => {
+      list.push({ uid: uid++, kind:"garden", x:g.x, y:g.y, w:g.w, h:g.h, crop:i % 3 });
+    });
+    MINI_PONDS.forEach((p, i) => {
+      list.push({ uid: uid++, kind:"pond", x:p.x, y:p.y, rx:p.rx, ry:p.ry, seed:2.5+i });
+    });
+    MOUNTAIN_CLUSTERS.forEach(m => {
+      list.push({ uid: uid++, kind:"mountain", x:m.x, y:m.y, scale:m.scale });
+    });
+    DECOR_HUTS.forEach(h => {
+      list.push({ uid: uid++, kind:"hut", x:h.x, y:h.y, scale:h.scale, color:h.color });
+    });
+    list.push({ uid: uid++, kind:"plaza", x:950, y:640, r:110 });
+    return list;
+  }
+  const SCENERY_LABELS = {
+    hill:"Hill", meadow:"Meadow", garden:"Garden bed", pond:"Pond",
+    mountain:"Mountain", hut:"Hut", plaza:"Plaza",
+  };
 
   const GAME_LORE = {
     title: "Paws & Pause",
@@ -2110,8 +2271,8 @@ const BREEDS = {
 
   const NPCS = [
     {
-      id:"mara", name:"Mara", role:"Cafe dreamer · Lavender Cottage",
-      homeX:600, homeY:520, range:70, speed:2200, phase:0.0,
+      id:"mara", name:"Mara", role:"Cafe dreamer · Mara's Home",
+      homeX:445, homeY:520, range:70, speed:2200, phase:0.0,
       skin:"#D9A066", outfit:"#8A6BAE", hair:"#3A2417", eyeStyle:"round",
       avatar: {
         hairSet:"hair_f", face:1, hair:2, eyes:1, nose:0, mouth:1, glasses:-1, facial:-1,
@@ -2127,7 +2288,7 @@ const BREEDS = {
         "The bakery smells like cinnamon today - you should stop by.",
         "I saw your puppy napping in a sunbeam earlier. Cutest thing.",
         "Some days you just need a slow walk and nothing else.",
-        "Come by Lavender Cottage anytime. The kettle is almost always on.",
+        "Come by my home anytime. The kettle is almost always on.",
       ],
       questions:[
         { q:"Why did you move here?", a:"The city never stopped humming. Willow Isle does. I wanted a place where afternoons could stretch." },
@@ -2137,8 +2298,8 @@ const BREEDS = {
       ],
     },
     {
-      id:"theo", name:"Theo", role:"Shore wanderer · Blue Cottage",
-      homeX:1230, homeY:680, range:90, speed:2600, phase:2.1,
+      id:"theo", name:"Theo", role:"Shore wanderer · Theo's Home",
+      homeX:460, homeY:330, range:80, speed:2600, phase:2.1,
       skin:"#F0C08A", outfit:"#5A7FB0", hair:"#111111", eyeStyle:"sleepy",
       avatar: {
         hairSet:"hair_m", face:0, hair:3, eyes:3, nose:1, mouth:0, glasses:-1, facial:-1,
@@ -2148,7 +2309,7 @@ const BREEDS = {
       story:[
         "Theo collects sea glass the way other people collect postcards - each piece a quiet day he wants to remember.",
         "He fishes when the water is calm and repairs fences when it is not, usually tomorrow.",
-        "His Blue Cottage smells like salt air and old books.",
+        "His little home by the residential lane smells like salt air and old books.",
       ],
       lines:[
         "Fishing's better in the evening, if you ask me.",
@@ -2355,28 +2516,58 @@ const BREEDS = {
     {
       id:"lisa", name:"Lisa", role:"Host · Concert Festival",
       homeX:420, homeY:760, range:70, speed:2000, phase:5.1,
-      skin:"#F7D9B6", outfit:"#C45A8C", hair:"#111111", eyeStyle:"wink",
+      stayIndoors: true,
+      skin:"#E8C4A8", outfit:"#1A1A1A", hair:"#8B5A3C", eyeStyle:"sparkle",
+      useLisaSprite: true,
       avatar: {
-        hairSet:"hair_f", face:7, hair:2, eyes:4, nose:0, mouth:1, glasses:-1, facial:-1,
+        hairSet:"hair_f", face:7, hair:8, eyes:4, nose:0, mouth:1, glasses:-1, facial:-1,
         tops:5, outer:-1, bottoms:3, dresses:-1, shoes:0, hats:-1,
-        colors:{ skin:"#F7D9B6", hair:"#111111", eyes:"#4B2C20", top:"#C45A8C", bottom:"#C45A8C", shoes:"#E8E0D5", hat:"#D98F2B", glasses:"#2C2C2C" }
+        colors:{ skin:"#E8C4A8", hair:"#8B5A3C", eyes:"#4B2C20", top:"#1A1A1A", bottom:"#1A1A1A", shoes:"#F5F0E8", hat:"#D98F2B", glasses:"#2C2C2C" }
       },
       story:[
-        "Lisa built the Concert Festival from borrowed speakers and stubborn joy.",
-        "She believes music turns neighbors into a chorus, even if nobody sings on key.",
-        "When the lights hit the stage, the whole island seems to hold its breath - then cheer.",
+        "Global superstar with unmatched charisma and fashion sense.",
+        "Lisa loves cute things and is always full of energy — Friendly, Fashion Lover, Dance Queen.",
+        "She built the Concert Festival so the whole island can dance under the lights.",
       ],
       lines:[
-        "Join the show when the Festival is unlocked!",
-        "Cheer loud. The island loves a good chorus.",
-        "Pip always dances in the front row.",
-        "Tonight's set is dedicated to soft hearts everywhere.",
+        "Hey! Nice to meet you!",
+        "You look so stylish today!",
+        "Let's go dance! Are you in?",
+        "This spot is perfect for a photo!",
       ],
       questions:[
-        { q:"How do I join the show?", a:"Unlock the Festival, walk in, and start the activity at the counter. Follow the lights." },
+        { q:"How do I join the show?", a:"Unlock the Festival, walk in, and start the activity at the counter. Follow the lights — I'll be on stage!" },
         { q:"Why music here?", a:"Because pause is not silence. Sometimes pause is a beat you can sway to." },
-        { q:"Favorite song?", a:"Anything with handclaps and hope." },
+        { q:"Got a dance tip?", a:"Smile first, then move. Confidence is the best choreography." },
         { q:"Who should I bring?", a:"A puppy, a friend, or just yourself. All three are VIP." },
+      ],
+    },
+    {
+      id:"sky", name:"Sky", role:"Clerk · Willow Airlines",
+      homeX:980, homeY:1260, range:0, speed:2000, phase:0.2,
+      stayIndoors: true,
+      skin:"#F0C08A", outfit:"#4AA3D9", hair:"#5A4030", eyeStyle:"round",
+      avatar: {
+        hairSet:"hair_f", face:3, hair:4, eyes:2, nose:0, mouth:1, glasses:-1, facial:-1,
+        tops:2, outer:-1, bottoms:3, dresses:-1, shoes:0, hats:-1,
+        colors:{ skin:"#F0C08A", hair:"#5A4030", eyes:"#4B2C20", top:"#FFFFFF", bottom:"#2A3A55", shoes:"#E8E0D5", hat:"#4AA3D9", glasses:"#2C2C2C" }
+      },
+      story:[
+        "Sky runs Willow Airlines with a headset, a smile, and zero bird feathers.",
+        "She stamps boarding passes like confetti and knows every island hop rumor.",
+        "When the gates flash orange, she says the sea is just a runway with better views.",
+      ],
+      lines:[
+        "Welcome to Willow Airlines! Where are we flying today?",
+        "Boarding gate is ready whenever you are.",
+        "Don't forget your smile — it is the real passport.",
+        "The pier breeze is the best pre-flight snack.",
+      ],
+      questions:[
+        { q:"Where can I fly?", a:"For now this is the island terminal — check in with me, peek through the gates, and dream of the next hop." },
+        { q:"Who designed this place?", a:"Clean counters, orange gates, soft lights — made for cute check-ins, not chaos." },
+        { q:"Any travel tip?", a:"Arrive early, wave at the tower, and keep your paws (and luggage) on the path." },
+        { q:"Can puppies fly?", a:"Only with the sweetest boarding pass. Ask me twice and I'll stamp a heart." },
       ],
     },
     {
@@ -2436,19 +2627,386 @@ const BREEDS = {
   ];
 
   const PATH_SEGMENTS = [
-    // East–west spine through plaza (gentle S-curve)
-    [[200,240],[380,250],[560,360],[720,520],[820,620],[980,540],[1180,500],[1400,470],[1580,380],[1680,240]],
-    // North spur → stadium
-    [[820,620],[820,450],[860,300],[905,170]],
-    // West spur → home / arcade / concert / farm / lake
-    [[200,240],[260,360],[420,480],[520,540],[430,700],[540,840],[420,960],[290,1100]],
-    // East spur → store / cinema / school / shelter
-    [[1400,470],[1320,620],[1260,780],[1400,820],[1560,780],[1600,920],[1580,1100]],
-    // South connector farm ↔ cinema (arcs below plaza)
-    [[540,840],[720,900],[960,920],[1160,860],[1260,780]],
+    // Main N–S spine: stadium → plaza → airport (AC island axis)
+    [[940,160],[950,360],[950,640],[970,900],[980,1180],[980,1320]],
+    // East–west plaza boulevard
+    [[220,640],[420,640],[650,640],[950,640],[1200,640],[1450,520],[1600,420]],
+    // Residential NW grid
+    [[220,640],[220,420],[240,260],[420,240],[420,420]],
+    [[420,420],[520,520],[650,640]],
+    // North recreation lane
+    [[950,360],[1120,280],[1260,260],[1540,260]],
+    // Shop district (Able / Nook style cluster)
+    [[1200,640],[1320,540],[1480,480],[1580,420],[1610,280]],
+    [[1320,540],[1320,640],[1450,520]],
+    // West entertainment strip
+    [[650,640],[560,560],[480,640],[360,700],[280,900]],
+    // Farm & lake connectors
+    [[650,640],[590,780],[500,900],[300,1080]],
+    [[590,780],[700,860],[850,900],[970,900]],
+    // East shelter road
+    [[1450,520],[1520,700],[1560,900],[1570,1050]],
+    // Plaza ring
+    [[950,640],[850,560],[850,720],[950,780],[1050,720],[1050,560],[950,640]],
+    // Airport approach plaza → pier
+    [[970,900],[980,1050],[980,1180]],
   ];
   // Flat list kept for any legacy readers
   const PATH_NODES = PATH_SEGMENTS.reduce((a, seg) => a.concat(seg), []);
+
+  const DEFAULT_RIVERS = [
+    { uid: 1, x: 700, y: 780, rx: 40, ry: 160, seed: 2.2 },
+    { uid: 2, x: 760, y: 980, rx: 120, ry: 36, seed: 3.1 },
+    { uid: 3, x: 900, y: 1040, rx: 90, ry: 30, seed: 4.0 },
+  ];
+
+  let mapEditTool = null; // null | "path" | "river"
+  let pathDraftSeg = null; // active segment being drawn
+
+  function clonePathDefaults(){
+    return PATH_SEGMENTS.map(seg => seg.map(p => [p[0], p[1]]));
+  }
+  function ensureMapEditState(){
+    if(!Array.isArray(state.customPaths)) state.customPaths = null; // null = use defaults
+    if(!Array.isArray(state.rivers) || !state.rivers.length){
+      state.rivers = DEFAULT_RIVERS.map(r => Object.assign({}, r));
+    }
+    if(!Array.isArray(state.scenery) || !state.scenery.length){
+      state.scenery = buildDefaultScenery();
+    }
+    syncPlazaFromScenery();
+  }
+  function getActivePaths(){
+    ensureMapEditState();
+    // null = island defaults · [] = intentionally cleared · [...] = custom
+    if(Array.isArray(state.customPaths)) return state.customPaths;
+    return PATH_SEGMENTS;
+  }
+  function beginCustomPathsIfNeeded(){
+    ensureMapEditState();
+    if(!Array.isArray(state.customPaths)){
+      state.customPaths = clonePathDefaults();
+    }
+  }
+  function nextRiverUid(){
+    ensureMapEditState();
+    let max = 1;
+    state.rivers.forEach(r => { if((r.uid||0) >= max) max = r.uid + 1; });
+    return max;
+  }
+  function riverAt(px, py){
+    ensureMapEditState();
+    for(let i = state.rivers.length - 1; i >= 0; i--){
+      const r = state.rivers[i];
+      if(carriedRiver && r.uid === carriedRiver.uid) continue;
+      const dx = (px - r.x) / Math.max(12, r.rx);
+      const dy = (py - r.y) / Math.max(12, r.ry);
+      if(dx*dx + dy*dy <= 1.05) return r;
+    }
+    return null;
+  }
+
+  function sceneryHitRadius(s){
+    if(s.kind === "hill") return Math.max(40, Math.min(s.rx, s.ry) * 0.55);
+    if(s.kind === "meadow") return Math.max(28, Math.min(s.rx, s.ry) * 0.7);
+    if(s.kind === "pond") return Math.max(22, Math.min(s.rx, s.ry) * 0.95);
+    if(s.kind === "garden") return Math.max(18, Math.max(s.w, s.h) * 0.55);
+    if(s.kind === "mountain") return 55 * (s.scale || 1);
+    if(s.kind === "hut") return 42 * (s.scale || 1);
+    if(s.kind === "plaza") return s.r || 100;
+    return 40;
+  }
+  function sceneryArea(s){
+    if(s.kind === "hill" || s.kind === "meadow" || s.kind === "pond") return (s.rx||40)*(s.ry||40);
+    if(s.kind === "garden") return (s.w||40)*(s.h||30);
+    if(s.kind === "plaza") return Math.PI * Math.pow(s.r || 100, 2);
+    if(s.kind === "mountain") return Math.pow(55*(s.scale||1), 2);
+    if(s.kind === "hut") return Math.pow(42*(s.scale||1), 2);
+    return 1000;
+  }
+  function sceneryAt(px, py){
+    ensureMapEditState();
+    let best = null, bestArea = Infinity;
+    for(const s of state.scenery){
+      if(carriedScenery && s.uid === carriedScenery.uid) continue;
+      let hit = false;
+      if(s.kind === "hill" || s.kind === "meadow" || s.kind === "pond"){
+        const dx = (px - s.x) / Math.max(12, s.rx * (s.kind === "hill" ? 0.7 : 1));
+        const dy = (py - s.y) / Math.max(12, s.ry * (s.kind === "hill" ? 0.7 : 1));
+        hit = dx*dx + dy*dy <= 1.0;
+      } else if(s.kind === "garden"){
+        hit = Math.abs(px - s.x) < s.w/2 + 8 && Math.abs(py - s.y) < s.h/2 + 8;
+      } else {
+        const r = sceneryHitRadius(s);
+        hit = Math.hypot(px - s.x, py - s.y) <= r;
+      }
+      if(!hit) continue;
+      const a = sceneryArea(s);
+      if(a < bestArea){ bestArea = a; best = s; }
+    }
+    return best;
+  }
+  function syncPlazaFromScenery(){
+    if(!state || !Array.isArray(state.scenery)) return;
+    const plaza = state.scenery.find(s => s.kind === "plaza");
+    if(plaza){
+      PLAZA_CX = plaza.x;
+      PLAZA_CY = plaza.y;
+    }
+  }
+  function nextSceneryUid(){
+    ensureMapEditState();
+    let max = 1;
+    state.scenery.forEach(s => { if((s.uid||0) >= max) max = s.uid + 1; });
+    return max;
+  }
+  function ensureMapBag(){
+    if(!Array.isArray(state.mapBag)) state.mapBag = [];
+  }
+  function mapBagCount(){
+    ensureMapBag();
+    const decor = islandInventoryCount();
+    return state.mapBag.length + decor;
+  }
+  function mapBagEntryLabel(entry){
+    if(!entry) return "Item";
+    if(entry.bagType === "river") return "River";
+    if(entry.bagType === "scenery") return SCENERY_LABELS[entry.item && entry.item.kind] || "Background";
+    if(entry.bagType === "decor") return (islandItemCatalog(entry.type)?.name) || entry.type || "Decor";
+    return "Item";
+  }
+  function sceneryItemSvg(kind){
+    switch(kind){
+      case "mountain":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="40" rx="22" ry="3" fill="rgba(58,44,34,0.12)"/>
+          <path d="M8 38 L22 12 L34 30 L42 18 L56 38 Z" fill="#B7A996"/>
+          <path d="M22 12 L28 22 L18 22 Z" fill="#F7F2EA"/>
+          <path d="M42 18 L46 26 L38 26 Z" fill="#F7F2EA"/>
+          <path d="M14 38 L28 20 L40 38 Z" fill="#9A8B7A"/>
+        </svg>`;
+      case "hut":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="40" rx="18" ry="3" fill="rgba(58,44,34,0.12)"/>
+          <rect x="16" y="20" width="32" height="18" rx="3" fill="#F3DBAA"/>
+          <path d="M12 22 L32 6 L52 22 Z" fill="#E8A33D"/>
+          <path d="M12 22 L32 10 L52 22 Z" fill="#D98F2B" opacity="0.35"/>
+          <rect x="28" y="26" width="8" height="12" rx="1.5" fill="#8C5A3B"/>
+          <rect x="20" y="24" width="7" height="7" rx="1.5" fill="#8FC1D6"/>
+          <circle cx="44" cy="14" r="3" fill="#FBF0DE"/>
+        </svg>`;
+      case "garden":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="40" rx="20" ry="3" fill="rgba(58,44,34,0.1)"/>
+          <rect x="10" y="18" width="44" height="20" rx="4" fill="#C4A574"/>
+          <path d="M14 24 H50 M14 30 H50 M14 35 H50" stroke="rgba(58,44,34,0.22)" stroke-width="1.2"/>
+          <circle cx="18" cy="22" r="2.4" fill="#6B8E4E"/><circle cx="28" cy="26" r="2.4" fill="#D9705C"/>
+          <circle cx="38" cy="21" r="2.4" fill="#D98F2B"/><circle cx="48" cy="27" r="2.4" fill="#6B8E4E"/>
+          <circle cx="22" cy="32" r="2.2" fill="#D9705C"/><circle cx="42" cy="33" r="2.2" fill="#D98F2B"/>
+        </svg>`;
+      case "pond":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="40" rx="18" ry="3" fill="rgba(58,44,34,0.1)"/>
+          <ellipse cx="32" cy="24" rx="22" ry="14" fill="#7EB8C8"/>
+          <ellipse cx="32" cy="24" rx="15" ry="9" fill="#8FC1D6"/>
+          <ellipse cx="26" cy="20" rx="5" ry="2.5" fill="rgba(255,255,255,0.45)"/>
+          <circle cx="40" cy="28" r="4" fill="#6B8E6B"/><circle cx="44" cy="28" r="2.5" fill="#D9705C"/>
+        </svg>`;
+      case "meadow":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="34" rx="24" ry="10" fill="#C5DB96"/>
+          <ellipse cx="32" cy="30" rx="18" ry="8" fill="#B9D98C"/>
+          <rect x="16" y="22" width="2.5" height="8" fill="#6B8E6B"/><circle cx="17" cy="20" r="3.5" fill="#E3998A"/>
+          <rect x="30" y="18" width="2.5" height="10" fill="#6B8E6B"/><circle cx="31" cy="16" r="4" fill="#D98F2B"/>
+          <rect x="44" y="22" width="2.5" height="8" fill="#6B8E6B"/><circle cx="45" cy="20" r="3.5" fill="#D9A5C0"/>
+          <ellipse cx="32" cy="40" rx="16" ry="2.5" fill="rgba(58,44,34,0.1)"/>
+        </svg>`;
+      case "hill":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="40" rx="22" ry="3" fill="rgba(58,44,34,0.1)"/>
+          <ellipse cx="32" cy="28" rx="24" ry="14" fill="#A9CE83"/>
+          <ellipse cx="28" cy="24" rx="14" ry="8" fill="#B9D98C"/>
+          <ellipse cx="36" cy="30" rx="10" ry="6" fill="#C5DB96" opacity="0.8"/>
+          <circle cx="22" cy="20" r="2" fill="#6B8E6B"/><circle cx="40" cy="18" r="2.2" fill="#6B8E6B"/>
+        </svg>`;
+      case "plaza":
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="40" rx="20" ry="3" fill="rgba(58,44,34,0.1)"/>
+          <circle cx="32" cy="24" r="16" fill="#EAD9A8"/>
+          <circle cx="32" cy="24" r="11" fill="#E2CFA0"/>
+          <circle cx="32" cy="24" r="5" fill="#8FC1D6"/>
+          <circle cx="32" cy="20" r="2.5" fill="#CFE7F2"/>
+          <rect x="18" y="30" width="4" height="6" rx="1" fill="#C4895A"/>
+          <rect x="42" y="30" width="4" height="6" rx="1" fill="#C4895A"/>
+        </svg>`;
+      default:
+        return `<svg viewBox="0 0 64 44" aria-hidden="true">
+          <ellipse cx="32" cy="28" rx="20" ry="12" fill="#D9C199"/>
+        </svg>`;
+    }
+  }
+  function riverItemSvg(){
+    return `<svg viewBox="0 0 64 44" aria-hidden="true">
+      <ellipse cx="32" cy="40" rx="20" ry="3" fill="rgba(58,44,34,0.1)"/>
+      <path d="M4 28 C16 18, 28 34, 40 24 C48 18, 56 26, 60 22 L60 36 C52 40, 44 30, 34 36 C22 42, 12 34, 4 36 Z" fill="#7EB8C8"/>
+      <path d="M8 30 C18 22, 28 34, 40 26 C48 20, 54 28, 58 24" stroke="#A8D4E0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="22" cy="28" rx="4" ry="2" fill="rgba(255,255,255,0.4)"/>
+    </svg>`;
+  }
+  function mapBagEntryPreview(entry){
+    if(entry.bagType === "river"){
+      return `<div class="store-preview icon">${riverItemSvg()}</div>`;
+    }
+    if(entry.bagType === "scenery"){
+      const kind = entry.item && entry.item.kind;
+      return `<div class="store-preview icon">${sceneryItemSvg(kind)}</div>`;
+    }
+    return islandPreviewHtml(entry.type || "bench");
+  }
+  function placeCarriedScenery(){
+    if(!carriedScenery) return false;
+    carriedScenery.x = Math.round(player.x);
+    carriedScenery.y = Math.round(player.y);
+    delete carriedScenery.fromInv;
+    if(!state.scenery.some(s => s.uid === carriedScenery.uid)){
+      state.scenery.push(carriedScenery);
+    }
+    if(carriedScenery.kind === "plaza") syncPlazaFromScenery();
+    carriedScenery = null;
+    SFX.purchase();
+    saveState(true);
+    toast("Background piece placed");
+    return true;
+  }
+  function cancelSceneryCarry(){
+    if(!carriedScenery) return;
+    if(carriedScenery.fromInv){
+      ensureMapBag();
+      const snap = Object.assign({}, carriedScenery);
+      delete snap.fromInv;
+      state.mapBag.push({ bagType:"scenery", item: snap });
+      carriedScenery = null;
+      toast("Returned to bag");
+      saveState(true);
+      return;
+    }
+    if(!state.scenery.some(s => s.uid === carriedScenery.uid)){
+      state.scenery.push(carriedScenery);
+    }
+    carriedScenery = null;
+    toast("Put background piece back");
+  }
+  function stowCarriedRiver(){
+    if(!carriedRiver) return;
+    ensureMapBag();
+    ensureMapEditState();
+    state.rivers = (state.rivers || []).filter(r => r.uid !== carriedRiver.uid);
+    state.mapBag.push({ bagType:"river", rx:carriedRiver.rx, ry:carriedRiver.ry, seed:carriedRiver.seed });
+    carriedRiver = null;
+    SFX.purchase();
+    saveState(true);
+    toast("River bagged — Place to put it down later");
+  }
+  function stowCarriedScenery(){
+    if(!carriedScenery) return;
+    ensureMapBag();
+    ensureMapEditState();
+    state.scenery = (state.scenery || []).filter(s => s.uid !== carriedScenery.uid);
+    const snap = Object.assign({}, carriedScenery);
+    delete snap.fromInv;
+    state.mapBag.push({ bagType:"scenery", item: snap });
+    if(snap.kind === "plaza") syncPlazaFromScenery();
+    carriedScenery = null;
+    SFX.purchase();
+    saveState(true);
+    toast((SCENERY_LABELS[snap.kind] || "Background") + " bagged — Place to use later");
+  }
+  function stowCarriedMapItem(){
+    if(carriedZone){
+      toast("Buildings stay on the map — they can't go in the bag");
+      return;
+    }
+    if(carriedIsland){ stowCarriedIsland(); return; }
+    if(carriedRiver){ stowCarriedRiver(); return; }
+    if(carriedScenery){ stowCarriedScenery(); return; }
+    toast("Pick something up with E first (not a building)");
+  }
+  function startPlacingMapBagItem(index){
+    ensureMapBag();
+    const entry = state.mapBag[index];
+    if(!entry){ toast("Nothing there"); return; }
+    if(carriedZone || carriedIsland || carriedRiver || carriedScenery){
+      toast("Place what you're carrying first");
+      return;
+    }
+    state.mapBag.splice(index, 1);
+    if(entry.bagType === "river"){
+      carriedRiver = {
+        uid: nextRiverUid(),
+        x: Math.round(player.x), y: Math.round(player.y),
+        rx: entry.rx || 70, ry: entry.ry || 36, seed: entry.seed || 2,
+        fromInv: true,
+      };
+      toast("Carrying river — press E to place");
+    } else if(entry.bagType === "scenery"){
+      const item = Object.assign({}, entry.item || {});
+      item.uid = nextSceneryUid();
+      item.x = Math.round(player.x);
+      item.y = Math.round(player.y);
+      item.fromInv = true;
+      carriedScenery = item;
+      toast("Carrying " + (SCENERY_LABELS[item.kind] || "background") + " — press E to place");
+    } else if(entry.bagType === "decor"){
+      // legacy/fallback entry
+      addIslandToInventory(entry.type, 1);
+      startPlacingFromInventory(entry.type);
+      saveState(true);
+      return;
+    } else {
+      toast("Unknown bag item");
+      state.mapBag.splice(index, 0, entry);
+      return;
+    }
+    if(gameMode !== "rearrange") enterRearrangeMode();
+    closeModal();
+    saveState(true);
+  }
+  function drawSceneryItem(s, alpha){
+    const a = alpha == null ? 1 : alpha;
+    ctx.save();
+    ctx.globalAlpha = a;
+    if(s.kind === "hill" || s.kind === "meadow"){
+      ctx.fillStyle = s.color || "#B9D98C";
+      wobblyBlobPath(ctx, s.x, s.y, s.rx, s.ry, 14, s.seed || 2);
+      ctx.fill();
+    } else if(s.kind === "garden"){
+      const x = s.x, y = s.y, w = s.w, h = s.h, i = s.crop || 0;
+      ctx.fillStyle = "#C4A574";
+      roundRect(x - w/2, y - h/2, w, h, 6); ctx.fill();
+      ctx.strokeStyle = "rgba(58,44,34,0.18)"; ctx.lineWidth = 1;
+      for(let r = 1; r < 4; r++){
+        ctx.beginPath();
+        ctx.moveTo(x - w/2 + 4, y - h/2 + r * (h/4));
+        ctx.lineTo(x + w/2 - 4, y - h/2 + r * (h/4));
+        ctx.stroke();
+      }
+      ctx.fillStyle = ["#6B8E4E","#D9705C","#D98F2B"][i % 3];
+      for(let k = 0; k < 5; k++){
+        ctx.beginPath();
+        ctx.arc(x - w/3 + k * (w/4), y + ((k%2)?4:-2), 3.2, 0, Math.PI*2);
+        ctx.fill();
+      }
+    } else if(s.kind === "pond"){
+      drawPond(s.x, s.y, s.rx, s.ry, { seed: s.seed || 2.5 });
+    } else if(s.kind === "mountain"){
+      drawMountainCluster(s.x, s.y, s.scale || 1);
+    } else if(s.kind === "hut"){
+      drawHut(s.x, s.y, s.scale || 0.75, s.color || "#E8A33D");
+    } else if(s.kind === "plaza"){
+      drawPlazaHub(s.x, s.y);
+    }
+    ctx.restore();
+  }
 
   function strokePathSegments(lineWidth, style, alpha){
     ctx.save();
@@ -2457,7 +3015,7 @@ const BREEDS = {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.globalAlpha = alpha == null ? 1 : alpha;
-    PATH_SEGMENTS.forEach((pts) => {
+    getActivePaths().forEach((pts) => {
       if(!pts || pts.length < 2) return;
       ctx.beginPath();
       ctx.moveTo(pts[0][0], pts[0][1]);
@@ -2483,11 +3041,19 @@ const BREEDS = {
     [90,420],[240,560],[700,360],[1000,360],[1750,520],
     [100,780],[480,1100],[760,1200],[1100,1200],[1400,1180],[1700,900],
     [900,980],[1600,640],[320,360],[1280,300],
+    // denser groves for a lived-in island
+    [150,200],[340,140],[560,160],[920,120],[1220,140],[1550,180],
+    [60,540],[160,680],[280,820],[640,420],[860,400],[1180,360],
+    [1720,680],[1800,820],[200,980],[360,1120],[620,1180],[980,1160],
+    [1320,1120],[1500,1080],[1680,1040],[740,880],[1040,820],[1460,520],
   ];
   const FLOWER_PATCHES = [
     [260,320],[500,280],[760,240],[1100,220],[1500,300],[1680,480],
     [360,560],[640,700],[880,740],[1120,700],[1480,620],
     [420,940],[700,1000],[1000,1040],[1340,960],[200,1180],[1560,1240],
+    [760,580],[860,680],[920,560],[740,660],[1000,640],
+    [480,480],[600,520],[1280,480],[1360,560],[1540,700],
+    [320,700],[220,860],[540,960],[820,1080],[1180,1000],
   ];
   const FLOWER_COLORS = ["#E3998A","#F0C36A","#CFE1D2","#D9A5C0"];
 
@@ -2512,14 +3078,54 @@ const BREEDS = {
       items.push({ uid: uid++, type:"grass", x: x-18, y: y-16, w:36, h:32, seed: i*5.3 });
     });
     items.push({ uid: uid++, type:"diydesk", x: PLAZA_CX-35, y: PLAZA_CY+48, w:70, h:50 });
+    // Livable town props — lamps, fences, gardens (benches start in the bag)
+    [
+      [PLAZA_CX-110, PLAZA_CY-10],[PLAZA_CX+90, PLAZA_CY-10],[760,520],[880,520],
+      [380,260],[560,380],[1000,500],[1320,480],[1500,360],[1640,300],
+      [260,500],[480,700],[560,900],[720,960],[1100,860],[1400,800],
+      [300,1000],[500,1120],[900,1140],[1300,1100],[1600,1000]
+    ].forEach(([x,y]) => {
+      items.push({ uid: uid++, type:"lamp", x:x-14, y:y-48, w:28, h:56 });
+    });
+    [
+      [180,300],[300,440],[640,340],[1080,300],[1460,280],
+      [200,720],[460,780],[680,860],[980,880],[1340,900],
+      [240,1140],[720,1140],[1120,1140]
+    ].forEach(([x,y], i) => {
+      items.push({ uid: uid++, type:"fence", x:x-36, y:y-20, w:72, h:36, seed:i });
+    });
+    [
+      [PLAZA_CX-40, PLAZA_CY-70],[680,600],[960,600],[500,300],[1200,260],
+      [360,640],[780,780],[1100,740],[1500,640],[420,880],[900,1000],[1400,980]
+    ].forEach(([x,y]) => {
+      items.push({ uid: uid++, type:"flowers", x:x-24, y:y-28, w:48, h:44 });
+    });
+    items.push({ uid: uid++, type:"fountain", x: PLAZA_CX-32, y: PLAZA_CY-70, w:64, h:70 });
+    [[640,640],[1000,640],[480,860],[1200,860]].forEach(([x,y]) => {
+      items.push({ uid: uid++, type:"picnic", x:x-28, y:y-24, w:56, h:48 });
+    });
+    [[600,480],[1100,520],[400,980],[1450,720]].forEach(([x,y]) => {
+      items.push({ uid: uid++, type:"sign", x:x-18, y:y-36, w:36, h:48 });
+    });
+    items.push({ uid: uid++, type:"statue", x: PLAZA_CX+70, y: PLAZA_CY-40, w:48, h:64 });
+    // Airport airplane on the south pier
+    items.push({ uid: uid++, type:"airplane", x: 1040, y: 1288, w:140, h:90 });
+    // Cute fenced animals near the farm
+    items.push({ uid: uid++, type:"cowpen", x: 740, y: 1020, w:170, h:120 });
+    items.push({ uid: uid++, type:"chickenpen", x: 420, y: 1020, w:140, h:110 });
+    // extra bushes for soft edges
+    [[420,360],[780,420],[1060,440],[1380,400],[620,980],[860,920],[1220,960],
+     [180,880],[1640,760],[720,200],[980,180],[1500,980]].forEach(([x,y], i) => {
+      items.push({ uid: uid++, type:"bush", x:x-28, y:y-26, w:56, h:48, seed: 40+i });
+    });
     return items;
   }
 
   function ensureIslandDecorSeeded(){
     if(!state.islandDecor) state.islandDecor = [];
+    if(!state.islandInventory) state.islandInventory = {};
     if(!state.islandDecor.length){
       state.islandDecor = defaultIslandDecor();
-      return;
     }
     if(!state.islandDecor.some(d => d.type === "tree")){
       const base = Math.max(1, ...state.islandDecor.map(d => d.uid || 0)) + 1;
@@ -2528,6 +3134,46 @@ const BREEDS = {
       state.islandDecor = state.islandDecor.concat(extras);
     } else if(!state.islandDecor.some(d => d.type === "diydesk")){
       state.islandDecor.push({ uid: nextIslandUidSafe(), type:"diydesk", x: PLAZA_CX-35, y: PLAZA_CY+48, w:70, h:50 });
+    }
+    // Livable town props refresh (lamps/fences/gardens — benches stay in the bag)
+    if(state.livablePack !== "v2"){
+      state.livablePack = "v2";
+      const want = new Set(["lamp","fence","flowers","fountain","picnic","sign","statue"]);
+      if(!state.islandDecor.some(d => d.type === "lamp")){
+        const extras = defaultIslandDecor().filter(d => want.has(d.type));
+        let uid = nextIslandUidSafe();
+        extras.forEach(d => { d.uid = uid++; state.islandDecor.push(d); });
+      }
+      // denser nature for older saves
+      const treeCount = state.islandDecor.filter(d => d.type === "tree").length;
+      if(treeCount < 35){
+        let uid = nextIslandUidSafe();
+        defaultIslandDecor().filter(d => d.type === "tree" || d.type === "flower" || d.type === "bush").forEach(d => {
+          d.uid = uid++;
+          state.islandDecor.push(d);
+        });
+      }
+    }
+    // Scoop park benches off the map into the bag (once)
+    if(state.benchBagged !== true){
+      state.benchBagged = true;
+      const benches = (state.islandDecor || []).filter(d => d.type === "bench");
+      if(benches.length){
+        state.islandDecor = state.islandDecor.filter(d => d.type !== "bench");
+        addIslandToInventory("bench", benches.length);
+      } else if(!state.islandInventory || !state.islandInventory.bench){
+        addIslandToInventory("bench", 14);
+      }
+    }
+    // Airport airplane for older saves
+    if(!state.islandDecor.some(d => d.type === "airplane")){
+      state.islandDecor.push({ uid: nextIslandUidSafe(), type:"airplane", x:1040, y:1288, w:140, h:90 });
+    }
+    if(!state.islandDecor.some(d => d.type === "cowpen")){
+      state.islandDecor.push({ uid: nextIslandUidSafe(), type:"cowpen", x:740, y:1020, w:170, h:120 });
+    }
+    if(!state.islandDecor.some(d => d.type === "chickenpen")){
+      state.islandDecor.push({ uid: nextIslandUidSafe(), type:"chickenpen", x:420, y:1020, w:140, h:110 });
     }
     // KayKit nature refresh: add rocks/grass once if missing
     if(state.naturePack !== "kaykit"){
@@ -2802,11 +3448,17 @@ const BREEDS = {
       playerName: "",
       setupDone: false,
       unlocked: defaultUnlocked(),
+      mapVersion: 4,
       zoneLayout: null,
+      customPaths: null,
+      rivers: null,
+      scenery: null,
       furnitureLayout: defaultFurnitureLayout(),
       furnitureInventory: {},
       islandDecor: defaultIslandDecor(),
-      islandInventory: {},
+      islandInventory: { bench: 14 },
+      mapBag: [],
+      benchBagged: true,
       materials: { wood: 4, petals: 3, stone: 2 },
       child: { skin: SKIN_TONES[1], hair: HAIR_COLORS[0], outfit: OUTFIT_COLORS[0], hairstyle: "short", clothing: "tshirt", eyeStyle: "round", eyeColor: EYE_COLORS[0], mouthStyle: "smile", accessory: "none", faceShape: "round", browStyle: "natural", noseStyle: "dot", avatar: null },
       weather: "clear",
@@ -2960,8 +3612,16 @@ const BREEDS = {
       merged.unlocked = Object.assign(defaultUnlocked(), parsed.unlocked || {});
       merged.fishCollection = Object.assign({}, parsed.fishCollection || {});
       merged.islandInventory = Object.assign({}, parsed.islandInventory || {});
+      merged.mapBag = Array.isArray(parsed.mapBag) ? parsed.mapBag : [];
       merged.furnitureInventory = Object.assign({}, parsed.furnitureInventory || {});
       merged.materials = Object.assign({ wood:0, petals:0, stone:2 }, parsed.materials || {});
+      merged.customPaths = Array.isArray(parsed.customPaths) ? parsed.customPaths : null;
+      merged.rivers = Array.isArray(parsed.rivers) && parsed.rivers.length
+        ? parsed.rivers
+        : DEFAULT_RIVERS.map(r => Object.assign({}, r));
+      merged.scenery = Array.isArray(parsed.scenery) && parsed.scenery.length
+        ? parsed.scenery
+        : buildDefaultScenery();
       merged.islandDecor = Array.isArray(parsed.islandDecor) ? parsed.islandDecor : [];
       if(!merged.islandDecor.length) merged.islandDecor = defaultIslandDecor();
       else if(!merged.islandDecor.some(d => d.type === "tree")){
@@ -2969,6 +3629,15 @@ const BREEDS = {
         const extras = defaultIslandDecor();
         extras.forEach((d, i) => { d.uid = base + i; });
         merged.islandDecor = merged.islandDecor.concat(extras);
+      }
+      // Always inject cute animal pens for older saves
+      if(!merged.islandDecor.some(d => d.type === "cowpen")){
+        const uid = Math.max(1, ...merged.islandDecor.map(d => d.uid || 0)) + 1;
+        merged.islandDecor.push({ uid, type:"cowpen", x:740, y:1020, w:170, h:120 });
+      }
+      if(!merged.islandDecor.some(d => d.type === "chickenpen")){
+        const uid = Math.max(1, ...merged.islandDecor.map(d => d.uid || 0)) + 1;
+        merged.islandDecor.push({ uid, type:"chickenpen", x:420, y:1020, w:140, h:110 });
       }
       if(!parsed.furnitureLayout || !Array.isArray(parsed.furnitureLayout) || !parsed.furnitureLayout.length){
         merged.furnitureLayout = defaultFurnitureLayout();
@@ -2989,6 +3658,7 @@ const BREEDS = {
       if(merged.unlocked.store == null) merged.unlocked.store = true;
       if(merged.unlocked.boutique == null) merged.unlocked.boutique = true;
       if(merged.unlocked.concert == null) merged.unlocked.concert = false;
+      if(merged.unlocked.airport == null) merged.unlocked.airport = true;
       if(merged.unlocked.guestLavender == null) merged.unlocked.guestLavender = true;
       if(merged.unlocked.guestBlue == null) merged.unlocked.guestBlue = true;
       if(merged.unlocked.school == null) merged.unlocked.school = true;
@@ -3015,11 +3685,6 @@ const BREEDS = {
 
   function applyZoneLayout(){
     zones = ZONE_DEFAULTS.map(z => Object.assign({}, z));
-    // Map v2: structured ring + farm/cinema — refresh saved coords once
-    if(state.mapVersion !== 3){
-      state.zoneLayout = null;
-      state.mapVersion = 3;
-    }
     if(state.zoneLayout){
       zones.forEach(z => {
         const p = state.zoneLayout[z.id];
@@ -3027,6 +3692,21 @@ const BREEDS = {
       });
     }
     syncLakeFromZones();
+  }
+  /** Canonical island layout for new games (AC ring, pens, airport, paths). */
+  function applyStarterIsland(){
+    state.mapVersion = 4;
+    state.zoneLayout = null;
+    state.customPaths = null;
+    state.rivers = DEFAULT_RIVERS.map(r => Object.assign({}, r));
+    state.scenery = buildDefaultScenery();
+    state.islandDecor = defaultIslandDecor();
+    state.mapBag = [];
+    state.benchBagged = true;
+    if(!state.islandInventory) state.islandInventory = {};
+    state.islandInventory.bench = Math.max(state.islandInventory.bench || 0, 14);
+    applyZoneLayout();
+    ensureIslandDecorSeeded();
   }
   function saveZoneLayout(){
     state.zoneLayout = {};
@@ -3037,12 +3717,17 @@ const BREEDS = {
     if(lake){
       LAKE_CX = lake.x + lake.w/2;
       LAKE_CY = lake.y + lake.h/2;
+      LAKE_RX = Math.max(90, lake.w * 0.58);
+      LAKE_RY = Math.max(70, lake.h * 0.52);
     }
+    syncPlazaFromScenery();
   }
   function isUnlocked(id){
     return !!(state.unlocked && state.unlocked[id]);
   }
   applyZoneLayout();
+  ensureIslandDecorSeeded();
+  saveState(true);
 
   /* ---------- Toasts ---------- */
   const toastsEl = document.getElementById("toasts");
@@ -3266,6 +3951,8 @@ const BREEDS = {
   let carriedZone = null;
   let carriedFurn = null;
   let carriedIsland = null;
+  let carriedRiver = null;
+  let carriedScenery = null;
   let townPlayerPos = null;
   let housePuppy = { x: 180, y: 390 };
   let storeTab = "island";
@@ -3282,10 +3969,15 @@ const BREEDS = {
     wall: 28,
     door: { x: 390, y: 504, w: 110, h: 28 },
   };
+  const HOUSE_CONCERT = {
+    x: 10, y: 8, w: 880, h: 504,
+    wall: 22,
+    door: { x: 390, y: 504, w: 110, h: 28 },
+  };
   const HOUSE = Object.assign({}, HOUSE_DEFAULT);
 
   function applyBuildingRoom(id){
-    const src = (id === "cinema") ? HOUSE_CINEMA : HOUSE_DEFAULT;
+    const src = id === "cinema" ? HOUSE_CINEMA : id === "concert" ? HOUSE_CONCERT : HOUSE_DEFAULT;
     Object.assign(HOUSE, {
       x: src.x, y: src.y, w: src.w, h: src.h, wall: src.wall,
       door: Object.assign({}, src.door),
@@ -3338,7 +4030,7 @@ const BREEDS = {
   }
 
   function islandItemCatalog(type){
-    return ISLAND_ITEMS.find(i => i.id === type) || null;
+    return ISLAND_ITEMS.find(i => i.id === type) || EXTRA_DECOR_CATALOG[type] || null;
   }
 
   function islandInventoryCount(){
@@ -3359,9 +4051,7 @@ const BREEDS = {
   function canPlaceIslandItem(item, nx, ny){
     if(nx < 50 || ny < 50 || nx + item.w > WORLD_W - 50 || ny + item.h > WORLD_H - 50) return false;
     const trial = { x:nx, y:ny, w:item.w, h:item.h };
-    for(const z of zones){
-      if(zonesOverlap(trial, z)) return false;
-    }
+    // Decor may overlap buildings — only avoid heavy overlap with other decor
     for(const other of (state.islandDecor || [])){
       if(carriedIsland && other.uid === carriedIsland.uid) continue;
       if(FLORA_TYPES.has(item.type) && FLORA_TYPES.has(other.type)){
@@ -3419,9 +4109,13 @@ const BREEDS = {
     if(!cat) return;
     if(!takeIslandFromInventory(type)){ toast("None left in your bag"); return; }
     carriedZone = null;
+    carriedRiver = null;
+    carriedScenery = null;
     carriedIsland = { uid: nextIslandUid(), type: cat.id, x: player.x, y: player.y, w: cat.w, h: cat.h, fromInv: true };
     if(cat.id === "tree") carriedIsland.scale = 0.95 + Math.random()*0.2;
     if(cat.id === "flower") carriedIsland.seed = Math.random()*40;
+    if(cat.id === "rock") carriedIsland.scale = 0.85 + Math.random()*0.4;
+    if(cat.id === "grass") carriedIsland.seed = Math.random()*40;
     if(gameMode !== "rearrange") enterRearrangeMode();
     closeModal();
     toast("Carrying " + cat.name + " - press E to place");
@@ -3782,6 +4476,33 @@ const BREEDS = {
         ctx.textAlign = "center";
         ctx.fillText("DIY", cx, y+h*0.38);
         break;
+      case "airplane":
+        if(!AirplaneArt.draw(ctx, x, y, w, h)){
+          ctx.fillStyle = "rgba(58,44,34,0.14)";
+          ctx.beginPath(); ctx.ellipse(cx, y+h-6, w*0.4, 8, 0, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = "#F7E8E4";
+          ctx.beginPath(); ctx.ellipse(cx, cy, w*0.42, h*0.22, -0.15, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = "#F2C4C8";
+          ctx.beginPath(); ctx.ellipse(cx-8, cy+4, w*0.28, h*0.12, 0.2, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = "#A8D4E8";
+          roundRect(x+w*0.55, y+h*0.28, w*0.16, h*0.16, 4); ctx.fill();
+        }
+        break;
+      case "cowpen": {
+        const t = performance.now();
+        drawFencePenFrame(x, y, w, h);
+        drawCuteCow(x + w*0.35, y + h*0.55, 1.15, Math.sin(t/500)*2);
+        drawCuteCow(x + w*0.68, y + h*0.62, 0.95, Math.sin(t/520+1)*2);
+        break;
+      }
+      case "chickenpen": {
+        const t = performance.now();
+        drawFencePenFrame(x, y, w, h);
+        drawCuteChicken(x + w*0.28, y + h*0.55, 1.05, Math.sin(t/360)*2.5);
+        drawCuteChicken(x + w*0.52, y + h*0.48, 0.95, Math.sin(t/380+1)*2.2);
+        drawCuteChicken(x + w*0.74, y + h*0.60, 1.0, Math.sin(t/400+2)*2.4);
+        break;
+      }
       default:
         ctx.fillStyle = "#D9C199";
         roundRect(x, y, w, h, 8); ctx.fill();
@@ -3952,8 +4673,42 @@ const BREEDS = {
   }
 
   function drawHomeIcon(cx, cy){ drawCottage(cx, cy, 1, "#C45A4A", "#F3E2C4"); }
-  function drawGuestLavenderIcon(cx, cy){ drawCottage(cx, cy, 0.88, "#8A6BAE", "#EDE4F2"); }
-  function drawGuestBlueIcon(cx, cy){ drawCottage(cx, cy, 0.82, "#4A7DBF", "#E4ECF5"); }
+  function drawNeighborHome(cx, cy, scale, roof, wall, accent){
+    // Same cozy home silhouette as player house — personal garden accents
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale || 1, scale || 1);
+    acShadow(68, 64);
+    acWoodWall(-54, -2, 108, 60, wall || "#F3E2C4", true);
+    acGableRoof(58, -54, -2, roof || "#C45A4A", accent || "#E8897A");
+    // chimney
+    ctx.fillStyle = "#A9784F";
+    roundRect(28, -58, 14, 28, 3); ctx.fill();
+    ctx.fillStyle = "rgba(200,210,220,0.55)";
+    ctx.beginPath(); ctx.ellipse(35, -64, 5, 3, 0, 0, Math.PI*2); ctx.fill();
+    acDoor(-12, 24, 24, 32, "#8C5A3B");
+    acWindow(-42, 8, 18, 16);
+    acWindow(22, 8, 18, 16);
+    // garden path + mailbox
+    ctx.fillStyle = "#EAD9A8";
+    roundRect(-10, 54, 20, 10, 3); ctx.fill();
+    ctx.fillStyle = "#C4895A";
+    ctx.fillRect(40, 28, 4, 22);
+    ctx.fillStyle = accent || "#8A6BAE";
+    roundRect(36, 22, 14, 10, 2); ctx.fill();
+    // flower boxes
+    ctx.fillStyle = "#6B8E4E";
+    roundRect(-44, 26, 24, 7, 2); ctx.fill();
+    roundRect(20, 26, 24, 7, 2); ctx.fill();
+    ctx.fillStyle = accent || "#E3998A";
+    ctx.beginPath(); ctx.arc(-36, 24, 3.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-28, 23, 2.8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(28, 24, 3.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(36, 23, 2.8, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  function drawGuestLavenderIcon(cx, cy){ drawNeighborHome(cx, cy, 0.92, "#8A6BAE", "#F3EAF6", "#C9A5D8"); }
+  function drawGuestBlueIcon(cx, cy){ drawNeighborHome(cx, cy, 0.9, "#4A7DBF", "#E8F0F8", "#8FB4D8"); }
 
   function drawStoreIcon(cx, cy){
     // Nook's Cranny–inspired shop
@@ -4222,6 +4977,12 @@ const BREEDS = {
       drawStoreDisplayTable: typeof drawStoreDisplayTable === "function" ? drawStoreDisplayTable : null,
       drawBuildingShelf, drawBuildingPlant, drawBuildingTable, drawBuildingChair,
       drawGuestCottageInterior: typeof drawGuestCottageInterior === "function" ? drawGuestCottageInterior : null,
+      drawGuestLavenderIcon: typeof drawGuestLavenderIcon === "function" ? drawGuestLavenderIcon : null,
+      drawGuestBlueIcon: typeof drawGuestBlueIcon === "function" ? drawGuestBlueIcon : null,
+      drawLisaHost: typeof drawLisaHost === "function" ? drawLisaHost : null,
+      drawConcertInterior: typeof drawConcertInterior === "function" ? drawConcertInterior : null,
+      drawAirportInterior: typeof drawAirportInterior === "function" ? drawAirportInterior : null,
+      LisaAtlas,
       performance: window.performance,
     };
   }
@@ -4246,6 +5007,7 @@ const BREEDS = {
     farm: makeZoneIcon("farm", drawFarmIcon),
     cinema: makeZoneIcon("cinema", drawCinemaIcon),
     lake: makeZoneIcon("lake", null),
+    airport: makeZoneIcon("airport", null),
     guestLavender: makeZoneIcon("guestLavender", drawGuestLavenderIcon),
     guestBlue: makeZoneIcon("guestBlue", drawGuestBlueIcon),
   };
@@ -4294,7 +5056,7 @@ const BREEDS = {
   }
 
   // Sea harbour on the south coast (open ocean, not the inland lake)
-  const HARBOUR_CX = 980, HARBOUR_CY = 1360;
+  const HARBOUR_CX = 980, HARBOUR_CY = 1385;
 
   function getHarbourLayout(){
     const qx = HARBOUR_CX;
@@ -4502,15 +5264,40 @@ const BREEDS = {
     wobblyBlobPath(ctx, WORLD_W/2, WORLD_H/2, WORLD_W/2-24, WORLD_H/2-24, 26, 2.1);
     ctx.fill();
 
+    ctx.fillStyle = "#E8D5A8";
+    wobblyBlobPath(ctx, WORLD_W/2, WORLD_H/2, WORLD_W/2-40, WORLD_H/2-40, 26, 2.5);
+    ctx.fill();
     ctx.fillStyle = "#B9D98C";
-    wobblyBlobPath(ctx, WORLD_W/2, WORLD_H/2, WORLD_W/2-62, WORLD_H/2-62, 26, 3.4);
+    wobblyBlobPath(ctx, WORLD_W/2, WORLD_H/2, WORLD_W/2-78, WORLD_H/2-78, 26, 3.6);
     ctx.fill();
 
-    ELEVATION_BLOBS.forEach(b => {
-      ctx.fillStyle = b.color;
-      wobblyBlobPath(ctx, b.x, b.y, b.rx, b.ry, 16, b.seed);
+    ensureMapEditState();
+    (state.scenery || []).forEach(s => {
+      if(s.kind !== "hill" && s.kind !== "meadow" && s.kind !== "garden") return;
+      if(carriedScenery && s.uid === carriedScenery.uid) return;
+      drawSceneryItem(s, 1);
+    });
+    if(carriedScenery && gameMode === "rearrange" && (carriedScenery.kind === "hill" || carriedScenery.kind === "meadow" || carriedScenery.kind === "garden")){
+      drawSceneryItem(Object.assign({}, carriedScenery, { x:player.x, y:player.y }), 0.55);
+    }
+
+    // Rivers (editable in Edit Map)
+    (state.rivers || []).forEach(r => {
+      if(carriedRiver && r.uid === carriedRiver.uid) return;
+      ctx.fillStyle = "#7EB8C8";
+      wobblyBlobPath(ctx, r.x, r.y, r.rx, r.ry, 14, r.seed || 2);
+      ctx.fill();
+      ctx.fillStyle = "#8FC1D6";
+      wobblyBlobPath(ctx, r.x, r.y, r.rx * 0.72, r.ry * 0.78, 14, (r.seed || 2) + 0.4);
       ctx.fill();
     });
+    if(carriedRiver && gameMode === "rearrange"){
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = "#7EB8C8";
+      wobblyBlobPath(ctx, player.x, player.y, carriedRiver.rx, carriedRiver.ry, 14, carriedRiver.seed || 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
   }
 
   function drawMountainCluster(cx, cy, scale){
@@ -4561,13 +5348,32 @@ const BREEDS = {
     ctx.save();
     ctx.translate(cx, cy);
     ctx.fillStyle = "rgba(58,44,34,0.12)";
-    ctx.beginPath(); ctx.ellipse(0, 8, 76, 20, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 8, 96, 26, 0, 0, Math.PI*2); ctx.fill();
+    // outer cobble ring
+    ctx.fillStyle = "#E0C896";
+    ctx.beginPath(); ctx.arc(0, 0, 92, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "rgba(58,44,34,0.16)"; ctx.lineWidth = 2;
+    for(let i = 0; i < 16; i++){
+      const a = (i/16)*Math.PI*2;
+      ctx.beginPath();
+      ctx.arc(Math.cos(a)*78, Math.sin(a)*78, 7, 0, Math.PI*2);
+      ctx.stroke();
+    }
     ctx.fillStyle = "#EAD9A8";
     ctx.beginPath(); ctx.arc(0, 0, 70, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = "rgba(58,44,34,0.22)"; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.arc(0, 0, 70, 0, Math.PI*2); ctx.stroke();
     ctx.fillStyle = "#F3DBAA";
     ctx.beginPath(); ctx.arc(0, 0, 46, 0, Math.PI*2); ctx.fill();
+    // flower ring around plaza heart
+    const cols = ["#E3998A","#D98F2B","#D9A5C0","#CFE1D2","#D9705C"];
+    for(let i = 0; i < 10; i++){
+      const a = (i/10)*Math.PI*2 + 0.2;
+      ctx.fillStyle = cols[i % cols.length];
+      ctx.beginPath();
+      ctx.arc(Math.cos(a)*56, Math.sin(a)*56, 4.5, 0, Math.PI*2);
+      ctx.fill();
+    }
     ctx.fillStyle = "rgba(217,112,92,0.55)";
     ctx.beginPath(); ctx.arc(0, 6, 14, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(-13, -6, 6, 0, Math.PI*2); ctx.fill();
@@ -4580,35 +5386,102 @@ const BREEDS = {
   function drawGuestCottageInterior(t, cx, cy, id){
     const isLav = id === "guestLavender";
     const accent = isLav ? "#8A6BAE" : "#4A7DBF";
-    const soft = isLav ? "#E8D8F0" : "#D8E6F5";
-    // bed
+    const soft = isLav ? "#EDE4F2" : "#DCE8F5";
+    // living rug (home, not shop floor)
+    ctx.fillStyle = isLav ? "#D9C8E8" : "#B8CDE0";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 40, 120, 48, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // bed / couch nook
     ctx.fillStyle = soft;
-    roundRect(HOUSE.x + 70, HOUSE.y + 280, 110, 55, 10); ctx.fill();
+    roundRect(HOUSE.x + 60, HOUSE.y + 300, 150, 70, 12); ctx.fill();
     ctx.fillStyle = accent;
-    roundRect(HOUSE.x + 78, HOUSE.y + 272, 50, 18, 6); ctx.fill();
-    // bookshelf / desk
-    ctx.fillStyle = "#A9784F";
-    roundRect(HOUSE.x + HOUSE.w - 160, HOUSE.y + 280, 100, 55, 8); ctx.fill();
+    roundRect(HOUSE.x + 70, HOUSE.y + 292, 60, 22, 8); ctx.fill();
     ctx.fillStyle = isLav ? "#C9A5D8" : "#8FB4D8";
-    for(let i=0;i<4;i++){
-      roundRect(HOUSE.x + HOUSE.w - 148 + i*20, HOUSE.y + 288, 14, 28, 2); ctx.fill();
-    }
-    // plant + window sill bits
-    drawBuildingPlant(HOUSE.x + 160, HOUSE.y + 200);
-    drawBuildingPlant(HOUSE.x + HOUSE.w - 160, HOUSE.y + 200);
-    drawBuildingShelf(HOUSE.x + 55, HOUSE.y + 100, 70, 70, isLav ? ["#8A6BAE","#E3998A","#CFE1D2","#D98F2B"] : ["#4A7DBF","#8FD1E0","#E8A33D","#CFE1D2"]);
-    drawBuildingShelf(HOUSE.x + HOUSE.w - 125, HOUSE.y + 100, 70, 70, isLav ? ["#D9A5C0","#6B8E6B","#D98F2B","#8A6BAE"] : ["#5A7FB0","#CFE7F2","#D9705C","#4A7DBF"]);
-    // host behind counter
+    roundRect(HOUSE.x + 140, HOUSE.y + 310, 55, 18, 6); ctx.fill();
+    // side table
+    ctx.fillStyle = "#A9784F";
+    roundRect(HOUSE.x + 220, HOUSE.y + 330, 40, 36, 6); ctx.fill();
     if(isLav){
-      drawBuildingPatron(cx - 20, cy - 28, "#D9A066", "#8A6BAE", "#3A2417", Math.sin(t/520)*1.1);
-      drawNpcNameTag(cx - 20, cy - 52, "Mara");
-      drawBuildingPatron(HOUSE.x + 280, HOUSE.y + 380, "#F0C08A", "#CFE1D2", "#6B4423", Math.sin(t/450)*1.4);
-      drawNpcNameTag(HOUSE.x + 280, HOUSE.y + 356, "Pip");
+      // tea kettle + cups (Mara's slower mornings)
+      ctx.fillStyle = "#6E5C49";
+      ctx.beginPath(); ctx.arc(HOUSE.x + 240, HOUSE.y + 318, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#C4895A";
+      roundRect(HOUSE.x + 228, HOUSE.y + 308, 8, 6, 2); ctx.fill();
+      ctx.fillStyle = "#FBF0DE";
+      ctx.beginPath(); ctx.arc(HOUSE.x + 228, HOUSE.y + 338, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(HOUSE.x + 250, HOUSE.y + 338, 5, 0, Math.PI * 2); ctx.fill();
+      // lavender sprigs in a jar
+      ctx.fillStyle = "#CFE7F2";
+      roundRect(HOUSE.x + 170, HOUSE.y + 200, 18, 28, 4); ctx.fill();
+      ctx.strokeStyle = "#6B8E6B"; ctx.lineWidth = 2;
+      for(let i = 0; i < 3; i++){
+        ctx.beginPath();
+        ctx.moveTo(HOUSE.x + 179, HOUSE.y + 210);
+        ctx.lineTo(HOUSE.x + 172 + i * 7, HOUSE.y + 188);
+        ctx.stroke();
+        ctx.fillStyle = "#8A6BAE";
+        ctx.beginPath(); ctx.arc(HOUSE.x + 172 + i * 7, HOUSE.y + 186, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      // pastry / bread tray
+      ctx.fillStyle = "#C4895A";
+      roundRect(HOUSE.x + 280, HOUSE.y + 210, 70, 28, 6); ctx.fill();
+      ctx.fillStyle = "#E8C9A0";
+      ctx.beginPath(); ctx.ellipse(HOUSE.x + 300, HOUSE.y + 222, 12, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(HOUSE.x + 325, HOUSE.y + 224, 10, 7, 0, 0, Math.PI * 2); ctx.fill();
+      // tea-tin shelf
+      drawBuildingShelf(HOUSE.x + 55, HOUSE.y + 100, 80, 75, ["#8A6BAE","#E3998A","#CFE1D2","#D98F2B"]);
+      drawBuildingShelf(HOUSE.x + HOUSE.w - 140, HOUSE.y + 100, 80, 75, ["#D9A5C0","#6B8E6B","#F3EBDD","#8A6BAE"]);
+      // quilt chest
+      ctx.fillStyle = "#A9784F";
+      roundRect(HOUSE.x + HOUSE.w - 200, HOUSE.y + 320, 90, 50, 8); ctx.fill();
+      ctx.fillStyle = "#C9A5D8";
+      roundRect(HOUSE.x + HOUSE.w - 190, HOUSE.y + 330, 70, 14, 4); ctx.fill();
+      drawBuildingPlant(HOUSE.x + 160, HOUSE.y + 200);
+      drawBuildingPlant(HOUSE.x + HOUSE.w - 180, HOUSE.y + 210);
+      // Mara at home (not behind a shop counter)
+      drawBuildingPatron(HOUSE.x + 360, HOUSE.y + 350, "#D9A066", "#8A6BAE", "#3A2417", Math.sin(t/520)*1.1);
+      drawNpcNameTag(HOUSE.x + 360, HOUSE.y + 326, "Mara");
     } else {
-      drawBuildingPatron(cx - 20, cy - 28, "#F0C08A", "#5A7FB0", "#111111", Math.sin(t/540)*1.1);
-      drawNpcNameTag(cx - 20, cy - 52, "Theo");
-      drawBuildingPatron(HOUSE.x + 500, HOUSE.y + 375, "#B87A4B", "#D98F2B", "#3A2417", Math.sin(t/470)*1.3);
-      drawNpcNameTag(HOUSE.x + 500, HOUSE.y + 351, "Sam");
+      // reading desk + lamp (Theo's shore books)
+      ctx.fillStyle = "#8C5A3B";
+      roundRect(HOUSE.x + HOUSE.w - 220, HOUSE.y + 300, 130, 55, 8); ctx.fill();
+      ctx.fillStyle = "#5A7FB0";
+      for(let i = 0; i < 5; i++){
+        roundRect(HOUSE.x + HOUSE.w - 208 + i * 22, HOUSE.y + 308, 16, 32, 2); ctx.fill();
+      }
+      // desk lamp
+      ctx.fillStyle = "#D98F2B";
+      ctx.beginPath(); ctx.arc(HOUSE.x + HOUSE.w - 100, HOUSE.y + 295, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#6E5C49";
+      ctx.fillRect(HOUSE.x + HOUSE.w - 102, HOUSE.y + 305, 4, 18);
+      // sea glass jars on sill
+      [[140,200,"#8FD1E0"],[170,205,"#A8D4E0"],[200,198,"#CFE7F2"],[HOUSE.w-200,200,"#7EB8C8"],[HOUSE.w-170,204,"#8FC1D6"]].forEach(([jx,jy,col]) => {
+        ctx.fillStyle = col;
+        roundRect(HOUSE.x + jx, HOUSE.y + jy, 16, 22, 4); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        roundRect(HOUSE.x + jx + 3, HOUSE.y + jy + 3, 6, 8, 2); ctx.fill();
+      });
+      // fishing rod in corner
+      ctx.strokeStyle = "#8C5A3B"; ctx.lineWidth = 3; ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(HOUSE.x + 80, HOUSE.y + 380);
+      ctx.lineTo(HOUSE.x + 130, HOUSE.y + 160);
+      ctx.stroke();
+      ctx.fillStyle = "#4A7DBF";
+      ctx.beginPath(); ctx.arc(HOUSE.x + 130, HOUSE.y + 158, 4, 0, Math.PI * 2); ctx.fill();
+      // shoreline photo frame
+      ctx.fillStyle = "#A9784F";
+      roundRect(cx - 40, HOUSE.y + 110, 80, 55, 4); ctx.fill();
+      ctx.fillStyle = "#8FC1D6";
+      roundRect(cx - 32, HOUSE.y + 118, 64, 40, 3); ctx.fill();
+      ctx.fillStyle = "#B9D98C";
+      ctx.beginPath(); ctx.ellipse(cx, HOUSE.y + 148, 28, 8, 0, 0, Math.PI * 2); ctx.fill();
+      drawBuildingShelf(HOUSE.x + 55, HOUSE.y + 100, 70, 70, ["#4A7DBF","#8FD1E0","#E8A33D","#CFE1D2"]);
+      drawBuildingPlant(HOUSE.x + HOUSE.w - 160, HOUSE.y + 200);
+      // Theo at home
+      drawBuildingPatron(HOUSE.x + 340, HOUSE.y + 355, "#F0C08A", "#5A7FB0", "#111111", Math.sin(t/540)*1.1);
+      drawNpcNameTag(HOUSE.x + 340, HOUSE.y + 331, "Theo");
     }
   }
 
@@ -4618,6 +5491,12 @@ const BREEDS = {
     ctx.translate(npc.x, npc.y + bob);
     ctx.fillStyle = "rgba(58,44,34,0.16)";
     ctx.beginPath(); ctx.ellipse(0, 4, 11, 4.5, 0, 0, Math.PI*2); ctx.fill();
+    if(npc.useLisaSprite && LisaAtlas.ready){
+      LisaAtlas.draw(ctx, "front", 0, 6, 84);
+      ctx.restore();
+      drawNpcNameTag(npc.x, npc.y + bob - 36, npc.name);
+      return;
+    }
     const sheet = avatarCanvasCache.npcs[npc.id];
     if(sheet){
       ctx.drawImage(sheet, -28, -78, 56, 82);
@@ -4636,25 +5515,37 @@ const BREEDS = {
   }
 
   function drawTree(cx, cy, scale){
+    // Cute hand-drawn trees (not KayKit sprites)
     const s = scale || 1;
-    const tid = KayKitAtlas.treeId((cx * 7 + cy * 13) | 0);
-    if(KayKitAtlas.has(tid)){
-      const w = 56 * s, h = 72 * s;
-      KayKitAtlas.drawFit(ctx, tid, cx - w/2, cy - h + 8*s, w, h, { pad: 0.02 });
-      return;
-    }
     ctx.save();
     ctx.translate(cx, cy);
     ctx.scale(s, s);
-    ctx.fillStyle = "rgba(58,44,34,0.12)";
-    ctx.beginPath(); ctx.ellipse(0, 30, 22, 7, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "rgba(58,44,34,0.14)";
+    ctx.beginPath(); ctx.ellipse(0, 30, 20, 6, 0, 0, Math.PI*2); ctx.fill();
+    // trunk
     ctx.fillStyle = "#8C5A3B";
-    ctx.fillRect(-5, 4, 10, 26);
+    ctx.beginPath();
+    ctx.moveTo(-5, 28); ctx.lineTo(-4, 6); ctx.lineTo(4, 6); ctx.lineTo(5, 28);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#A9784F";
+    ctx.fillRect(-2.5, 8, 2, 14);
+    // leafy canopy — soft round blobs
+    ctx.fillStyle = "#6B8E6B";
+    ctx.beginPath(); ctx.arc(-13, -4, 15, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(13, -4, 15, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = "#8FB07A";
-    ctx.beginPath(); ctx.arc(-12,-6,16,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(12,-6,16,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#9EC088";
-    ctx.beginPath(); ctx.arc(0,-18,19,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-6, -16, 14, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(7, -14, 13, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#CFE1DC";
+    ctx.beginPath(); ctx.arc(0, -22, 12, 0, Math.PI*2); ctx.fill();
+    // soft highlight
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.beginPath(); ctx.arc(-4, -24, 5, 0, Math.PI*2); ctx.fill();
+    // tiny fruit dots
+    ctx.fillStyle = "#E3998A";
+    ctx.beginPath(); ctx.arc(-10, -8, 2.2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#D98F2B";
+    ctx.beginPath(); ctx.arc(9, -10, 2.2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   }
 
@@ -4708,6 +5599,114 @@ const BREEDS = {
     return false;
   }
 
+  function drawCuteCow(cx, cy, scale, bob){
+    const s = scale || 1;
+    const by = bob || 0;
+    ctx.save();
+    ctx.translate(cx, cy + by);
+    ctx.scale(s, s);
+    ctx.fillStyle = "rgba(58,44,34,0.14)";
+    ctx.beginPath(); ctx.ellipse(0, 18, 18, 5, 0, 0, Math.PI*2); ctx.fill();
+    // body
+    ctx.fillStyle = "#F7F2EA";
+    ctx.beginPath(); ctx.ellipse(0, 4, 16, 11, 0, 0, Math.PI*2); ctx.fill();
+    // spots
+    ctx.fillStyle = "#5A4030";
+    ctx.beginPath(); ctx.ellipse(-7, 2, 5, 4, -0.3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(6, 6, 4.5, 3.5, 0.2, 0, Math.PI*2); ctx.fill();
+    // head
+    ctx.fillStyle = "#F7F2EA";
+    ctx.beginPath(); ctx.ellipse(0, -10, 9, 8, 0, 0, Math.PI*2); ctx.fill();
+    // snout
+    ctx.fillStyle = "#F2C4C8";
+    ctx.beginPath(); ctx.ellipse(0, -6, 5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#5A4030";
+    ctx.beginPath(); ctx.arc(-2, -6, 1.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(2, -6, 1.1, 0, Math.PI*2); ctx.fill();
+    // eyes
+    ctx.beginPath(); ctx.arc(-3.5, -12, 1.4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.5, -12, 1.4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(-3.1, -12.4, 0.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.9, -12.4, 0.5, 0, Math.PI*2); ctx.fill();
+    // ears / horns
+    ctx.fillStyle = "#F2C4C8";
+    ctx.beginPath(); ctx.ellipse(-8, -14, 3, 2.2, -0.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(8, -14, 3, 2.2, 0.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#E8D5A8";
+    ctx.beginPath(); ctx.moveTo(-5, -17); ctx.lineTo(-3, -21); ctx.lineTo(-1, -17); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(5, -17); ctx.lineTo(3, -21); ctx.lineTo(1, -17); ctx.fill();
+    // legs
+    ctx.fillStyle = "#E8D5A8";
+    ctx.fillRect(-10, 12, 4, 8); ctx.fillRect(-3, 12, 4, 8);
+    ctx.fillRect(3, 12, 4, 8); ctx.fillRect(9, 12, 4, 8);
+    ctx.restore();
+  }
+
+  function drawCuteChicken(cx, cy, scale, bob){
+    const s = scale || 1;
+    const by = bob || 0;
+    ctx.save();
+    ctx.translate(cx, cy + by);
+    ctx.scale(s, s);
+    ctx.fillStyle = "rgba(58,44,34,0.12)";
+    ctx.beginPath(); ctx.ellipse(0, 12, 9, 3, 0, 0, Math.PI*2); ctx.fill();
+    // body
+    ctx.fillStyle = "#FFF7EA";
+    ctx.beginPath(); ctx.ellipse(0, 2, 9, 7, 0, 0, Math.PI*2); ctx.fill();
+    // wing
+    ctx.fillStyle = "#F3E2C8";
+    ctx.beginPath(); ctx.ellipse(5, 3, 4, 3, 0.3, 0, Math.PI*2); ctx.fill();
+    // head
+    ctx.fillStyle = "#FFF7EA";
+    ctx.beginPath(); ctx.arc(0, -7, 5.5, 0, Math.PI*2); ctx.fill();
+    // comb
+    ctx.fillStyle = "#D9705C";
+    ctx.beginPath(); ctx.arc(-2, -12, 2.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(1, -13, 2.4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.5, -11.5, 2, 0, Math.PI*2); ctx.fill();
+    // beak
+    ctx.fillStyle = "#E8A33D";
+    ctx.beginPath(); ctx.moveTo(4, -7); ctx.lineTo(9, -6); ctx.lineTo(4, -4); ctx.fill();
+    // eye
+    ctx.fillStyle = "#3A2C22";
+    ctx.beginPath(); ctx.arc(1.5, -8, 1.2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(1.8, -8.3, 0.4, 0, Math.PI*2); ctx.fill();
+    // feet
+    ctx.strokeStyle = "#E8A33D"; ctx.lineWidth = 1.6; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(-3, 8); ctx.lineTo(-3, 12); ctx.lineTo(-5, 13); ctx.moveTo(-3, 12); ctx.lineTo(-1, 13); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(3, 8); ctx.lineTo(3, 12); ctx.lineTo(1, 13); ctx.moveTo(3, 12); ctx.lineTo(5, 13); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFencePenFrame(x, y, w, h){
+    // grassy yard
+    ctx.fillStyle = "#C5DB96";
+    roundRect(x + 4, y + 4, w - 8, h - 8, 10); ctx.fill();
+    ctx.fillStyle = "#B9D98C";
+    wobblyBlobPath(ctx, x + w/2, y + h/2 + 4, w * 0.38, h * 0.28, 10, 2.4);
+    ctx.fill();
+    // posts + rails
+    const posts = 5;
+    ctx.fillStyle = "#8C5A3B";
+    for(let i = 0; i < posts; i++){
+      const px = x + 8 + i * ((w - 20) / (posts - 1));
+      ctx.fillRect(px, y + 6, 6, h - 14);
+      ctx.fillStyle = "#A9784F";
+      ctx.beginPath();
+      ctx.moveTo(px - 1, y + 6); ctx.lineTo(px + 3, y + 1); ctx.lineTo(px + 7, y + 6);
+      ctx.fill();
+      ctx.fillStyle = "#8C5A3B";
+    }
+    ctx.fillStyle = "#A9784F";
+    ctx.fillRect(x + 8, y + 18, w - 16, 5);
+    ctx.fillRect(x + 8, y + h - 28, w - 16, 5);
+    // gate hint
+    ctx.fillStyle = "#C4895A";
+    roundRect(x + w/2 - 14, y + h - 22, 28, 14, 3); ctx.fill();
+  }
+
   function drawFlowerPatch(cx, cy, seed){
     for(let i=0;i<5;i++){
       const a = seededRand(seed+i)*Math.PI*2;
@@ -4735,23 +5734,84 @@ const BREEDS = {
     ctx.translate(-camera.x, -camera.y);
 
     drawIslandTerrain();
-    MOUNTAIN_CLUSTERS.forEach(m => drawMountainCluster(m.x, m.y, m.scale));
+    ensureMapEditState();
+    (state.scenery || []).forEach(s => {
+      if(s.kind !== "mountain") return;
+      if(carriedScenery && s.uid === carriedScenery.uid) return;
+      drawSceneryItem(s, 1);
+    });
 
+    strokePathSegments(44, "#E2CFA0", 1);
     strokePathSegments(40, "#EAD9A8", 1);
     strokePathSegments(40, "rgba(58,44,34,0.07)", 1);
     strokePathSegments(20, THEME.soilDeep, 0.28);
+    if(gameMode === "rearrange" && mapEditTool === "path"){
+      ctx.save();
+      ctx.strokeStyle = "rgba(196,120,58,0.35)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, PATH_CLEAR_RADIUS, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+      const draft = pathDraftSeg;
+      if(draft && draft.length){
+        ctx.save();
+        ctx.setLineDash([10, 8]);
+        ctx.strokeStyle = "rgba(120, 90, 50, 0.75)";
+        ctx.lineWidth = 10;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(draft[0][0], draft[0][1]);
+        for(let i = 1; i < draft.length; i++) ctx.lineTo(draft[i][0], draft[i][1]);
+        ctx.lineTo(player.x, player.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        draft.forEach((p, i) => {
+          ctx.fillStyle = i === draft.length - 1 ? "#C4783A" : "#E8C96A";
+          ctx.beginPath();
+          ctx.arc(p[0], p[1], 7, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.fillStyle = "rgba(196,120,58,0.7)";
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    // Path-edge pebbles for a lived-in walkway feel
+    getActivePaths().forEach((pts, si) => {
+      for(let i = 0; i < pts.length - 1; i++){
+        const x0 = pts[i][0], y0 = pts[i][1], x1 = pts[i+1][0], y1 = pts[i+1][1];
+        const steps = 4;
+        for(let s = 0; s < steps; s++){
+          const t = (s + 0.5) / steps;
+          const px = x0 + (x1 - x0) * t, py = y0 + (y1 - y0) * t;
+          const ang = Math.atan2(y1 - y0, x1 - x0) + Math.PI/2;
+          const side = (si + i + s) % 2 ? 1 : -1;
+          ctx.fillStyle = "rgba(180,160,120,0.45)";
+          ctx.beginPath();
+          ctx.arc(px + Math.cos(ang) * 16 * side, py + Math.sin(ang) * 16 * side, 2.2, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    });
 
-    drawPlazaHub(PLAZA_CX, PLAZA_CY);
-
-    MINI_PONDS.forEach((pd, i) => drawPond(pd.x, pd.y, pd.rx, pd.ry, { seed: 2.5+i }));
+    (state.scenery || []).forEach(s => {
+      if(s.kind !== "plaza" && s.kind !== "pond" && s.kind !== "hut") return;
+      if(carriedScenery && s.uid === carriedScenery.uid) return;
+      drawSceneryItem(s, 1);
+    });
+    if(carriedScenery && gameMode === "rearrange" && (carriedScenery.kind === "plaza" || carriedScenery.kind === "pond" || carriedScenery.kind === "hut" || carriedScenery.kind === "mountain")){
+      drawSceneryItem(Object.assign({}, carriedScenery, { x:player.x, y:player.y }), 0.55);
+    }
     drawLakeWater();
     drawSeaHarbour();
-    DECOR_HUTS.forEach(h => drawHut(h.x, h.y, h.scale, h.color));
-
-    (state.islandDecor || []).forEach(item => {
-      if(carriedIsland && item.uid === carriedIsland.uid) return;
-      drawIslandDecorItem(item, 1);
-    });
 
     for(const z of zones){
       if(carriedZone && z.id === carriedZone.id) continue;
@@ -4781,6 +5841,12 @@ const BREEDS = {
       ctx.setLineDash([]);
     }
 
+    // Decor draws above buildings so it can sit on top of them
+    (state.islandDecor || []).forEach(item => {
+      if(carriedIsland && item.uid === carriedIsland.uid) return;
+      drawIslandDecorItem(item, 1);
+    });
+
     if(carriedIsland){
       const gx = player.x - carriedIsland.w/2;
       const gy = player.y - carriedIsland.h/2;
@@ -4798,7 +5864,10 @@ const BREEDS = {
     }
 
     const nowTs = performance.now();
-    NPCS.forEach(npc => drawNPC(npc, nowTs));
+    NPCS.forEach(npc => {
+      if(npc.stayIndoors) return;
+      drawNPC(npc, nowTs);
+    });
 
     if(hasDogs() && puppyTrail.length){
       const p = puppyTrail[0];
@@ -5302,34 +6371,80 @@ const BREEDS = {
     const rearrangeHint = document.getElementById("rearrange-hint");
 
     if(gameMode === "rearrange"){
-      if(carriedZone){
+      if(mapEditTool === "path"){
+        currentTarget = { kind:"path-stamp" };
+        promptText.textContent = pathDraftSeg ? ("Path point " + (pathDraftSeg.length + 1)) : "Start path";
+        promptBtn.style.display = "flex";
+        if(rearrangeHint) rearrangeHint.textContent = pathDraftSeg
+          ? "E adds a point · End Path / Enter finishes this road · Esc undoes · Clear Here erases nearby"
+          : "E starts a road · Clear Here removes paths around you (not the whole map)";
+      } else if(carriedZone){
         currentTarget = { kind:"place", ref:carriedZone };
         promptText.textContent = "Place " + carriedZone.label;
         promptBtn.style.display = "flex";
-        if(rearrangeHint) rearrangeHint.textContent = "Walk to a clear spot, then press E to place · Esc to cancel";
+        if(rearrangeHint) rearrangeHint.textContent = carriedZone.id === "lake"
+          ? "Move Lake anywhere clear — the water follows · E to place"
+          : "Walk to a clear spot, then press E to place · Esc to cancel";
+      } else if(carriedRiver){
+        currentTarget = { kind:"river-place", ref:carriedRiver };
+        promptText.textContent = "Place river";
+        promptBtn.style.display = "flex";
+        if(rearrangeHint) rearrangeHint.textContent = "E places · Bag keeps it for later · Esc cancels";
+      } else if(carriedScenery){
+        currentTarget = { kind:"scenery-place", ref:carriedScenery };
+        const label = SCENERY_LABELS[carriedScenery.kind] || "background";
+        promptText.textContent = "Place " + label;
+        promptBtn.style.display = "flex";
+        if(rearrangeHint) rearrangeHint.textContent = "E places · Bag keeps it for later · Esc cancels";
       } else if(carriedIsland){
         currentTarget = { kind:"island-place", ref:carriedIsland };
         const cat = islandItemCatalog(carriedIsland.type);
         promptText.textContent = "Place " + (cat ? cat.name : "decor");
         promptBtn.style.display = "flex";
-        if(rearrangeHint) rearrangeHint.textContent = "Find a clear spot on the island · Esc to cancel";
+        if(rearrangeHint) rearrangeHint.textContent = "E places · Bag keeps it for later · Esc cancels";
       } else {
+        const riv = riverAt(player.x, player.y);
+        const scenery = sceneryAt(player.x, player.y);
         const decor = islandDecorAt(player.x, player.y);
         const z = zoneAt(player.x, player.y);
-        if(decor){
+        // Prefer small background pieces (hut/pond/garden) before buildings when overlapping edges
+        const sceneryIsForeground = scenery && ["hut","pond","garden","mountain","plaza","meadow"].includes(scenery.kind);
+        if(mapEditTool === "river" && !riv){
+          currentTarget = { kind:"river-new" };
+          promptText.textContent = "Place new river";
+          promptBtn.style.display = "flex";
+          if(rearrangeHint) rearrangeHint.textContent = "E places a new river blot here · or stand on water to move it";
+        } else if(riv){
+          currentTarget = { kind:"river-pickup", ref:riv };
+          promptText.textContent = "Move river";
+          promptBtn.style.display = "flex";
+          if(rearrangeHint) rearrangeHint.textContent = "E picks up this river water · place it somewhere else";
+        } else if(sceneryIsForeground && !(z && isUnlocked(z.id) && scenery.kind !== "plaza")){
+          currentTarget = { kind:"scenery-pickup", ref:scenery };
+          promptText.textContent = "Move " + (SCENERY_LABELS[scenery.kind] || "background");
+          promptBtn.style.display = "flex";
+          if(rearrangeHint) rearrangeHint.textContent = "E picks up this background piece · hills move too when nothing else is underfoot";
+        } else if(decor){
           currentTarget = { kind:"island-pickup", ref:decor };
           const cat = islandItemCatalog(decor.type);
           const flora = FLORA_TYPES.has(decor.type);
           promptText.textContent = (flora ? "Dig up " : "Move ") + (cat ? cat.name : "decor");
           promptBtn.style.display = "flex";
           if(rearrangeHint) rearrangeHint.textContent = flora
-            ? "E picks up plants/trees · Bag button removes them for crafting mats · Done saves"
-            : "E moves decor · Place adds from bag · Bag stows what you carry · Done saves";
+            ? "E picks up · Bag stores it (+ crafting mats) · Place brings it back later"
+            : "E picks up · Bag stores · Place from bag later · buildings can't be bagged";
         } else if(z && isUnlocked(z.id)){
           currentTarget = { kind:"pickup", ref:z };
-          promptText.textContent = "Move " + z.label;
+          promptText.textContent = "Move " + z.label + (z.id === "lake" ? " (water)" : "");
           promptBtn.style.display = "flex";
-          if(rearrangeHint) rearrangeHint.textContent = "E moves buildings · Place adds island decor · Done saves";
+          if(rearrangeHint) rearrangeHint.textContent = z.id === "lake"
+            ? "E moves Lake (buildings can't go in the bag)"
+            : "E moves buildings on the map only — Bag is for scenery & decor";
+        } else if(scenery){
+          currentTarget = { kind:"scenery-pickup", ref:scenery };
+          promptText.textContent = "Move " + (SCENERY_LABELS[scenery.kind] || "background");
+          promptBtn.style.display = "flex";
+          if(rearrangeHint) rearrangeHint.textContent = "E moves hills, meadows, ponds, huts, mountains & plaza";
         } else if(z && !isUnlocked(z.id)){
           currentTarget = null;
           promptBtn.style.display = "none";
@@ -5337,10 +6452,7 @@ const BREEDS = {
         } else {
           currentTarget = null;
           promptBtn.style.display = "none";
-          const invCount = islandInventoryCount();
-          if(rearrangeHint) rearrangeHint.textContent = invCount
-            ? ("Walk to decor/building · or Place (" + invCount + " in bag)")
-            : "Walk onto a building or decor · buy more at the Store";
+          if(rearrangeHint) rearrangeHint.textContent = "Pick up scenery/decor/rivers → Bag to keep · Place later · buildings stay on map";
         }
       }
       return;
@@ -5353,6 +6465,7 @@ const BREEDS = {
     }
     let nearNpc = null, bestD = 48;
     NPCS.forEach(npc => {
+      if(npc.stayIndoors) return;
       const d = Math.hypot(player.x-npc.x, player.y-npc.y);
       if(d < bestD){ bestD = d; nearNpc = npc; }
     });
@@ -5394,6 +6507,11 @@ const BREEDS = {
   }
 
   function computeNpcPos(npc, t){
+    if(npc.stayIndoors){
+      npc.x = npc.homeX;
+      npc.y = npc.homeY;
+      return;
+    }
     npc.x = npc.homeX + Math.sin(t/npc.speed + npc.phase) * npc.range;
     npc.y = npc.homeY + Math.cos(t/(npc.speed*1.3) + npc.phase) * (npc.range*0.55);
   }
@@ -5405,17 +6523,50 @@ const BREEDS = {
       return;
     }
     if(gameMode === "rearrange"){
-      if(currentTarget.kind === "pickup"){
+      if(currentTarget.kind === "path-stamp"){
+        addPathPointAtPlayer();
+      } else if(currentTarget.kind === "pickup"){
         carriedZone = currentTarget.ref;
         carriedIsland = null;
+        carriedRiver = null;
+        carriedScenery = null;
+        mapEditTool = null;
         SFX.enterZone();
-        toast("Carrying " + carriedZone.label + " - find a spot to place it");
+        toast(carriedZone.id === "lake"
+          ? "Carrying Lake — the pond moves with it"
+          : ("Carrying " + carriedZone.label + " - find a spot to place it"));
         currentTarget = null;
       } else if(currentTarget.kind === "place"){
         placeCarriedAtPlayer();
+      } else if(currentTarget.kind === "river-pickup"){
+        carriedRiver = currentTarget.ref;
+        carriedZone = null;
+        carriedIsland = null;
+        carriedScenery = null;
+        mapEditTool = null;
+        SFX.enterZone();
+        toast("Carrying river — E to place · Bag to keep for later");
+        currentTarget = null;
+      } else if(currentTarget.kind === "river-place"){
+        placeCarriedRiver();
+      } else if(currentTarget.kind === "river-new"){
+        placeNewRiverAtPlayer();
+      } else if(currentTarget.kind === "scenery-pickup"){
+        carriedScenery = currentTarget.ref;
+        carriedZone = null;
+        carriedIsland = null;
+        carriedRiver = null;
+        mapEditTool = null;
+        SFX.enterZone();
+        toast("Carrying " + (SCENERY_LABELS[carriedScenery.kind] || "background") + " — E place · Bag keep");
+        currentTarget = null;
+      } else if(currentTarget.kind === "scenery-place"){
+        placeCarriedScenery();
       } else if(currentTarget.kind === "island-pickup"){
         carriedIsland = currentTarget.ref;
         carriedZone = null;
+        carriedRiver = null;
+        carriedScenery = null;
         SFX.enterZone();
         toast("Carrying decor - find a spot to place it");
         currentTarget = null;
@@ -6452,7 +7603,7 @@ const BREEDS = {
     mctx.strokeStyle = "rgba(234,217,168,0.95)";
     mctx.lineWidth = 2.6;
     mctx.lineCap = "round"; mctx.lineJoin = "round";
-    PATH_SEGMENTS.forEach((pts) => {
+    getActivePaths().forEach((pts) => {
       if(!pts || pts.length < 2) return;
       mctx.beginPath();
       mctx.moveTo(pts[0][0]*sx, pts[0][1]*sy);
@@ -6522,8 +7673,14 @@ const BREEDS = {
     if(isTyping) return;
     if(e.key === "Escape"){
       if(gameMode === "rearrange"){
-        if(carriedZone || carriedIsland) cancelCarry();
-        else exitRearrangeMode();
+        if(carriedZone || carriedIsland || carriedRiver || carriedScenery) cancelCarry();
+        else if(mapEditTool === "path" && (pathDraftSeg || (state.customPaths && state.customPaths.length))){
+          undoPathPoint();
+        } else if(mapEditTool){
+          mapEditTool = null;
+          pathDraftSeg = null;
+          toast("Edit tool off");
+        } else exitRearrangeMode();
       } else if(gameMode === "house-edit"){
         if(carriedFurn) cancelFurnCarry();
         else exitHouseEdit();
@@ -6536,8 +7693,18 @@ const BREEDS = {
     }
     if(KEY_MAP[e.key]){ keys[KEY_MAP[e.key]] = true; e.preventDefault(); }
     if(e.key === "Shift"){ keys.run = true; }
-    if(e.key === " "){ e.preventDefault(); if(gameMode === "town" || gameMode === "house" || gameMode === "building") triggerJump(); }
+    if(e.key === " "){
+      e.preventDefault();
+      if(gameMode === "rearrange" && mapEditTool === "path") finishPathDraft();
+      else if(gameMode === "town" || gameMode === "house" || gameMode === "building") triggerJump();
+    }
     if(e.key === "e" || e.key === "E"){ interactWithTarget(); }
+    if(e.key === "Enter"){
+      if(gameMode === "rearrange" && mapEditTool === "path"){
+        e.preventDefault();
+        finishPathDraft();
+      }
+    }
     if(e.key === "r" || e.key === "R"){
       if(gameMode === "house-edit"){ e.preventDefault(); tryRotateFurniture(); }
     }
@@ -6619,6 +7786,12 @@ const BREEDS = {
     act.textContent = info.activity;
     document.getElementById("house-hint").textContent = id === "cinema"
       ? "Island Cinema · Talk to Nora for tickets · Walk to EXIT door to leave"
+      : id === "concert"
+      ? "Concert Festival · Watch Lisa on stage · Walk to the door to leave"
+      : id === "airport"
+      ? "Willow Airlines · Talk to Sky at the desk · Walk to the door to leave"
+      : (id === "guestLavender" || id === "guestBlue")
+      ? (info.label + " · Make yourself at home · Walk to the door to leave")
       : (info.label + " · E at counter · Leave to exit");
     const mm = document.querySelector(".minimap-frame");
     if(mm) mm.style.display = "none";
@@ -6655,6 +7828,11 @@ const BREEDS = {
       openCinemaTicketBooth();
       return;
     }
+    if(id === "airport"){
+      SFX.enterZone();
+      openAirportDesk();
+      return;
+    }
     exitBuilding(true);
     SFX.enterZone();
     if(id === "cafe") openJob();
@@ -6678,8 +7856,8 @@ const BREEDS = {
       return;
     }
     openModal(`
-      <h3>${isLav ? "Lavender Cottage" : "Blue Cottage"}</h3>
-      <div class="flavor-box">${isLav ? "Mara welcomes you in for tea." : "Theo shows you a jar of sea glass."}</div>
+      <h3>${isLav ? "Mara's Home" : "Theo's Home"}</h3>
+      <div class="flavor-box">${isLav ? "Soft quilts, lavender sachets, and a kettle already singing. Mara pours you a cup." : "Salt-air books, sea glass catching the light. Theo clears a chair by the window."}</div>
       <div class="action-row" style="margin-top:0.9rem">
         <button class="action-btn" id="guest-done">Thanks!</button>
       </div>
@@ -7749,10 +8927,12 @@ const BREEDS = {
   }
 
   function buildingSolids(){
-    const solids = [
-      { x: HOUSE.x + HOUSE.w/2 - 95, y: HOUSE.y + 115, w: 190, h: 55 }, // counter
-    ];
     const id = currentBuilding;
+    const solids = [];
+    // Homes have no shop counter
+    if(id !== "guestLavender" && id !== "guestBlue" && id !== "concert" && id !== "airport"){
+      solids.push({ x: HOUSE.x + HOUSE.w/2 - 95, y: HOUSE.y + 115, w: 190, h: 55 });
+    }
     if(id === "cafe"){
       solids.push(
         { x: HOUSE.x + 55, y: HOUSE.y + 280, w: 70, h: 55 },
@@ -7820,10 +9000,11 @@ const BREEDS = {
       );
     } else if(id === "guestLavender" || id === "guestBlue"){
       solids.push(
-        { x: HOUSE.x + 70, y: HOUSE.y + 280, w: 90, h: 55 },
-        { x: HOUSE.x + HOUSE.w - 160, y: HOUSE.y + 280, w: 90, h: 55 },
-        { x: HOUSE.x + 55, y: HOUSE.y + 100, w: 70, h: 70 },
-        { x: HOUSE.x + HOUSE.w - 125, y: HOUSE.y + 100, w: 70, h: 70 }
+        { x: HOUSE.x + 60, y: HOUSE.y + 300, w: 150, h: 70 },
+        { x: HOUSE.x + 220, y: HOUSE.y + 330, w: 40, h: 40 },
+        { x: HOUSE.x + 55, y: HOUSE.y + 100, w: 80, h: 75 },
+        { x: HOUSE.x + HOUSE.w - 140, y: HOUSE.y + 100, w: 80, h: 75 },
+        { x: HOUSE.x + HOUSE.w - 220, y: HOUSE.y + 300, w: 130, h: 55 }
       );
     } else if(id === "school"){
       solids.push(
@@ -8114,153 +9295,312 @@ const BREEDS = {
     drawNpcNameTag(HOUSE.x + HOUSE.w - 170, HOUSE.y + 336, "Pip");
   }
 
-  function drawLisaHost(x, y, t, scale){
+  function drawLisaHost(x, y, t, scale, stageSpan){
     scale = scale || 1;
-    const bob = Math.sin(t/280) * 2.5 * scale;
-    const arm = Math.sin(t/180) * 10;
+    stageSpan = stageSpan == null ? 120 : stageSpan;
+    const walkPhase = t / 1400;
+    const ox = Math.sin(walkPhase) * (stageSpan / 2);
+    const vx = Math.cos(walkPhase);
+    const moving = Math.abs(vx) > 0.35;
+    const facingLeft = vx < 0;
+    const danceBob = Math.abs(Math.sin(t / 160)) * 8 * scale;
+    const sway = Math.sin(t / 200) * 0.08;
+    // Only use the clean full-body sheet crop — talk/idle were half-cut from the source sheet
+    const frame = "front";
+
+    const drawX = x + ox;
+    const drawY = y - danceBob;
+    const h = 118 * scale;
+    ctx.save();
+    ctx.translate(drawX, drawY);
+    ctx.rotate(sway);
+    ctx.scale(facingLeft && moving ? -1 : 1, 1);
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.beginPath(); ctx.ellipse(0, 14 * scale, 28 * scale, 8 * scale, 0, 0, Math.PI*2); ctx.fill();
+    if(LisaAtlas.draw(ctx, frame, 0, 14 * scale, h)){
+      if(Math.sin(t/380) > 0.55){
+        const hx = 34 * scale, hy = -h + 28 * scale;
+        ctx.fillStyle = "rgba(255,120,160,0.9)";
+        ctx.beginPath();
+        ctx.moveTo(hx, hy + 4);
+        ctx.bezierCurveTo(hx - 10, hy - 8, hx - 16, hy + 8, hx, hy + 16);
+        ctx.bezierCurveTo(hx + 16, hy + 8, hx + 10, hy - 8, hx, hy + 4);
+        ctx.fill();
+      }
+      ctx.restore();
+      return { x: drawX, y: drawY - h + 18 * scale };
+    }
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#1A1A1A";
+    roundRect(-14, -8, 28, 26, 8); ctx.fill();
+    ctx.fillStyle = "#E8C4A8";
+    ctx.beginPath(); ctx.arc(0, -20, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#8B5A3C";
+    ctx.beginPath(); ctx.ellipse(0, -24, 16, 14, 0, Math.PI, Math.PI*2); ctx.fill();
+    ctx.restore();
+    return { x: drawX, y: drawY - 90 * scale };
+  }
+
+
+  function drawConcertInterior(t, cx, cy){
+    // Audience view: stage only — watch Lisa perform full-body
+    const stageTop = HOUSE.y + 56;
+    const stageH = 250;
+    const stageX = HOUSE.x + 70;
+    const stageW = HOUSE.w - 140;
+
+    ctx.fillStyle = "#120818";
+    ctx.fillRect(HOUSE.x + HOUSE.wall, HOUSE.y + HOUSE.wall + 30, HOUSE.w - HOUSE.wall*2, HOUSE.h - HOUSE.wall*2 - 30);
+
+    ctx.fillStyle = "#3A1040";
+    roundRect(stageX - 10, stageTop - 8, stageW + 20, stageH + 30, 14); ctx.fill();
+    ctx.fillStyle = "#5A1858";
+    for(let i = 0; i < 10; i++){
+      const px = stageX + 8 + i * ((stageW - 16) / 9);
+      roundRect(px, stageTop, 18, stageH + 10, 6); ctx.fill();
+    }
+
+    ctx.fillStyle = "#1A0F2E";
+    roundRect(stageX, stageTop + 36, stageW, stageH - 20, 16); ctx.fill();
+    ctx.fillStyle = "#2A1848";
+    roundRect(stageX + 18, stageTop + 48, stageW - 36, stageH - 56, 12); ctx.fill();
+    ctx.fillStyle = "#E8A33D";
+    roundRect(stageX + 10, stageTop + stageH - 8, stageW - 20, 14, 5); ctx.fill();
+    ctx.fillStyle = "#F5C96A";
+    roundRect(stageX + 18, stageTop + stageH - 4, stageW - 36, 6, 3); ctx.fill();
+
+    ctx.fillStyle = "#8C2A5A";
+    roundRect(stageX - 8, stageTop - 4, 36, stageH + 24, 8); ctx.fill();
+    roundRect(stageX + stageW - 28, stageTop - 4, 36, stageH + 24, 8); ctx.fill();
+
+    [[cx - 160, stageTop + 10],[cx, stageTop],[cx + 160, stageTop + 10]].forEach(([lx, ly], i) => {
+      const pulse = 0.18 + Math.sin(t/240 + i)*0.12;
+      ctx.fillStyle = `rgba(255,220,140,${pulse})`;
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.lineTo(lx - 70 - i*8, stageTop + stageH - 30);
+      ctx.lineTo(lx + 70 + i*8, stageTop + stageH - 30);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#F5C96A";
+      ctx.beginPath(); ctx.arc(lx, ly, 7, 0, Math.PI*2); ctx.fill();
+    });
+
+    ctx.fillStyle = "#C45A8C";
+    roundRect(cx - 110, stageTop + 12, 220, 28, 8); ctx.fill();
+    ctx.fillStyle = "#FBF0DE";
+    ctx.font = "800 15px ui-rounded, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("★ LISA LIVE ★", cx, stageTop + 32);
+
+    [[stageX + 24, stageTop + 70],[stageX + stageW - 64, stageTop + 70]].forEach(([sx,sy]) => {
+      ctx.fillStyle = "#140C22";
+      roundRect(sx, sy, 40, 70, 8); ctx.fill();
+      ctx.fillStyle = "#3A2559";
+      ctx.beginPath(); ctx.arc(sx+20, sy+22, 11, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(sx+20, sy+50, 8, 0, Math.PI*2); ctx.fill();
+    });
+
+    const lisaY = stageTop + stageH - 20;
+    const lisaPos = drawLisaHost(cx, lisaY, t, 2.15, 100) || { x: cx, y: stageTop + 70 };
+    drawNpcNameTag(lisaPos.x, lisaPos.y - 8, "Lisa");
+
+    for(let i=0;i<12;i++){
+      const sx = stageX + 40 + ((t/28 + i*55) % (stageW - 80));
+      const sy = stageTop + 60 + Math.sin(t/380 + i)*50 + (i%3)*18;
+      ctx.fillStyle = ["#E8A33D","#C45A8C","#FBF0DE","#8FD1E0"][i%4];
+      ctx.beginPath(); ctx.arc(sx, sy, 2.2, 0, Math.PI*2); ctx.fill();
+    }
+
+    const crowdY = HOUSE.y + HOUSE.h - HOUSE.wall - 70;
+    ctx.fillStyle = "#0A0612";
+    roundRect(HOUSE.x + 50, crowdY - 10, HOUSE.w - 100, 55, 12); ctx.fill();
+    for(let i = 0; i < 14; i++){
+      const ax = HOUSE.x + 70 + i * 54;
+      const bob = Math.sin(t/280 + i)*3;
+      ctx.fillStyle = i % 3 === 0 ? "#1A1228" : "#140E20";
+      ctx.beginPath();
+      ctx.ellipse(ax, crowdY + 28 + bob, 16, 12, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(ax, crowdY + 10 + bob, 11, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle = "rgba(251,240,222,0.45)";
+    ctx.font = "600 12px ui-rounded, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Watching Lisa perform", cx, crowdY - 18);
+  }
+
+  function drawAirportClerk(x, y, t){
+    const bob = Math.sin(t/420) * 1.5;
     ctx.save();
     ctx.translate(x, y + bob);
-    ctx.scale(scale, scale);
-    // shadow
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
-    ctx.beginPath(); ctx.ellipse(0, 28, 16, 5, 0, 0, Math.PI*2); ctx.fill();
-    // legs
-    ctx.fillStyle = "#1A1228";
-    roundRect(-8, 10, 6, 16, 2); ctx.fill();
-    roundRect(2, 10, 6, 16, 2); ctx.fill();
-    // boots
-    ctx.fillStyle = "#E8A33D";
-    roundRect(-9, 22, 8, 5, 2); ctx.fill();
-    roundRect(1, 22, 8, 5, 2); ctx.fill();
-    // body / black stage outfit
-    ctx.fillStyle = "#111018";
-    roundRect(-11, -6, 22, 20, 7); ctx.fill();
-    // yellow accent sash
-    ctx.fillStyle = "#E8A33D";
-    roundRect(-11, 2, 22, 4, 2); ctx.fill();
-    // arms
-    ctx.save();
-    ctx.translate(-12, 0);
-    ctx.rotate((-20 + arm) * Math.PI/180);
+    ctx.fillStyle = "rgba(58,44,34,0.16)";
+    ctx.beginPath(); ctx.ellipse(0, 26, 16, 5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#2A3A55";
+    roundRect(-10, 8, 8, 16, 3); ctx.fill();
+    roundRect(2, 8, 8, 16, 3); ctx.fill();
+    ctx.fillStyle = "#E8E0D5";
+    roundRect(-11, 20, 10, 5, 2); ctx.fill();
+    roundRect(1, 20, 10, 5, 2); ctx.fill();
+    ctx.fillStyle = "#FFFFFF";
+    roundRect(-12, -8, 24, 20, 6); ctx.fill();
+    ctx.fillStyle = "#4AA3D9";
+    roundRect(-12, -2, 24, 8, 3); ctx.fill();
+    ctx.fillStyle = "#1A2A40";
+    ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(-3, 8); ctx.lineTo(0, 10); ctx.lineTo(3, 8); ctx.closePath(); ctx.fill();
     ctx.fillStyle = "#F0C08A";
-    roundRect(-3, 0, 6, 14, 3); ctx.fill();
-    ctx.restore();
-    ctx.save();
-    ctx.translate(12, 0);
-    ctx.rotate((20 - arm) * Math.PI/180);
+    roundRect(-18, -4, 7, 14, 3); ctx.fill();
+    roundRect(11, -4, 7, 14, 3); ctx.fill();
     ctx.fillStyle = "#F0C08A";
-    roundRect(-3, 0, 6, 14, 3); ctx.fill();
-    // mic in right hand
-    ctx.fillStyle = "#333";
-    ctx.fillRect(-1, 12, 2, 10);
-    ctx.fillStyle = "#E8A33D";
-    ctx.beginPath(); ctx.arc(0, 12, 4, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-    // head
-    ctx.fillStyle = "#F0C08A";
-    ctx.beginPath(); ctx.arc(0, -16, 11, 0, Math.PI*2); ctx.fill();
-    // long dark hair with soft bangs
-    ctx.fillStyle = "#1A1210";
-    ctx.beginPath();
-    ctx.ellipse(0, -20, 13, 12, 0, Math.PI, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(-11, -8, 5, 14, 0.15, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(11, -8, 5, 14, -0.15, 0, Math.PI*2); ctx.fill();
-    // bangs
-    ctx.beginPath(); ctx.ellipse(-4, -22, 5, 4, -0.3, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(4, -22, 5, 4, 0.3, 0, Math.PI*2); ctx.fill();
-    // eyes
+    ctx.beginPath(); ctx.arc(0, -18, 12, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#5A4030";
+    ctx.beginPath(); ctx.ellipse(0, -24, 13, 10, 0, Math.PI, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-10, -14, 4, 10, 0.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(10, -14, 4, 10, -0.2, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "#2A3A55"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(0, -18, 13, Math.PI*1.05, Math.PI*1.95); ctx.stroke();
+    ctx.fillStyle = "#2A3A55";
+    ctx.beginPath(); ctx.arc(-12, -16, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#4AA3D9";
+    ctx.beginPath(); ctx.arc(-12, -16, 2, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = "#2A1810";
-    ctx.beginPath(); ctx.ellipse(-4, -16, 1.6, 2.2, 0, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(4, -16, 1.6, 2.2, 0, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.beginPath(); ctx.arc(-3.4, -16.8, 0.6, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4.6, -16.8, 0.6, 0, Math.PI*2); ctx.fill();
-    // smile
-    ctx.strokeStyle = "#B5654A"; ctx.lineWidth = 1.2; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.arc(0, -12, 3.5, 0.15, Math.PI - 0.15); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(-4, -18, 1.6, 2.2, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(4, -18, 1.6, 2.2, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "#B5654A"; ctx.lineWidth = 1.3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(0, -14, 3.2, 0.15, Math.PI - 0.15); ctx.stroke();
+    ctx.fillStyle = "rgba(255,150,150,0.35)";
+    ctx.beginPath(); ctx.ellipse(-7, -14, 2.5, 1.5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(7, -14, 2.5, 1.5, 0, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   }
 
-  function drawConcertInterior(t, cx, cy){
-    // stage platform
-    ctx.fillStyle = "#1A0F2E";
-    roundRect(HOUSE.x + 120, HOUSE.y + 95, HOUSE.w - 240, 78, 10); ctx.fill();
-    ctx.fillStyle = "#2A1840";
-    roundRect(HOUSE.x + 130, HOUSE.y + 102, HOUSE.w - 260, 58, 8); ctx.fill();
-    // stage lights
-    [[HOUSE.x+160, HOUSE.y+88],[HOUSE.x+HOUSE.w/2, HOUSE.y+82],[HOUSE.x+HOUSE.w-160, HOUSE.y+88]].forEach(([lx,ly], i) => {
-      const pulse = 0.25 + Math.sin(t/220 + i)*0.2;
-      ctx.fillStyle = `rgba(255,200,80,${pulse})`;
-      ctx.beginPath();
-      ctx.moveTo(lx, ly);
-      ctx.lineTo(lx - 40, ly + 70);
-      ctx.lineTo(lx + 40, ly + 70);
-      ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "#E8A33D";
-      ctx.beginPath(); ctx.arc(lx, ly, 6, 0, Math.PI*2); ctx.fill();
-    });
-    // banner
-    ctx.fillStyle = "#C45A8C";
-    roundRect(cx - 90, HOUSE.y + 88, 180, 22, 6); ctx.fill();
-    ctx.fillStyle = "#FBF0DE";
-    ctx.font = "700 12px ui-rounded, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("★ LISA LIVE ★", cx, HOUSE.y + 103);
+  function drawAirportInterior(t, cx, cy){
+    const x0 = HOUSE.x + HOUSE.wall;
+    const y0 = HOUSE.y + HOUSE.wall + 28;
+    const rw = HOUSE.w - HOUSE.wall * 2;
+    const rh = HOUSE.h - HOUSE.wall * 2 - 28;
 
-    // speakers
-    [[HOUSE.x+90, HOUSE.y+110],[HOUSE.x+HOUSE.w-130, HOUSE.y+110]].forEach(([sx,sy]) => {
-      ctx.fillStyle = "#1A1220";
-      roundRect(sx, sy, 40, 55, 6); ctx.fill();
-      ctx.fillStyle = "#3A2559";
-      ctx.beginPath(); ctx.arc(sx+20, sy+18, 10, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(sx+20, sy+40, 7, 0, Math.PI*2); ctx.fill();
-      ctx.strokeStyle = `rgba(232,163,61,${0.3+Math.sin(t/150)*0.25})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(sx+20, sy+18, 12, 0, Math.PI*2); ctx.stroke();
-    });
-
-    // Lisa on stage as host
-    drawLisaHost(cx, HOUSE.y + 145, t, 1.35);
-    drawNpcNameTag(cx, HOUSE.y + 108, "Lisa · Host");
-
-    // festival stalls / merch
-    ctx.fillStyle = "#C45A8C";
-    roundRect(HOUSE.x + 70, HOUSE.y + 310, 90, 50, 8); ctx.fill();
-    ctx.fillStyle = "#E8A33D";
-    roundRect(HOUSE.x + 78, HOUSE.y + 300, 74, 16, 4); ctx.fill();
-    ctx.fillStyle = "#2A1840";
-    ctx.font = "700 9px ui-rounded, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("MERCH", HOUSE.x + 115, HOUSE.y + 312);
-
-    ctx.fillStyle = "#5A7FB0";
-    roundRect(HOUSE.x + HOUSE.w - 160, HOUSE.y + 310, 90, 50, 8); ctx.fill();
-    ctx.fillStyle = "#E8A33D";
-    roundRect(HOUSE.x + HOUSE.w - 152, HOUSE.y + 300, 74, 16, 4); ctx.fill();
-    ctx.fillStyle = "#2A1840";
-    ctx.fillText("SNACKS", HOUSE.x + HOUSE.w - 115, HOUSE.y + 312);
-
-    // floating sparkles / confetti
-    for(let i=0;i<10;i++){
-      const sx = HOUSE.x + 140 + ((t/30 + i*70) % (HOUSE.w - 280));
-      const sy = HOUSE.y + 180 + Math.sin(t/400 + i)*40 + (i%3)*20;
-      ctx.fillStyle = ["#E8A33D","#C45A8C","#FBF0DE","#8FD1E0"][i%4];
-      ctx.beginPath(); ctx.arc(sx, sy, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#F4F7FA";
+    ctx.fillRect(x0, y0, rw, rh);
+    ctx.strokeStyle = "rgba(90,120,150,0.08)"; ctx.lineWidth = 1;
+    for(let y = y0 + 20; y < y0 + rh; y += 28){
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + rw, y); ctx.stroke();
+    }
+    for(let x = x0 + 30; x < x0 + rw; x += 40){
+      ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + rh); ctx.stroke();
     }
 
-    // box office clerk
-    drawBuildingPatron(cx + 40, cy - 28, "#D9A066", "#C45A8C", "#3A2417", Math.sin(t/520)*1);
-    drawNpcNameTag(cx + 40, cy - 52, "Nova");
+    ctx.fillStyle = "#E8EEF4";
+    roundRect(x0 + 80, y0 + 8, rw - 160, 120, 10); ctx.fill();
+    ctx.fillStyle = "#D7E6F2";
+    roundRect(x0 + 100, y0 + 20, rw - 200, 90, 8); ctx.fill();
+    ctx.strokeStyle = "#D9705C"; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.arc(x0 + 150, y0 + 55, 18, 0, Math.PI*2); ctx.stroke();
+    ctx.strokeStyle = "#FBF0DE"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(x0 + 150, y0 + 55, 18, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = "#8C5A3B";
+    roundRect(cx - 20, y0 + 70, 22, 18, 4); ctx.fill();
+    ctx.fillStyle = "#6B8E6B";
+    ctx.beginPath(); ctx.ellipse(cx - 9, y0 + 58, 14, 18, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + 4, y0 + 52, 12, 16, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#4AA3D9";
+    roundRect(cx + 40, y0 + 35, 70, 44, 6); ctx.fill();
+    ctx.fillStyle = "#FBF0DE";
+    ctx.font = "700 11px ui-rounded, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("✈ GATE", cx + 75, y0 + 54);
+    ctx.fillText("→ →", cx + 75, y0 + 70);
 
-    // cheering crowd
-    drawBuildingPatron(HOUSE.x + 200, HOUSE.y + 380, "#F0C08A", "#E8A33D", "#111111", Math.sin(t/320)*2.2);
-    drawNpcNameTag(HOUSE.x + 200, HOUSE.y + 356, "Pip");
-    drawBuildingPatron(HOUSE.x + 340, HOUSE.y + 390, "#F7D9B6", "#C45A8C", "#B5651D", Math.sin(t/300+1)*2.4);
-    drawNpcNameTag(HOUSE.x + 340, HOUSE.y + 366, "Mara");
-    drawBuildingPatron(HOUSE.x + 480, HOUSE.y + 375, "#D9A066", "#5A7FB0", "#6B4423", Math.sin(t/340+2)*2);
-    drawNpcNameTag(HOUSE.x + 480, HOUSE.y + 351, "Theo");
-    drawBuildingPatron(HOUSE.x + 620, HOUSE.y + 385, "#B87A4B", "#FBF0DE", "#111111", Math.sin(t/310+0.5)*2.3);
-    drawNpcNameTag(HOUSE.x + 620, HOUSE.y + 361, "Sam");
+    const gateY = y0 + 150;
+    [[cx - 90, gateY],[cx + 30, gateY]].forEach(([gx, gy], i) => {
+      ctx.fillStyle = "#E8E0D0";
+      roundRect(gx, gy, 50, 70, 8); ctx.fill();
+      ctx.fillStyle = "#F3EBDD";
+      roundRect(gx + 6, gy + 8, 38, 54, 6); ctx.fill();
+      const swing = 0.08 * Math.sin(t/500 + i);
+      ctx.save();
+      ctx.translate(gx + (i === 0 ? 50 : 0), gy + 28);
+      ctx.rotate(swing + (i === 0 ? -0.05 : Math.PI + 0.05));
+      ctx.fillStyle = "#E8893A";
+      roundRect(0, -8, 70, 16, 8); ctx.fill();
+      ctx.fillStyle = "#4AA3D9";
+      ctx.beginPath(); ctx.arc(52, 0, 10, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#FBF0DE";
+      ctx.font = "700 12px ui-rounded, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("↑", 52, 4);
+      ctx.restore();
+    });
+    ctx.fillStyle = "#D9E8F2";
+    roundRect(cx - 36, gateY + 8, 72, 90, 8); ctx.fill();
+
+    const deskX = HOUSE.x + HOUSE.w - 250;
+    const deskY = HOUSE.y + 150;
+    ctx.fillStyle = "#C9D8E4";
+    roundRect(deskX, deskY, 170, 120, 12); ctx.fill();
+    ctx.fillStyle = "#4AA3D9";
+    roundRect(deskX, deskY + 36, 170, 55, 0); ctx.fill();
+    ctx.fillStyle = "#F7FBFE";
+    roundRect(deskX + 8, deskY + 8, 154, 28, 6); ctx.fill();
+    ctx.fillStyle = "#2A3A55";
+    roundRect(deskX + 90, deskY - 34, 52, 40, 4); ctx.fill();
+    ctx.fillStyle = "#8FD1E0";
+    roundRect(deskX + 96, deskY - 28, 40, 28, 3); ctx.fill();
+    ctx.fillStyle = "#E8A33D";
+    ctx.beginPath();
+    ctx.ellipse(deskX + 40, deskY + 20, 16, 4, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(deskX + 40, deskY + 20); ctx.lineTo(deskX + 28, deskY + 12); ctx.lineTo(deskX + 52, deskY + 12); ctx.fill();
+    ctx.fillStyle = "#FBF0DE";
+    roundRect(deskX + 20, deskY + 70, 56, 16, 3); ctx.fill();
+    ctx.fillStyle = "#2A3A55";
+    ctx.font = "700 10px ui-rounded, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("SKY", deskX + 48, deskY + 82);
+
+    ctx.fillStyle = "#4AA3D9";
+    roundRect(deskX - 10, HOUSE.y + 70, 180, 48, 8); ctx.fill();
+    ctx.fillStyle = "#FBF0DE";
+    ctx.beginPath(); ctx.arc(deskX + 28, HOUSE.y + 94, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#4AA3D9";
+    ctx.beginPath(); ctx.ellipse(deskX + 28, HOUSE.y + 94, 8, 3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#FBF0DE";
+    ctx.font = "800 13px ui-rounded, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Willow Airlines", deskX + 50, HOUSE.y + 98);
+
+    drawAirportClerk(deskX + 70, deskY + 18, t);
+    drawNpcNameTag(deskX + 70, deskY - 28, "Sky · Clerk");
+
+    for(let i = 0; i < 3; i++){
+      const sx = x0 + 40 + i * 70;
+      const sy = y0 + 280;
+      ctx.fillStyle = "#4AA3D9";
+      roundRect(sx, sy, 50, 18, 5); ctx.fill();
+      ctx.fillStyle = "#D9E6F0";
+      roundRect(sx + 4, sy - 16, 42, 18, 4); ctx.fill();
+    }
+
+    ctx.fillStyle = "rgba(42,58,85,0.45)";
+    ctx.font = "600 12px ui-rounded, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Check in with Sky · Walk to the door to leave", cx, HOUSE.y + HOUSE.h - HOUSE.wall - 36);
+  }
+
+  function openAirportDesk(){
+    const host = findNpcById("sky");
+    if(host){
+      openNpcDialogue(host);
+      return;
+    }
+    openModal(`
+      <h3>Willow Airlines</h3>
+      <p class="modal-sub">Sky greets you from the counter with a headset smile.</p>
+      <div class="flavor-box">"Welcome aboard! Gates are glowing, boarding passes are ready, and the island breeze is your runway."</div>
+      <div class="action-row" style="margin-top:0.9rem">
+        <button class="action-btn" id="airport-done">Thanks, Sky!</button>
+      </div>
+    `);
+    const done = document.getElementById("airport-done");
+    if(done) done.addEventListener("click", closeModal);
   }
 
   function updateBuilding(dt){
@@ -8308,6 +9648,29 @@ const BREEDS = {
       promptBtn.style.display = "none";
       return;
     }
+    if(currentBuilding === "concert"){
+      if(player.y > HOUSE.y + HOUSE.h * 0.55){
+        currentTarget = { kind:"building-act" };
+        promptText.textContent = info ? info.activity : "Cheer Lisa";
+        promptBtn.style.display = "flex";
+      } else {
+        currentTarget = null;
+        promptBtn.style.display = "none";
+      }
+      return;
+    }
+    if(currentBuilding === "airport"){
+      const deskX = HOUSE.x + HOUSE.w - 165, deskY = HOUSE.y + 200;
+      if(Math.hypot(player.x - deskX, player.y - deskY) < 100){
+        currentTarget = { kind:"building-act" };
+        promptText.textContent = info ? info.activity : "Talk to Sky";
+        promptBtn.style.display = "flex";
+      } else {
+        currentTarget = null;
+        promptBtn.style.display = "none";
+      }
+      return;
+    }
     if(Math.hypot(player.x - cx, player.y - cy) < 70){
       currentTarget = { kind:"building-act" };
       promptText.textContent = info ? info.activity : "Use";
@@ -8349,19 +9712,20 @@ const BREEDS = {
     // back wall stripe + windows
     ctx.fillStyle = "rgba(58,44,34,0.06)";
     ctx.fillRect(HOUSE.x + HOUSE.wall, HOUSE.y + HOUSE.wall, HOUSE.w - HOUSE.wall*2, 36);
-    [[HOUSE.x+120, HOUSE.y+HOUSE.wall+6],[HOUSE.x+HOUSE.w/2-45, HOUSE.y+HOUSE.wall+6],[HOUSE.x+HOUSE.w-210, HOUSE.y+HOUSE.wall+6]].forEach(([wx,wy]) => {
-      ctx.fillStyle = (id === "arcade" || id === "concert") ? "#2A1840" : "#CFE7F2";
-      roundRect(wx, wy, 90, 50, 7); ctx.fill();
-      if(id === "arcade" || id === "concert"){
-        const glow = 0.35 + Math.sin(t/400)*0.2;
-        const col = id === "concert" ? `rgba(255,180,80,${glow})` : `rgba(180,120,255,${glow})`;
-        ctx.fillStyle = col;
-        roundRect(wx+8, wy+8, 74, 34, 4); ctx.fill();
-      } else {
-        ctx.fillStyle = "rgba(255,255,255,0.45)";
-        ctx.beginPath(); ctx.ellipse(wx+28, wy+20, 12, 16, -0.3, 0, Math.PI*2); ctx.fill();
-      }
-    });
+    if(id !== "concert" && id !== "airport"){
+      [[HOUSE.x+120, HOUSE.y+HOUSE.wall+6],[HOUSE.x+HOUSE.w/2-45, HOUSE.y+HOUSE.wall+6],[HOUSE.x+HOUSE.w-210, HOUSE.y+HOUSE.wall+6]].forEach(([wx,wy]) => {
+        ctx.fillStyle = id === "arcade" ? "#2A1840" : "#CFE7F2";
+        roundRect(wx, wy, 90, 50, 7); ctx.fill();
+        if(id === "arcade"){
+          const glow = 0.35 + Math.sin(t/400)*0.2;
+          ctx.fillStyle = `rgba(180,120,255,${glow})`;
+          roundRect(wx+8, wy+8, 74, 34, 4); ctx.fill();
+        } else {
+          ctx.fillStyle = "rgba(255,255,255,0.45)";
+          ctx.beginPath(); ctx.ellipse(wx+28, wy+20, 12, 16, -0.3, 0, Math.PI*2); ctx.fill();
+        }
+      });
+    }
 
     // themed rug (store gets a softer patterned rug - not a big brown blob)
     if(id === "store" || id === "boutique"){
@@ -8376,11 +9740,8 @@ const BREEDS = {
         ctx.lineTo(HOUSE.x + 160 + i*110, HOUSE.y + 365);
         ctx.stroke();
       }
-    } else if(id === "concert"){
-      ctx.fillStyle = "#1E1233";
-      roundRect(HOUSE.x + 140, HOUSE.y + 220, HOUSE.w - 280, 160, 18); ctx.fill();
-      ctx.strokeStyle = "rgba(232,163,61,0.4)"; ctx.lineWidth = 2;
-      roundRect(HOUSE.x + 150, HOUSE.y + 230, HOUSE.w - 300, 140, 14); ctx.stroke();
+    } else if(id === "concert" || id === "airport"){
+      // custom interiors draw their own floors
     } else if(id === "farm"){
       // Tiny Farm Pack field — detailed plots drawn in drawFarmInterior
       ctx.fillStyle = "#9EC06A";
@@ -8420,29 +9781,33 @@ const BREEDS = {
       ctx.fillStyle = "#F5E9D3";
       roundRect(HOUSE.x + 82, HOUSE.y + 128, 46, 34, 6); ctx.fill();
     }
-    ctx.fillStyle = "#8C5A3B";
-    roundRect(cx - 95, cy - 12, 190, 52, 10); ctx.fill();
-    ctx.fillStyle = "#C4895A";
-    roundRect(cx - 88, cy - 6, 176, 18, 6); ctx.fill();
-    ctx.fillStyle = info.accent;
-    roundRect(cx - 36, cy - 32, 72, 24, 7); ctx.fill();
-    // sparkle on counter
-    ctx.fillStyle = `rgba(255,255,255,${0.35+Math.sin(t/300)*0.25})`;
-    ctx.beginPath(); ctx.arc(cx + 50, cy, 3, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#FBF0DE";
-    ctx.font = "700 11px ui-rounded, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(info.activity, cx, cy + 20);
+    if(id !== "concert" && id !== "airport" && id !== "guestLavender" && id !== "guestBlue"){
+      ctx.fillStyle = "#8C5A3B";
+      roundRect(cx - 95, cy - 12, 190, 52, 10); ctx.fill();
+      ctx.fillStyle = "#C4895A";
+      roundRect(cx - 88, cy - 6, 176, 18, 6); ctx.fill();
+      ctx.fillStyle = info.accent;
+      roundRect(cx - 36, cy - 32, 72, 24, 7); ctx.fill();
+      // sparkle on counter
+      ctx.fillStyle = `rgba(255,255,255,${0.35+Math.sin(t/300)*0.25})`;
+      ctx.beginPath(); ctx.arc(cx + 50, cy, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#FBF0DE";
+      ctx.font = "700 11px ui-rounded, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(info.activity, cx, cy + 20);
+    }
 
     // per-building furniture & life (modules in js/buildings/*.js)
-    if(window.PawsBuildings && window.PawsBuildings.drawInterior(id, ctx, getBuildingApi(), t, cx, cy)){
+    if(id === "concert"){
+      drawConcertInterior(t, cx, cy);
+    } else if(id === "airport"){
+      drawAirportInterior(t, cx, cy);
+    } else if(window.PawsBuildings && window.PawsBuildings.drawInterior(id, ctx, getBuildingApi(), t, cx, cy)){
       // handled by building module
     } else if(id === "store"){
       drawStoreInterior(t, cx, cy);
     } else if(id === "boutique"){
       drawBoutiqueInterior(t, cx, cy);
-    } else if(id === "concert"){
-      drawConcertInterior(t, cx, cy);
     } else if(id === "farm"){
       drawFarmInterior(t, cx, cy);
     } else if(id === "guestLavender" || id === "guestBlue"){
@@ -8489,8 +9854,9 @@ const BREEDS = {
       school: "Willow School - Study With Me lofi vibes, focus timer, camera ambience, and reminders.",
       farm: "Sunny Farm - plant seeds, water plots, and harvest after they grow.",
       cinema: "Island Cinema - see what's on screen, read the synopsis, and open the trailer.",
-      guestLavender: "Mara's lavender cottage - soft quilts and afternoon tea.",
-      guestBlue: "Theo's blue cottage - sea glass jars and quiet reading.",
+      airport: "Willow Airlines - check in with Sky, pass the orange gates, and dream of the next island hop.",
+      guestLavender: "Mara's home — tea tins, lavender, and slower mornings.",
+      guestBlue: "Theo's home — sea glass, shore books, and quiet light.",
     };
     openModal(`
       <h3>Unlock ${escapeHtml(z.label)}</h3>
@@ -8637,6 +10003,10 @@ const BREEDS = {
       startPlacingFromInventory(b.dataset.placeIsland);
     }));
 
+    modalBody.querySelectorAll("[data-place-bag]").forEach(b => b.addEventListener("click", () => {
+      startPlacingMapBagItem(Number(b.dataset.placeBag));
+    }));
+
     modalBody.querySelectorAll("[data-place-furn]").forEach(b => b.addEventListener("click", () => {
       startPlacingFurniture(b.dataset.placeFurn);
     }));
@@ -8692,14 +10062,24 @@ const BREEDS = {
   }
 
   function storeBagPanel(){
+    ensureMapBag();
     const islandKeys = Object.keys(state.islandInventory || {}).filter(k => state.islandInventory[k] > 0);
     const furnKeys = Object.keys(state.furnitureInventory || {}).filter(k => state.furnitureInventory[k] > 0);
-    if(!islandKeys.length && !furnKeys.length){
-      return `<div class="flavor-box">Your bag is empty. Buy Island Decor or Room Pieces, then place them with Edit Map / Edit Room.</div>`;
+    if(!islandKeys.length && !furnKeys.length && !state.mapBag.length){
+      return `<div class="flavor-box">Your bag is empty. Bag scenery/rivers/decor in Edit Map, or buy pieces at the Store.</div>`;
     }
     let html = "";
+    if(state.mapBag.length){
+      html += `<div class="field-label">Scenery & rivers</div><div class="item-grid">${state.mapBag.map((entry, i) => `
+        <div class="item-card">
+          ${mapBagEntryPreview(entry)}
+          <span>${mapBagEntryLabel(entry)}</span>
+          <span style="font-family:var(--mono);font-size:0.62rem;color:var(--ink-faint)">ready to place</span>
+          <button data-place-bag="${i}">Place on island</button>
+        </div>`).join("")}</div>`;
+    }
     if(furnKeys.length){
-      html += `<div class="field-label">Room furniture</div><div class="item-grid">${furnKeys.map(id => {
+      html += `<div class="field-label" style="margin-top:0.75rem">Room furniture</div><div class="item-grid">${furnKeys.map(id => {
         const item = housePieceCatalog(id);
         const qty = state.furnitureInventory[id];
         return `<div class="item-card">
@@ -8757,21 +10137,195 @@ const BREEDS = {
     }));
   }
 
+  function setMapEditTool(tool){
+    ensureMapEditState();
+    if(carriedZone || carriedIsland || carriedRiver || carriedScenery){
+      toast("Place what you're carrying first");
+      return;
+    }
+    if(mapEditTool === tool){
+      mapEditTool = null;
+      pathDraftSeg = null;
+      toast("Edit tool off");
+      return;
+    }
+    mapEditTool = tool;
+    pathDraftSeg = null;
+    if(tool === "path"){
+      beginCustomPathsIfNeeded();
+      toast("Path: E drops points · End Path / Enter finishes · Clear Here erases nearby");
+    } else if(tool === "river"){
+      toast("River move: E on water to pick up · or Place new river blot");
+    }
+  }
+  function addPathPointAtPlayer(){
+    beginCustomPathsIfNeeded();
+    const pt = [Math.round(player.x), Math.round(player.y)];
+    if(pathDraftSeg == null){
+      pathDraftSeg = [pt];
+      state.customPaths.push(pathDraftSeg);
+      toast("Started a new path — End Path when finished");
+    } else {
+      const last = pathDraftSeg[pathDraftSeg.length - 1];
+      if(Math.hypot(pt[0]-last[0], pt[1]-last[1]) < 18){
+        toast("Move a little farther before the next point");
+        return;
+      }
+      pathDraftSeg.push(pt);
+      toast("Path point " + pathDraftSeg.length + " · End Path when done");
+    }
+    saveState(true);
+  }
+  function finishPathDraft(){
+    if(mapEditTool !== "path" && !pathDraftSeg){
+      toast("Turn on Path first");
+      return;
+    }
+    if(!pathDraftSeg){
+      toast("No path in progress — press E to start one");
+      return;
+    }
+    beginCustomPathsIfNeeded();
+    if(pathDraftSeg.length < 2){
+      state.customPaths = state.customPaths.filter(s => s !== pathDraftSeg);
+      pathDraftSeg = null;
+      saveState(true);
+      toast("Need 2+ points — short path cancelled");
+      return;
+    }
+    pathDraftSeg = null;
+    saveState(true);
+    toast("Path ended — walk & E to start another road");
+  }
+  function undoPathPoint(){
+    beginCustomPathsIfNeeded();
+    if(pathDraftSeg && pathDraftSeg.length){
+      pathDraftSeg.pop();
+      if(!pathDraftSeg.length){
+        state.customPaths = state.customPaths.filter(s => s !== pathDraftSeg);
+        pathDraftSeg = null;
+        toast("Removed path start");
+      } else toast("Undid last path point");
+      saveState(true);
+      return;
+    }
+    if(state.customPaths && state.customPaths.length){
+      const last = state.customPaths[state.customPaths.length - 1];
+      if(last.length){
+        last.pop();
+        if(!last.length) state.customPaths.pop();
+        toast("Undid last path point");
+        saveState(true);
+      }
+    }
+  }
+  const PATH_CLEAR_RADIUS = 110;
+  function clearPathsNearPlayer(radius){
+    beginCustomPathsIfNeeded();
+    const R = radius == null ? PATH_CLEAR_RADIUS : radius;
+    const px = player.x, py = player.y;
+    let removedPts = 0;
+    const next = [];
+    for(const seg of state.customPaths){
+      let run = [];
+      const flush = () => {
+        if(run.length >= 2) next.push(run);
+        else removedPts += run.length;
+        run = [];
+      };
+      for(const p of seg){
+        if(Math.hypot(p[0] - px, p[1] - py) <= R){
+          removedPts++;
+          flush();
+        } else {
+          run.push(p);
+        }
+      }
+      flush();
+    }
+    pathDraftSeg = null;
+    state.customPaths = next;
+    saveState(true);
+    if(removedPts) toast("Cleared " + removedPts + " path point" + (removedPts === 1 ? "" : "s") + " around you");
+    else toast("No path in this area — stand closer to the road");
+  }
+  function clearAllPaths(){
+    state.customPaths = [];
+    pathDraftSeg = null;
+    saveState(true);
+    toast("All paths cleared — use Path + E to draw new ones");
+  }
+  function resetPathsToDefault(){
+    state.customPaths = null;
+    pathDraftSeg = null;
+    saveState(true);
+    toast("Paths reset to island default");
+  }
+  function placeNewRiverAtPlayer(){
+    ensureMapEditState();
+    const r = {
+      uid: nextRiverUid(),
+      x: Math.round(player.x),
+      y: Math.round(player.y),
+      rx: 70 + Math.floor(Math.random()*40),
+      ry: 34 + Math.floor(Math.random()*30),
+      seed: 1 + Math.random()*8,
+    };
+    state.rivers.push(r);
+    saveState(true);
+    toast("River water placed — pick it up with E to move");
+  }
+  function placeCarriedRiver(){
+    if(!carriedRiver) return false;
+    carriedRiver.x = Math.round(player.x);
+    carriedRiver.y = Math.round(player.y);
+    delete carriedRiver.fromInv;
+    if(!state.rivers.some(r => r.uid === carriedRiver.uid)){
+      state.rivers.push(carriedRiver);
+    }
+    carriedRiver = null;
+    saveState(true);
+    SFX.purchase();
+    toast("River placed");
+    return true;
+  }
+  function cancelRiverCarry(){
+    if(!carriedRiver) return;
+    if(carriedRiver.fromInv){
+      ensureMapBag();
+      state.mapBag.push({ bagType:"river", rx:carriedRiver.rx, ry:carriedRiver.ry, seed:carriedRiver.seed });
+      carriedRiver = null;
+      toast("Returned to bag");
+      saveState(true);
+      return;
+    }
+    if(!state.rivers.some(r => r.uid === carriedRiver.uid)){
+      state.rivers.push(carriedRiver);
+    }
+    carriedRiver = null;
+    toast("River put back");
+  }
+
   function enterRearrangeMode(){
     if(!state.setupDone){ toast("Finish setting up your character first"); return; }
     if(gameMode === "house" || gameMode === "house-edit"){ toast("Leave home first"); return; }
     if(gameMode !== "town" && gameMode !== "rearrange"){ toast("Finish what you're doing first"); return; }
     closeModal();
+    ensureMapEditState();
     if(!carriedIsland) carriedZone = null;
+    mapEditTool = null;
+    pathDraftSeg = null;
     gameMode = "rearrange";
     document.getElementById("rearrange-banner").classList.add("open");
-    toast("Edit mode - move buildings & island decor");
+    toast("Edit Map — move Lake/buildings, draw Paths, move Rivers");
   }
   function exitRearrangeMode(){
-    if(carriedZone || carriedIsland){
+    if(carriedZone || carriedIsland || carriedRiver || carriedScenery){
       toast("Place what you're carrying first, or press Esc to cancel");
       return;
     }
+    mapEditTool = null;
+    pathDraftSeg = null;
     gameMode = "town";
     document.getElementById("rearrange-banner").classList.remove("open");
     currentTarget = null;
@@ -8780,6 +10334,8 @@ const BREEDS = {
     toast("Town layout saved");
   }
   function cancelCarry(){
+    if(carriedRiver){ cancelRiverCarry(); return; }
+    if(carriedScenery){ cancelSceneryCarry(); return; }
     if(carriedIsland){ cancelIslandCarry(); return; }
     if(!carriedZone) return;
     carriedZone = null;
@@ -8788,14 +10344,46 @@ const BREEDS = {
 
   function openPlaceDecorPicker(){
     if(gameMode !== "rearrange") enterRearrangeMode();
-    if(carriedZone || carriedIsland){ toast("Place your current item first"); return; }
-    const keys = Object.keys(state.islandInventory || {}).filter(k => state.islandInventory[k] > 0);
-    if(!keys.length){
-      toast("Bag empty - buy decor at the Store first");
+    if(carriedZone || carriedIsland || carriedRiver || carriedScenery){
+      toast("Place your current item first");
       return;
     }
-    storeTab = "bag";
-    openStore();
+    ensureMapBag();
+    const keys = Object.keys(state.islandInventory || {}).filter(k => state.islandInventory[k] > 0);
+    if(!state.mapBag.length && !keys.length){
+      toast("Bag empty — pick something up and tap Bag (buildings stay on the map)");
+      return;
+    }
+    let html = `<h3>Island bag</h3>
+      <p class="modal-sub">Bag anything except buildings. Carry an item, then press E to place it.</p>`;
+    if(state.mapBag.length){
+      html += `<div class="field-label">Scenery & rivers</div><div class="item-grid">` + state.mapBag.map((entry, i) => `
+        <div class="item-card">
+          ${mapBagEntryPreview(entry)}
+          <span>${mapBagEntryLabel(entry)}</span>
+          <span style="font-family:var(--mono);font-size:0.62rem;color:var(--ink-faint)">ready to place</span>
+          <button data-place-bag="${i}">Carry</button>
+        </div>`).join("") + `</div>`;
+    }
+    if(keys.length){
+      html += `<div class="field-label" style="margin-top:0.75rem">Decor & plants</div><div class="item-grid">` + keys.map(type => {
+        const item = islandItemCatalog(type);
+        const qty = state.islandInventory[type];
+        return `<div class="item-card">
+          ${islandPreviewHtml(type)}
+          <span>${item ? item.name : type}</span>
+          <span style="font-family:var(--mono);font-size:0.62rem;color:var(--ink-faint)">×${qty}</span>
+          <button data-place-island="${type}">Carry</button>
+        </div>`;
+      }).join("") + `</div>`;
+    }
+    openModal(html);
+    modalBody.querySelectorAll("[data-place-bag]").forEach(b => b.addEventListener("click", () => {
+      startPlacingMapBagItem(Number(b.dataset.placeBag));
+    }));
+    modalBody.querySelectorAll("[data-place-island]").forEach(b => b.addEventListener("click", () => {
+      startPlacingFromInventory(b.dataset.placeIsland);
+    }));
   }
 
   /* ---------- Home hub ---------- */
@@ -10283,17 +11871,11 @@ const BREEDS = {
         ctx.beginPath(); ctx.ellipse(px+35, py+22, 14, 16, 0, 0, Math.PI*2); ctx.fill();
       }
     }
-    // animals
-    if(FarmAtlas.has("chicken")){
-      const bob = Math.sin(t/400)*3;
-      FarmAtlas.drawChicken(ctx, HOUSE.x + 95, HOUSE.y + 360 + bob, Math.floor(t/200)%4, 1.8);
-      FarmAtlas.drawChicken(ctx, HOUSE.x + HOUSE.w - 140, HOUSE.y + 370 - bob, Math.floor(t/220+2)%4, 1.7);
-    }
-    if(FarmAtlas.has("cow")){
-      const img = FarmAtlas.images.cow;
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, 0, 0, 32, 32, HOUSE.x + 220, HOUSE.y + 100, 56, 56);
-    }
+    // cute drawn animals inside the barn too
+    drawCuteChicken(HOUSE.x + 110, HOUSE.y + 380, 1.3, Math.sin(t/400)*3);
+    drawCuteChicken(HOUSE.x + HOUSE.w - 130, HOUSE.y + 375, 1.2, Math.sin(t/420+1)*2.5);
+    drawCuteCow(HOUSE.x + 250, HOUSE.y + 130, 1.35, Math.sin(t/500)*2);
+    drawCuteCow(HOUSE.x + 430, HOUSE.y + 145, 1.2, Math.sin(t/520+1)*2);
     // farmer NPC
     drawBuildingPatron(cx + 40, cy - 28, "#D9A066", "#6B8E4E", "#3A2417", Math.sin(t/520)*1.1);
     drawNpcNameTag(cx + 40, cy - 52, "Fern");
@@ -12213,7 +13795,7 @@ const BREEDS = {
       });
     }
     state.unlocked = defaultUnlocked();
-    applyZoneLayout();
+    applyStarterIsland();
     const home = zones.find(z => z.id === "home");
     if(home){ player.x = home.x + home.w/2; player.y = home.y + home.h + 30; }
     saveState(true);
@@ -12232,6 +13814,8 @@ const BREEDS = {
     carriedZone = null;
     carriedFurn = null;
     carriedIsland = null;
+    carriedRiver = null;
+    carriedScenery = null;
     houseDogs = [];
     gameMode = "town";
     document.getElementById("rearrange-banner").classList.remove("open");
@@ -12239,7 +13823,7 @@ const BREEDS = {
     const mm = document.querySelector(".minimap-frame");
     if(mm) mm.style.display = "";
     puppyTrail.length = 0;
-    applyZoneLayout();
+    applyStarterIsland();
     const home = zones.find(z => z.id === "home");
     if(home){ player.x = home.x + home.w/2; player.y = home.y + home.h + 30; }
     updateHud();
@@ -12256,6 +13840,7 @@ const BREEDS = {
     if(loaded){
       state = loaded;
       applyZoneLayout();
+      ensureIslandDecorSeeded();
       carriedZone = null;
       carriedFurn = null;
       houseDogs = [];
@@ -12287,11 +13872,41 @@ const BREEDS = {
     else enterRearrangeMode();
   });
   document.getElementById("btn-map-done").addEventListener("click", exitRearrangeMode);
+  document.getElementById("btn-map-path").addEventListener("click", () => {
+    if(gameMode !== "rearrange") return;
+    setMapEditTool("path");
+  });
+  document.getElementById("btn-map-end-path").addEventListener("click", () => {
+    if(gameMode !== "rearrange") return;
+    if(mapEditTool !== "path") setMapEditTool("path");
+    finishPathDraft();
+  });
+  document.getElementById("btn-map-clear-paths").addEventListener("click", () => {
+    if(gameMode !== "rearrange") return;
+    if(carriedZone || carriedIsland || carriedRiver || carriedScenery){
+      toast("Place what you're carrying first");
+      return;
+    }
+    clearPathsNearPlayer();
+  });
+  document.getElementById("btn-map-river").addEventListener("click", () => {
+    if(gameMode !== "rearrange") return;
+    setMapEditTool("river");
+  });
+  document.getElementById("btn-map-clear-paths").addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    if(gameMode !== "rearrange") return;
+    if(confirm("Clear ALL walking paths on the island?")) clearAllPaths();
+  });
+  document.getElementById("btn-map-path").addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    if(gameMode !== "rearrange") return;
+    if(confirm("Reset walking paths to the default island roads?")) resetPathsToDefault();
+  });
   document.getElementById("btn-map-place").addEventListener("click", openPlaceDecorPicker);
   document.getElementById("btn-map-bag").addEventListener("click", () => {
     if(gameMode !== "rearrange") return;
-    if(carriedIsland) stowCarriedIsland();
-    else toast("Pick up a tree, flower, or decor first - then Bag it");
+    stowCarriedMapItem();
   });
   document.getElementById("btn-house-edit").addEventListener("click", toggleHouseEdit);
   document.getElementById("btn-house-rotate").addEventListener("click", () => {

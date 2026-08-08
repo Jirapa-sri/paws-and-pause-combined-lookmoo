@@ -33,15 +33,10 @@ load_dotenv(ROOT / ".env", override=True)
 HOST = os.getenv("MATCH_HOST", "127.0.0.1")
 PORT = int(os.getenv("MATCH_PORT", "8765"))
 
-# Prefer project models first - many keys no longer include gpt-4o-mini.
+# Prefer project models first - this OpenAI project only allows gpt-5.6-* (not gpt-4o).
 _DEFAULT_MODEL_FALLBACKS = (
     "gpt-5.6-luna",
-    "gpt-5.4-mini",
-    "gpt-5.4",
-    "gpt-4.1-mini",
-    "gpt-4.1",
-    "gpt-4o",
-    "gpt-4o-mini",
+    "gpt-5.6-terra",
 )
 
 
@@ -123,7 +118,7 @@ def openai_chat_json(api_key: str, messages: list, *, max_tokens: int, temperatu
     global MODEL
     for model in model_candidates():
         # Newer models (gpt-5.x / o-series) reject max_tokens; use max_completion_tokens.
-        use_completion_tokens = bool(re.search(r"(gpt-5|o[1-9]|luna)", model, re.I))
+        use_completion_tokens = bool(re.search(r"(gpt-5|o[1-9]|luna|terra)", model, re.I))
         token_key = "max_completion_tokens" if use_completion_tokens else "max_tokens"
         base = {
             "model": model,
