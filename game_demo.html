@@ -783,8 +783,74 @@
     background: rgba(255,255,255,0.55); border:1px solid var(--line); border-radius:14px; padding:0.75rem 0.85rem;
   }
   .morning-card.tarot{ background: linear-gradient(160deg, rgba(243,219,170,0.55), rgba(207,225,220,0.45)); }
+  .morning-card.tarot.has-visual{
+    display:grid; grid-template-columns: auto 1fr; gap:0.85rem; align-items:start;
+  }
+  @media (max-width:560px){
+    .morning-card.tarot.has-visual{ grid-template-columns:1fr; justify-items:center; text-align:center; }
+  }
   .morning-card strong{ display:block; font-family: var(--display); margin:0.15rem 0 0.35rem; color: var(--ink); }
   .morning-card p{ margin:0; font-size:0.84rem; color: var(--ink-soft); line-height:1.45; }
+  .tarot-pick-row{
+    display:flex; justify-content:center; gap:0.7rem; flex-wrap:wrap;
+    perspective: 900px; margin:0.85rem 0 0.4rem; min-height:210px;
+  }
+  .tarot-pick{
+    width:112px; height:176px; border:none; padding:0; background:transparent;
+    cursor:pointer; perspective:900px;
+  }
+  .tarot-pick:disabled{ cursor:default; }
+  .tarot-pick .tarot-flip{
+    width:100%; height:100%; position:relative; transform-style:preserve-3d;
+    transition: transform 0.65s cubic-bezier(.2,.8,.2,1), filter 0.3s ease, opacity 0.3s ease;
+  }
+  .tarot-pick.flipped .tarot-flip{ transform: rotateY(180deg); }
+  .tarot-pick.dim .tarot-flip{ filter: grayscale(0.35) brightness(0.88); opacity:0.55; transform: scale(0.92); }
+  .tarot-face{
+    position:absolute; inset:0; border-radius:14px; backface-visibility:hidden;
+    box-shadow: 0 14px 28px -16px rgba(58,44,34,0.45);
+    border: 2px solid #E8D4A8;
+    overflow:hidden;
+  }
+  .tarot-face.back{
+    background:
+      radial-gradient(circle at 30% 25%, rgba(243,219,170,0.55), transparent 45%),
+      linear-gradient(155deg, #3E7C74 0%, #2F5F59 48%, #1F433F 100%);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tarot-face.back::before{
+    content:""; position:absolute; inset:8px; border-radius:10px;
+    border:1px solid rgba(243,219,170,0.45);
+    background:
+      repeating-linear-gradient(45deg, transparent 0 7px, rgba(243,219,170,0.08) 7px 8px),
+      repeating-linear-gradient(-45deg, transparent 0 7px, rgba(243,219,170,0.08) 7px 8px);
+  }
+  .tarot-face.back .tarot-seal{
+    position:relative; z-index:1; width:42px; height:42px; border-radius:50%;
+    border:1.5px solid #F3DBAA; background:rgba(245,233,211,0.18);
+    display:grid; place-items:center; color:#F3DBAA; font-family:var(--display); font-weight:800; font-size:1.1rem;
+  }
+  .tarot-face.front{
+    transform: rotateY(180deg);
+    background: linear-gradient(180deg, #FBF4E6, #F0E2C4);
+  }
+  .tarot-face.front.reversed{ transform: rotateY(180deg) rotate(180deg); }
+  .tarot-face.front svg{ width:100%; height:100%; display:block; }
+  .tarot-pick:hover:not(:disabled) .tarot-flip{ transform: translateY(-6px); }
+  .tarot-pick.flipped:hover:not(:disabled) .tarot-flip{ transform: rotateY(180deg); }
+  .tarot-card-static{
+    width:118px; height:186px; border-radius:14px; overflow:hidden;
+    border:2px solid #E8D4A8; box-shadow: 0 12px 24px -14px rgba(58,44,34,0.4);
+    background: linear-gradient(180deg, #FBF4E6, #F0E2C4);
+    flex-shrink:0;
+  }
+  .tarot-card-static.reversed{ transform: rotate(180deg); }
+  .tarot-card-static svg{ width:100%; height:100%; display:block; }
+  .tarot-orient{
+    display:inline-block; margin-top:0.2rem;
+    font-family: var(--mono); font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--ink-faint);
+  }
   .morning-link{ display:inline-block; margin-top:0.45rem; font-family: var(--mono); font-size:0.68rem; color: var(--teal-deep); }
   .mini-event-stage{
     position:relative; height:180px; border-radius:14px; overflow:hidden; margin:0.4rem 0 0.7rem;
@@ -1083,6 +1149,7 @@
 <script src="js/buildings/farm.js"></script>
 <script src="js/buildings/lake.js"></script>
 <script src="js/buildings/airport.js"></script>
+<script src="js/starter-island-pack.js"></script>
 <script src="assets/mii/character-maker.js?v=13"></script>
 <script>
 (function(){
@@ -2104,29 +2171,22 @@ const BREEDS = {
   const WORLD_W = 1900, WORLD_H = 1500;
 
   const ZONE_DEFAULTS = [
-    // Animal Crossing–style neighborhoods around plaza (950, 640)
-    // Residential NW
-    { id:"home",    label:"Home",     x:140,  y:200,  w:190, h:140, fill:"#B5654A", icon:"home" },
-    { id:"guestBlue", label:"Theo's", x:380, y:180, w:160, h:130, fill:"#4A7DBF", icon:"guestBlue" },
-    { id:"guestLavender", label:"Mara's", x:360, y:360, w:170, h:135, fill:"#8A6BAE", icon:"guestLavender" },
-    // North recreation
-    { id:"stadium", label:"Stadium",  x:820,  y:70,   w:240, h:165, fill:"#C0483E", icon:"stadium" },
-    { id:"cinema",  label:"Cinema",   x:1120, y:160,  w:280, h:200, fill:"#3A3A5C", icon:"cinema" },
-    // NE shops / cafe lane
-    { id:"cafe",    label:"Café",     x:1520, y:200,  w:190, h:140, fill:"#8C5A3B", icon:"cafe" },
-    { id:"boutique",label:"Boutique", x:1480, y:420,  w:170, h:130, fill:"#C45A7A", icon:"boutique" },
-    { id:"store",   label:"Store",    x:1240, y:480,  w:170, h:135, fill:"#C07840", icon:"store" },
-    // Plaza / town services
-    { id:"school",  label:"School",   x:880,  y:700,  w:180, h:145, fill:"#5A7FB0", icon:"school" },
-    // West entertainment
-    { id:"arcade",  label:"Arcade",   x:520,  y:500,  w:190, h:150, fill:"#4A2C6E", icon:"arcade" },
-    { id:"concert", label:"Festival", x:240,  y:620,  w:230, h:160, fill:"#C45A8C", icon:"concert" },
-    // SW nature + campsite feel
-    { id:"farm",    label:"Farm",     x:480,  y:820,  w:220, h:165, fill:"#6B8E4E", icon:"farm" },
-    { id:"lake",    label:"Lake",     x:140,  y:980,  w:270, h:200, fill:"#3E7C74", icon:"lake" },
-    { id:"shelter", label:"Shelter",  x:1480, y:980,  w:190, h:140, fill:"#8A5A8C", icon:"shelter" },
-    // South pier — airport (AC-style dock terminal)
-    { id:"airport", label:"Airport",  x:860,  y:1180, w:240, h:170, fill:"#4AA3D9", icon:"airport" },
+    // Player-tuned starter island (farm west, town east)
+    { id:"home",    label:"Home",     x:1363,  y:126,  w:190, h:140, fill:"#B5654A", icon:"home" },
+    { id:"guestBlue", label:"Theo's", x:1503, y:494, w:160, h:130, fill:"#4A7DBF", icon:"guestBlue" },
+    { id:"guestLavender", label:"Mara's", x:1273, y:485, w:170, h:135, fill:"#8A6BAE", icon:"guestLavender" },
+    { id:"stadium", label:"Stadium",  x:780,  y:80,   w:240, h:165, fill:"#C0483E", icon:"stadium" },
+    { id:"cinema",  label:"Cinema",   x:995, y:679,  w:280, h:200, fill:"#3A3A5C", icon:"cinema" },
+    { id:"cafe",    label:"Café",     x:936,  y:900,  w:190, h:140, fill:"#8C5A3B", icon:"cafe" },
+    { id:"boutique",label:"Boutique", x:1290, y:711,  w:170, h:130, fill:"#C45A7A", icon:"boutique" },
+    { id:"store",   label:"Store",    x:810,  y:727,  w:170, h:135, fill:"#C07840", icon:"store" },
+    { id:"school",  label:"School",   x:1486, y:715,  w:180, h:145, fill:"#5A7FB0", icon:"school" },
+    { id:"arcade",  label:"Arcade",   x:991,  y:473,  w:190, h:150, fill:"#4A2C6E", icon:"arcade" },
+    { id:"concert", label:"Festival", x:100,  y:586,  w:230, h:160, fill:"#C45A8C", icon:"concert" },
+    { id:"farm",    label:"Farm",     x:264,  y:290,  w:220, h:165, fill:"#6B8E4E", icon:"farm" },
+    { id:"lake",    label:"Lake",     x:403,  y:755,  w:270, h:200, fill:"#3E7C74", icon:"lake" },
+    { id:"shelter", label:"Shelter",  x:1176, y:900,  w:190, h:140, fill:"#8A5A8C", icon:"shelter" },
+    { id:"airport", label:"Airport",  x:480, y:1079, w:240, h:170, fill:"#4AA3D9", icon:"airport" },
   ];
   let zones = ZONE_DEFAULTS.map(z => Object.assign({}, z));
   let LAKE_CX = 280, LAKE_CY = 1080;
@@ -2155,15 +2215,9 @@ const BREEDS = {
   }
 
   const DECOR_HUTS = [
-    { x:230,  y:560,  scale:0.8,  color:"#E8A33D" },
-    { x:1560, y:560,  scale:0.75, color:"#D98F2B" },
-    { x:1120, y:1040, scale:0.8,  color:"#E8A33D" },
-    { x:400,  y:230,  scale:0.7,  color:"#D9A566" },
-    { x:1720, y:960,  scale:0.75, color:"#E8A33D" },
-    { x:140,  y:1010, scale:0.7,  color:"#D98F2B" },
+    { x:230,  y:560,  scale:0.75, color:"#E8A33D" },
+    { x:1720, y:960,  scale:0.7,  color:"#D98F2B" },
     { x:1230, y:190,  scale:0.7,  color:"#E8A33D" },
-    { x:1780, y:420,  scale:0.7,  color:"#D9A566" },
-    { x:1220, y:1300, scale:0.7,  color:"#D98F2B" },
   ];
 
   const ELEVATION_BLOBS = [
@@ -2188,37 +2242,33 @@ const BREEDS = {
   ];
 
   const MINI_PONDS = [
-    // Kept clear of the main path spines
-    { x: 170, y: 620, rx: 52, ry: 38 },
-    { x: 1680, y: 560, rx: 58, ry: 42 },
-    { x: 980, y: 1280, rx: 50, ry: 36 },
-    { x: 640, y: 360, rx: 40, ry: 28 },
-    { x: 1200, y: 1080, rx: 44, ry: 30 },
+    { x: 170, y: 620, rx: 48, ry: 34 },
+    { x: 1680, y: 560, rx: 52, ry: 38 },
     { x: 1760, y: 1080, rx: 42, ry: 30 },
   ];
 
   const DEFAULT_MEADOWS = [
-    { x:520, y:480, rx:90, ry:55, seed:4.1, color:"#C9DF9A" },
-    { x:980, y:700, rx:110, ry:60, seed:5.2, color:"#C5DB96" },
-    { x:1280, y:560, rx:95, ry:50, seed:6.0, color:"#C9DF9A" },
-    { x:360, y:820, rx:100, ry:58, seed:3.3, color:"#BFD68E" },
-    { x:1100, y:980, rx:120, ry:65, seed:7.1, color:"#C9DF9A" },
-    { x:700, y:1120, rx:90, ry:48, seed:2.7, color:"#BFD68E" },
-    { x:1500, y:820, rx:85, ry:50, seed:8.2, color:"#C5DB96" },
-    { x:240, y:400, rx:70, ry:42, seed:1.8, color:"#C9DF9A" },
+    { x:980, y:700, rx:90, ry:50, seed:5.2, color:"#C5DB96" },
+    { x:1280, y:560, rx:80, ry:44, seed:6.0, color:"#C9DF9A" },
+    { x:360, y:820, rx:85, ry:48, seed:3.3, color:"#BFD68E" },
   ];
   const DEFAULT_GARDENS = [
-    { x:500, y:780, w:70, h:36 },
-    { x:620, y:800, w:60, h:30 },
-    { x:1180, y:520, w:55, h:28 },
-    { x:1340, y:540, w:50, h:26 },
-    { x:280, y:520, w:48, h:24 },
-    { x:1600, y:720, w:55, h:28 },
+    { x:560, y:790, w:60, h:30 },
+    { x:1280, y:530, w:50, h:26 },
   ];
 
   let PLAZA_CX = 950, PLAZA_CY = 640;
 
+  function cloneStarterField(key, fallback){
+    const pack = window.STARTER_ISLAND_PACK;
+    if(pack && pack[key] != null){
+      return JSON.parse(JSON.stringify(pack[key]));
+    }
+    return typeof fallback === "function" ? fallback() : fallback;
+  }
   function buildDefaultScenery(){
+    const fromPack = cloneStarterField("scenery", null);
+    if(fromPack && fromPack.length) return fromPack;
     let uid = 1;
     const list = [];
     ELEVATION_BLOBS.forEach(b => {
@@ -2626,39 +2676,11 @@ const BREEDS = {
     },
   ];
 
-  const PATH_SEGMENTS = [
-    // Main N–S spine: stadium → plaza → airport (AC island axis)
-    [[940,160],[950,360],[950,640],[970,900],[980,1180],[980,1320]],
-    // East–west plaza boulevard
-    [[220,640],[420,640],[650,640],[950,640],[1200,640],[1450,520],[1600,420]],
-    // Residential NW grid
-    [[220,640],[220,420],[240,260],[420,240],[420,420]],
-    [[420,420],[520,520],[650,640]],
-    // North recreation lane
-    [[950,360],[1120,280],[1260,260],[1540,260]],
-    // Shop district (Able / Nook style cluster)
-    [[1200,640],[1320,540],[1480,480],[1580,420],[1610,280]],
-    [[1320,540],[1320,640],[1450,520]],
-    // West entertainment strip
-    [[650,640],[560,560],[480,640],[360,700],[280,900]],
-    // Farm & lake connectors
-    [[650,640],[590,780],[500,900],[300,1080]],
-    [[590,780],[700,860],[850,900],[970,900]],
-    // East shelter road
-    [[1450,520],[1520,700],[1560,900],[1570,1050]],
-    // Plaza ring
-    [[950,640],[850,560],[850,720],[950,780],[1050,720],[1050,560],[950,640]],
-    // Airport approach plaza → pier
-    [[970,900],[980,1050],[980,1180]],
-  ];
+  const PATH_SEGMENTS = [[[270,100],[472,98]],[[276,333],[469,333]],[[469,92],[469,330]],[[270,330],[270,98]],[[321,98],[321,330]],[[369,330],[369,100]],[[420,100],[420,324]],[[262,143],[463,143]],[[472,189],[273,189]],[[265,237],[469,237]],[[469,273],[270,273],[270,299]],[[271,299],[466,299]],[[652,1299],[635,1339]],[[324,1152],[301,1194]],[[324,1152],[650,1291],[630,1331],[303,1188],[320,1157]],[[325,1163],[614,1297],[322,1182],[334,1162]],[[1459,251],[1459,384],[898,384],[898,220]],[[1088,621],[1088,692],[1581,692],[1581,610]],[[1354,612],[1354,700],[768,701],[760,911],[1578,925],[1578,848],[1578,899],[1368,914],[1368,852],[1368,917],[1128,917],[1128,857],[1133,925],[1485,925],[1485,1078],[1028,1078],[1028,1022],[1028,1084],[1281,1084],[1281,1042],[1281,1081],[796,1081],[671,1197]],[[173,731],[173,859],[199,859],[199,740],[224,740],[224,859],[252,859],[252,738],[176,738],[176,868],[261,868],[261,740]]];
   // Flat list kept for any legacy readers
   const PATH_NODES = PATH_SEGMENTS.reduce((a, seg) => a.concat(seg), []);
 
-  const DEFAULT_RIVERS = [
-    { uid: 1, x: 700, y: 780, rx: 40, ry: 160, seed: 2.2 },
-    { uid: 2, x: 760, y: 980, rx: 120, ry: 36, seed: 3.1 },
-    { uid: 3, x: 900, y: 1040, rx: 90, ry: 30, seed: 4.0 },
-  ];
+  const DEFAULT_RIVERS = [{"uid":2,"x":1257,"y":159,"rx":120,"ry":36,"seed":3.1},{"uid":3,"x":216,"y":286,"rx":40,"ry":160,"seed":2.2}];
 
   let mapEditTool = null; // null | "path" | "river"
   let pathDraftSeg = null; // active segment being drawn
@@ -3036,173 +3058,41 @@ const BREEDS = {
     ctx.restore();
   }
 
+  // Sparse edge trees — keep the island open like the clean starter shot
   const TREES = [
-    [180,100],[480,90],[700,70],[1100,90],[1400,110],[1700,160],
-    [90,420],[240,560],[700,360],[1000,360],[1750,520],
-    [100,780],[480,1100],[760,1200],[1100,1200],[1400,1180],[1700,900],
-    [900,980],[1600,640],[320,360],[1280,300],
-    // denser groves for a lived-in island
-    [150,200],[340,140],[560,160],[920,120],[1220,140],[1550,180],
-    [60,540],[160,680],[280,820],[640,420],[860,400],[1180,360],
-    [1720,680],[1800,820],[200,980],[360,1120],[620,1180],[980,1160],
-    [1320,1120],[1500,1080],[1680,1040],[740,880],[1040,820],[1460,520],
+    [160,120],[520,90],[900,80],[1280,110],[1680,160],
+    [80,520],[1720,540],
+    [140,900],[520,1180],[980,1220],[1400,1160],[1700,980],
+    [320,300],[1100,340],
   ];
   const FLOWER_PATCHES = [
-    [260,320],[500,280],[760,240],[1100,220],[1500,300],[1680,480],
-    [360,560],[640,700],[880,740],[1120,700],[1480,620],
-    [420,940],[700,1000],[1000,1040],[1340,960],[200,1180],[1560,1240],
-    [760,580],[860,680],[920,560],[740,660],[1000,640],
-    [480,480],[600,520],[1280,480],[1360,560],[1540,700],
-    [320,700],[220,860],[540,960],[820,1080],[1180,1000],
+    [300,300],[460,280],[700,520],[980,600],[1200,520],
+    [520,760],[860,720],[1480,640],
   ];
   const FLOWER_COLORS = ["#E3998A","#F0C36A","#CFE1D2","#D9A5C0"];
 
   function seededRand(seed){ const x = Math.sin(seed*999) * 10000; return x - Math.floor(x); }
 
   function defaultIslandDecor(){
-    const items = [];
-    let uid = 1;
-    TREES.forEach(([x,y], i) => {
-      items.push({ uid: uid++, type:"tree", x: x-28, y: y-42, w:56, h:72, scale: 0.95 + seededRand(i)*0.35 });
-    });
-    FLOWER_PATCHES.forEach(([x,y], i) => {
-      items.push({ uid: uid++, type:"flower", x: x-20, y: y-18, w:40, h:34, seed: i*3.7 });
-    });
-    [[500,400],[1100,900],[200,600],[1400,350],[780,780],[980,320],[420,980],[1280,620]].forEach(([x,y], i) => {
-      items.push({ uid: uid++, type:"bush", x: x-28, y: y-26, w:56, h:48, seed: i*11 });
-    });
-    [[340,520],[860,240],[1500,880],[620,1100],[1050,560],[240,860],[1680,520]].forEach(([x,y], i) => {
-      items.push({ uid: uid++, type:"rock", x: x-22, y: y-20, w:44, h:40, scale: 0.85 + seededRand(i+9)*0.4 });
-    });
-    [[450,700],[900,480],[1300,980],[300,400],[1600,700],[700,300],[1150,700]].forEach(([x,y], i) => {
-      items.push({ uid: uid++, type:"grass", x: x-18, y: y-16, w:36, h:32, seed: i*5.3 });
-    });
-    items.push({ uid: uid++, type:"diydesk", x: PLAZA_CX-35, y: PLAZA_CY+48, w:70, h:50 });
-    // Livable town props — lamps, fences, gardens (benches start in the bag)
-    [
-      [PLAZA_CX-110, PLAZA_CY-10],[PLAZA_CX+90, PLAZA_CY-10],[760,520],[880,520],
-      [380,260],[560,380],[1000,500],[1320,480],[1500,360],[1640,300],
-      [260,500],[480,700],[560,900],[720,960],[1100,860],[1400,800],
-      [300,1000],[500,1120],[900,1140],[1300,1100],[1600,1000]
-    ].forEach(([x,y]) => {
-      items.push({ uid: uid++, type:"lamp", x:x-14, y:y-48, w:28, h:56 });
-    });
-    [
-      [180,300],[300,440],[640,340],[1080,300],[1460,280],
-      [200,720],[460,780],[680,860],[980,880],[1340,900],
-      [240,1140],[720,1140],[1120,1140]
-    ].forEach(([x,y], i) => {
-      items.push({ uid: uid++, type:"fence", x:x-36, y:y-20, w:72, h:36, seed:i });
-    });
-    [
-      [PLAZA_CX-40, PLAZA_CY-70],[680,600],[960,600],[500,300],[1200,260],
-      [360,640],[780,780],[1100,740],[1500,640],[420,880],[900,1000],[1400,980]
-    ].forEach(([x,y]) => {
-      items.push({ uid: uid++, type:"flowers", x:x-24, y:y-28, w:48, h:44 });
-    });
-    items.push({ uid: uid++, type:"fountain", x: PLAZA_CX-32, y: PLAZA_CY-70, w:64, h:70 });
-    [[640,640],[1000,640],[480,860],[1200,860]].forEach(([x,y]) => {
-      items.push({ uid: uid++, type:"picnic", x:x-28, y:y-24, w:56, h:48 });
-    });
-    [[600,480],[1100,520],[400,980],[1450,720]].forEach(([x,y]) => {
-      items.push({ uid: uid++, type:"sign", x:x-18, y:y-36, w:36, h:48 });
-    });
-    items.push({ uid: uid++, type:"statue", x: PLAZA_CX+70, y: PLAZA_CY-40, w:48, h:64 });
-    // Airport airplane on the south pier
-    items.push({ uid: uid++, type:"airplane", x: 1040, y: 1288, w:140, h:90 });
-    // Cute fenced animals near the farm
-    items.push({ uid: uid++, type:"cowpen", x: 740, y: 1020, w:170, h:120 });
-    items.push({ uid: uid++, type:"chickenpen", x: 420, y: 1020, w:140, h:110 });
-    // extra bushes for soft edges
-    [[420,360],[780,420],[1060,440],[1380,400],[620,980],[860,920],[1220,960],
-     [180,880],[1640,760],[720,200],[980,180],[1500,980]].forEach(([x,y], i) => {
-      items.push({ uid: uid++, type:"bush", x:x-28, y:y-26, w:56, h:48, seed: 40+i });
-    });
-    return items;
+    const fromPack = cloneStarterField("islandDecor", null);
+    if(fromPack && fromPack.length) return fromPack;
+    return [];
   }
 
   function ensureIslandDecorSeeded(){
     if(!state.islandDecor) state.islandDecor = [];
     if(!state.islandInventory) state.islandInventory = {};
+    // One-time adopt the player-tuned farm/town starter map + paths
+    if(state.cleanMapPack !== "player-v2"){
+      applyStarterIsland();
+      return;
+    }
     if(!state.islandDecor.length){
       state.islandDecor = defaultIslandDecor();
     }
-    if(!state.islandDecor.some(d => d.type === "tree")){
-      const base = Math.max(1, ...state.islandDecor.map(d => d.uid || 0)) + 1;
-      const extras = defaultIslandDecor();
-      extras.forEach((d, i) => { d.uid = base + i; });
-      state.islandDecor = state.islandDecor.concat(extras);
-    } else if(!state.islandDecor.some(d => d.type === "diydesk")){
-      state.islandDecor.push({ uid: nextIslandUidSafe(), type:"diydesk", x: PLAZA_CX-35, y: PLAZA_CY+48, w:70, h:50 });
-    }
-    // Livable town props refresh (lamps/fences/gardens — benches stay in the bag)
-    if(state.livablePack !== "v2"){
-      state.livablePack = "v2";
-      const want = new Set(["lamp","fence","flowers","fountain","picnic","sign","statue"]);
-      if(!state.islandDecor.some(d => d.type === "lamp")){
-        const extras = defaultIslandDecor().filter(d => want.has(d.type));
-        let uid = nextIslandUidSafe();
-        extras.forEach(d => { d.uid = uid++; state.islandDecor.push(d); });
-      }
-      // denser nature for older saves
-      const treeCount = state.islandDecor.filter(d => d.type === "tree").length;
-      if(treeCount < 35){
-        let uid = nextIslandUidSafe();
-        defaultIslandDecor().filter(d => d.type === "tree" || d.type === "flower" || d.type === "bush").forEach(d => {
-          d.uid = uid++;
-          state.islandDecor.push(d);
-        });
-      }
-    }
-    // Scoop park benches off the map into the bag (once)
-    if(state.benchBagged !== true){
-      state.benchBagged = true;
-      const benches = (state.islandDecor || []).filter(d => d.type === "bench");
-      if(benches.length){
-        state.islandDecor = state.islandDecor.filter(d => d.type !== "bench");
-        addIslandToInventory("bench", benches.length);
-      } else if(!state.islandInventory || !state.islandInventory.bench){
-        addIslandToInventory("bench", 14);
-      }
-    }
-    // Airport airplane for older saves
-    if(!state.islandDecor.some(d => d.type === "airplane")){
-      state.islandDecor.push({ uid: nextIslandUidSafe(), type:"airplane", x:1040, y:1288, w:140, h:90 });
-    }
-    if(!state.islandDecor.some(d => d.type === "cowpen")){
-      state.islandDecor.push({ uid: nextIslandUidSafe(), type:"cowpen", x:740, y:1020, w:170, h:120 });
-    }
-    if(!state.islandDecor.some(d => d.type === "chickenpen")){
-      state.islandDecor.push({ uid: nextIslandUidSafe(), type:"chickenpen", x:420, y:1020, w:140, h:110 });
-    }
-    // KayKit nature refresh: add rocks/grass once if missing
-    if(state.naturePack !== "kaykit"){
-      state.naturePack = "kaykit";
-      if(!state.islandDecor.some(d => d.type === "rock")){
-        let uid = nextIslandUidSafe();
-        [[340,520],[860,240],[1500,880],[620,1100],[1050,560],[240,860],[1680,520]].forEach(([x,y], i) => {
-          state.islandDecor.push({ uid: uid++, type:"rock", x: x-22, y: y-20, w:44, h:40, scale: 0.85 + seededRand(i+9)*0.4 });
-        });
-      }
-      if(!state.islandDecor.some(d => d.type === "grass")){
-        let uid = nextIslandUidSafe();
-        [[450,700],[900,480],[1300,980],[300,400],[1600,700],[700,300],[1150,700]].forEach(([x,y], i) => {
-          state.islandDecor.push({ uid: uid++, type:"grass", x: x-18, y: y-16, w:36, h:32, seed: i*5.3 });
-        });
-      }
-      // enlarge tree hitboxes for bigger KayKit sprites
-      state.islandDecor.forEach(d => {
-        if(d.type === "tree" && (d.w < 52 || d.h < 68)){
-          const cx = d.x + d.w/2, cy = d.y + d.h*0.7;
-          d.w = 56; d.h = 72;
-          d.x = cx - 28; d.y = cy - 50;
-        }
-        if(d.type === "bush" && d.w < 50){
-          const cx = d.x + d.w/2, cy = d.y + d.h/2;
-          d.w = 56; d.h = 48;
-          d.x = cx - 28; d.y = cy - 24;
-        }
-      });
+    if(!state.islandDecor.some(d => d.type === "airplane") && window.STARTER_ISLAND_PACK){
+      const air = (window.STARTER_ISLAND_PACK.islandDecor || []).find(d => d.type === "airplane");
+      if(air) state.islandDecor.push(Object.assign({}, air, { uid: nextIslandUidSafe() }));
     }
   }
   function nextIslandUidSafe(){
@@ -3448,17 +3338,22 @@ const BREEDS = {
       playerName: "",
       setupDone: false,
       unlocked: defaultUnlocked(),
-      mapVersion: 4,
-      zoneLayout: null,
-      customPaths: null,
-      rivers: null,
-      scenery: null,
+      mapVersion: 5,
       furnitureLayout: defaultFurnitureLayout(),
       furnitureInventory: {},
       islandDecor: defaultIslandDecor(),
-      islandInventory: { bench: 14 },
-      mapBag: [],
+      islandInventory: (window.STARTER_ISLAND_PACK && window.STARTER_ISLAND_PACK.islandInventory)
+        ? Object.assign({}, window.STARTER_ISLAND_PACK.islandInventory)
+        : { bench: 6, cowpen: 1, chickenpen: 1 },
+      mapBag: cloneStarterField("mapBag", []),
+      customPaths: cloneStarterField("customPaths", null),
+      zoneLayout: cloneStarterField("zoneLayout", null),
+      rivers: cloneStarterField("rivers", null) || DEFAULT_RIVERS.map(r => Object.assign({}, r)),
+      scenery: buildDefaultScenery(),
       benchBagged: true,
+      livablePack: "v2",
+      naturePack: "kaykit",
+      cleanMapPack: "player-v2",
       materials: { wood: 4, petals: 3, stone: 2 },
       child: { skin: SKIN_TONES[1], hair: HAIR_COLORS[0], outfit: OUTFIT_COLORS[0], hairstyle: "short", clothing: "tshirt", eyeStyle: "round", eyeColor: EYE_COLORS[0], mouthStyle: "smile", accessory: "none", faceShape: "round", browStyle: "natural", noseStyle: "dot", avatar: null },
       weather: "clear",
@@ -3469,7 +3364,7 @@ const BREEDS = {
       owned: { wallpaper:["sunny"], rug:["tan"], furniture:["wood"], dogbed:["basic"] },
       equipped: { wallpaper:"sunny", rug:"tan", furniture:"wood", dogbed:"basic" },
       fishCollection: {},
-      study: { session:"acnh", vibe:"garden", sound:"lofi", focusMinutes:50, breakMinutes:10, sessionsToday:0, reminders:[], bgDataUrl:"", mix:null, ytMuted:true },
+      study: { session:"acnh", vibe:"garden", sound:"lofi", focusMinutes:50, breakMinutes:10, sessionsToday:0, pocketDay:0, reminders:[], bgDataUrl:"", mix:null, ytMuted:true },
       farm: defaultFarmState(),
       cinemaTickets: {},
     };
@@ -3624,21 +3519,8 @@ const BREEDS = {
         : buildDefaultScenery();
       merged.islandDecor = Array.isArray(parsed.islandDecor) ? parsed.islandDecor : [];
       if(!merged.islandDecor.length) merged.islandDecor = defaultIslandDecor();
-      else if(!merged.islandDecor.some(d => d.type === "tree")){
-        const base = Math.max(1, ...merged.islandDecor.map(d => d.uid || 0)) + 1;
-        const extras = defaultIslandDecor();
-        extras.forEach((d, i) => { d.uid = base + i; });
-        merged.islandDecor = merged.islandDecor.concat(extras);
-      }
-      // Always inject cute animal pens for older saves
-      if(!merged.islandDecor.some(d => d.type === "cowpen")){
-        const uid = Math.max(1, ...merged.islandDecor.map(d => d.uid || 0)) + 1;
-        merged.islandDecor.push({ uid, type:"cowpen", x:740, y:1020, w:170, h:120 });
-      }
-      if(!merged.islandDecor.some(d => d.type === "chickenpen")){
-        const uid = Math.max(1, ...merged.islandDecor.map(d => d.uid || 0)) + 1;
-        merged.islandDecor.push({ uid, type:"chickenpen", x:420, y:1020, w:140, h:110 });
-      }
+      // Don't densify older saves here — ensureIslandDecorSeeded applies cleanMapPack once
+      if(parsed.cleanMapPack !== "player-v2") merged.cleanMapPack = null;
       if(!parsed.furnitureLayout || !Array.isArray(parsed.furnitureLayout) || !parsed.furnitureLayout.length){
         merged.furnitureLayout = defaultFurnitureLayout();
       } else {
@@ -3695,18 +3577,30 @@ const BREEDS = {
   }
   /** Canonical island layout for new games (AC ring, pens, airport, paths). */
   function applyStarterIsland(){
-    state.mapVersion = 4;
-    state.zoneLayout = null;
-    state.customPaths = null;
-    state.rivers = DEFAULT_RIVERS.map(r => Object.assign({}, r));
-    state.scenery = buildDefaultScenery();
-    state.islandDecor = defaultIslandDecor();
-    state.mapBag = [];
+    const pack = window.STARTER_ISLAND_PACK;
+    state.mapVersion = 5;
     state.benchBagged = true;
-    if(!state.islandInventory) state.islandInventory = {};
-    state.islandInventory.bench = Math.max(state.islandInventory.bench || 0, 14);
+    state.livablePack = "v2";
+    state.naturePack = "kaykit";
+    state.cleanMapPack = "player-v2";
+    if(pack){
+      state.zoneLayout = cloneStarterField("zoneLayout", {});
+      state.customPaths = cloneStarterField("customPaths", clonePathDefaults());
+      state.rivers = cloneStarterField("rivers", DEFAULT_RIVERS.map(r => Object.assign({}, r)));
+      state.scenery = cloneStarterField("scenery", buildDefaultScenery());
+      state.islandDecor = cloneStarterField("islandDecor", []);
+      state.mapBag = cloneStarterField("mapBag", []);
+      state.islandInventory = Object.assign({}, pack.islandInventory || {});
+    } else {
+      state.zoneLayout = null;
+      state.customPaths = null;
+      state.rivers = DEFAULT_RIVERS.map(r => Object.assign({}, r));
+      state.scenery = buildDefaultScenery();
+      state.islandDecor = defaultIslandDecor();
+      state.mapBag = [];
+      state.islandInventory = { bench: 6, cowpen: 1, chickenpen: 1 };
+    }
     applyZoneLayout();
-    ensureIslandDecorSeeded();
   }
   function saveZoneLayout(){
     state.zoneLayout = {};
@@ -8296,12 +8190,12 @@ const BREEDS = {
       clearInterval(studyTimer);
       studyTimer = null;
     }
-    studyEndsAt = 0;
   }
 
   function cleanupStudyDesk(){
     studyDeskOpen = false;
     clearStudyTimer();
+    studyEndsAt = 0;
     stopStudyAmbience();
   }
 
@@ -8423,7 +8317,7 @@ const BREEDS = {
                 <button class="action-btn secondary" id="study-start">${running ? "Pause" : "Start session"}</button>
                 <button class="action-btn ghost" id="study-reset">Reset</button>
               </div>
-              <p class="match-status">Sessions today: ${study.sessionsToday || 0}</p>
+              <p class="match-status">Sessions today: ${study.sessionsToday || 0} · Pocket money: ${study.pocketDay === state.day ? "claimed today" : "+$20 after one focus"}</p>
             </div>
           </div>
 
@@ -8505,6 +8399,7 @@ const BREEDS = {
       document.getElementById("study-start").addEventListener("click", toggleStudyTimer);
       document.getElementById("study-reset").addEventListener("click", () => {
         clearStudyTimer();
+        studyEndsAt = 0;
         running = false;
         onBreak = false;
         remainingMs = (study.focusMinutes || 50) * 60 * 1000;
@@ -8524,6 +8419,7 @@ const BREEDS = {
           study.focusMinutes = f || 50;
           study.breakMinutes = b || 10;
           clearStudyTimer();
+          studyEndsAt = 0;
           running = false;
           onBreak = false;
           remainingMs = study.focusMinutes * 60 * 1000;
@@ -8535,6 +8431,7 @@ const BREEDS = {
         btn.addEventListener("click", () => {
           study.focusMinutes = parseInt(btn.dataset.min, 10) || 50;
           clearStudyTimer();
+          studyEndsAt = 0;
           running = false;
           onBreak = false;
           remainingMs = study.focusMinutes * 60 * 1000;
@@ -8552,7 +8449,10 @@ const BREEDS = {
         saveState(true); render();
       }));
 
-      if(running && studyEndsAt) studyTimer = setInterval(tickTimer, 250);
+      if(running){
+        studyEndsAt = Date.now() + remainingMs;
+        studyTimer = setInterval(tickTimer, 250);
+      }
     }
 
     function addReminder(){
@@ -8571,16 +8471,26 @@ const BREEDS = {
       const overlay = document.getElementById("study-clock-overlay");
       const phase = document.getElementById("study-phase");
       const left = studyEndsAt - Date.now();
-      if(left <= 0){
+        if(left <= 0){
         clearStudyTimer();
+        studyEndsAt = 0;
         running = false;
         if(!onBreak){
           study.sessionsToday = (study.sessionsToday || 0) + 1;
           onBreak = true;
           remainingMs = (study.breakMinutes || 10) * 60 * 1000;
+          // Daily pocket money for finishing a school focus block
+          const POCKET = 20;
+          if(study.pocketDay !== state.day){
+            study.pocketDay = state.day;
+            state.money += POCKET;
+            updateHud();
+            toast("Focus done — pocket money +$" + POCKET);
+          } else {
+            toast("Focus block done - take a short break");
+          }
           saveState(true);
           SFX.adopt();
-          toast("Focus block done - take a short break");
         } else {
           onBreak = false;
           remainingMs = (study.focusMinutes || 50) * 60 * 1000;
@@ -8602,6 +8512,7 @@ const BREEDS = {
       if(running){
         remainingMs = Math.max(0, studyEndsAt - Date.now());
         clearStudyTimer();
+        studyEndsAt = 0;
         running = false;
         const btn = document.getElementById("study-start");
         if(btn) btn.textContent = "Start session";
@@ -8611,9 +8522,9 @@ const BREEDS = {
         Notification.requestPermission().catch(()=>{});
       }
       if(!studyLofi) await startStudyAmbience();
+      clearStudyTimer();
       studyEndsAt = Date.now() + remainingMs;
       running = true;
-      clearStudyTimer();
       studyTimer = setInterval(tickTimer, 250);
       const btn = document.getElementById("study-start");
       if(btn) btn.textContent = "Pause";
@@ -10819,6 +10730,9 @@ const BREEDS = {
     }
     state.energy = state.maxEnergy;
     state.day += 1;
+    if(state.study){
+      state.study.sessionsToday = 0;
+    }
     advanceFarmOvernight();
     syncLegacyDogFields();
     SFX.sleep();
@@ -10849,11 +10763,140 @@ const BREEDS = {
     saveState(true);
   }
 
+  function tarotArtSvg(cardName){
+    const name = String(cardName || "The Star");
+    const title = escapeHtml(name);
+    const frame = (inner) => `
+      <svg viewBox="0 0 120 190" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FBF6EC"/>
+            <stop offset="100%" stop-color="#EBD9B0"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="190" rx="12" fill="url(#tg)"/>
+        <rect x="7" y="7" width="106" height="176" rx="9" fill="none" stroke="#C9A66B" stroke-width="1.6"/>
+        <rect x="12" y="12" width="96" height="166" rx="7" fill="none" stroke="#E8D4A8" stroke-width="0.8"/>
+        ${inner}
+        <text x="60" y="176" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" font-weight="700" fill="#5A4634">${title}</text>
+      </svg>`;
+    const art = {
+      "The Sun": `
+        <circle cx="60" cy="78" r="28" fill="#F3DBAA" stroke="#D98F2B" stroke-width="2"/>
+        <g stroke="#D98F2B" stroke-width="2" stroke-linecap="round">
+          <path d="M60 38v-10M60 128v10M28 78h-10M102 78h10M36 54l-8-8M92 102l8 8M36 102l-8 8M92 54l8-8"/>
+        </g>
+        <path d="M34 128c8-10 18-14 26-14s18 4 26 14" fill="none" stroke="#3E7C74" stroke-width="2"/>`,
+      "The Moon": `
+        <circle cx="66" cy="78" r="30" fill="#CFE1DC" stroke="#6FA7B8" stroke-width="1.5"/>
+        <circle cx="78" cy="70" r="24" fill="#FBF6EC"/>
+        <circle cx="40" cy="50" r="2" fill="#6FA7B8"/><circle cx="92" cy="112" r="1.6" fill="#6FA7B8"/>
+        <circle cx="48" cy="118" r="1.4" fill="#6FA7B8"/>`,
+      "The Star": `
+        <path d="M60 42l8 22h24l-19 14 7 23-20-14-20 14 7-23-19-14h24z" fill="#F3DBAA" stroke="#D98F2B" stroke-width="1.4"/>
+        <circle cx="34" cy="108" r="3" fill="#8FD3DE"/><circle cx="86" cy="112" r="2.4" fill="#8FD3DE"/>
+        <path d="M28 138h64" stroke="#3E7C74" stroke-width="2" stroke-linecap="round"/>`,
+      "The Fool": `
+        <circle cx="60" cy="58" r="14" fill="#F0C9A8" stroke="#B87A4B" stroke-width="1.4"/>
+        <path d="M46 78c4 18 24 18 28 0" fill="#5A7FB0"/>
+        <path d="M48 96l-10 28M72 96l10 28" stroke="#3A2C22" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="88" cy="70" r="7" fill="none" stroke="#D98F2B" stroke-width="1.6"/>`,
+      "Temperance": `
+        <path d="M44 52h32v10l-6 12H50l-6-12z" fill="#8A6BAE"/>
+        <path d="M50 74v20M70 74v20" stroke="#8A6BAE" stroke-width="3"/>
+        <ellipse cx="48" cy="118" rx="14" ry="8" fill="#8FD3DE" opacity="0.85"/>
+        <ellipse cx="74" cy="118" rx="14" ry="8" fill="#F3DBAA" opacity="0.9"/>
+        <path d="M56 90c4 8 8 8 12 0" fill="none" stroke="#3E7C74" stroke-width="2"/>`,
+      "Strength": `
+        <circle cx="60" cy="70" r="22" fill="#E8DCC4" stroke="#C07840" stroke-width="2"/>
+        <path d="M42 78c6 10 30 10 36 0" fill="none" stroke="#8C5A3B" stroke-width="2.2"/>
+        <path d="M48 58h24M52 50h16" stroke="#D9705C" stroke-width="2" stroke-linecap="round"/>
+        <path d="M40 118h40" stroke="#3E7C74" stroke-width="2"/>`,
+      "The Hermit": `
+        <path d="M48 120V70l12-18 12 18v50z" fill="#6E5C49"/>
+        <circle cx="74" cy="62" r="10" fill="#F3DBAA" stroke="#D98F2B" stroke-width="1.5"/>
+        <path d="M74 72v18" stroke="#D98F2B" stroke-width="2"/>
+        <rect x="54" y="88" width="12" height="10" rx="2" fill="#F3DBAA"/>`,
+      "Wheel of Fortune": `
+        <circle cx="60" cy="82" r="34" fill="none" stroke="#D98F2B" stroke-width="2.4"/>
+        <circle cx="60" cy="82" r="16" fill="#FBF6EC" stroke="#3E7C74" stroke-width="2"/>
+        <path d="M60 48v68M26 82h68M38 58l44 48M38 106l44-48" stroke="#C9A66B" stroke-width="1.4"/>`,
+      "The Magician": `
+        <rect x="40" y="108" width="40" height="10" rx="2" fill="#6E4A2E"/>
+        <path d="M52 108V70h16v38" fill="#4A7DBF"/>
+        <circle cx="60" cy="54" r="10" fill="#F0C9A8"/>
+        <path d="M44 86h8M68 86h8M60 70v-8" stroke="#D98F2B" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="36" cy="100" r="4" fill="#8A6BAE"/><circle cx="84" cy="100" r="4" fill="#3E7C74"/>`,
+      "Ace of Cups": `
+        <path d="M44 70h32l-4 28c-2 12-22 12-24 0z" fill="#8FD3DE" stroke="#3E7C74" stroke-width="1.6"/>
+        <rect x="54" y="98" width="12" height="18" fill="#3E7C74"/>
+        <path d="M48 64c4-8 20-8 24 0" fill="none" stroke="#D9705C" stroke-width="2"/>
+        <circle cx="60" cy="54" r="4" fill="#D9705C"/>`,
+      "Ace of Wands": `
+        <path d="M58 128V52" stroke="#8C5A3B" stroke-width="5" stroke-linecap="round"/>
+        <path d="M58 56l-12-10M58 56l12-10M58 68l-14-4M58 68l14-4" stroke="#D98F2B" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="58" cy="48" r="6" fill="#F3DBAA"/>`,
+      "Two of Pentacles": `
+        <ellipse cx="44" cy="72" rx="16" ry="16" fill="#F3DBAA" stroke="#D98F2B" stroke-width="1.6"/>
+        <ellipse cx="76" cy="104" rx="16" ry="16" fill="#F3DBAA" stroke="#D98F2B" stroke-width="1.6"/>
+        <path d="M52 80c18 4 18 20 16 28" fill="none" stroke="#3E7C74" stroke-width="2.2"/>
+        <text x="44" y="76" text-anchor="middle" font-size="10" fill="#8C5A3B">✦</text>
+        <text x="76" y="108" text-anchor="middle" font-size="10" fill="#8C5A3B">✦</text>`,
+    };
+    return frame(art[name] || art["The Star"]);
+  }
+
+  function tarotCardMarkup(cardName, upright, opts){
+    const reversed = upright === false;
+    const cls = "tarot-card-static" + (reversed ? " reversed" : "");
+    const size = (opts && opts.compact) ? 'style="width:96px;height:150px"' : "";
+    return `<div class="${cls}" ${size} title="${escapeHtml(cardName || "Tarot")}">${tarotArtSvg(cardName)}</div>`;
+  }
+
+  function openTarotPick(data){
+    const tarot = (data && data.tarot) || { card: "The Star", upright: true, reading: "" };
+    openModal(`
+      <h3>Draw your card</h3>
+      <p class="modal-sub">Pick one card from the fortune teller's spread.</p>
+      <div class="tarot-pick-row" id="tarot-pick-row">
+        ${[0,1,2].map(i => `
+          <button type="button" class="tarot-pick" data-pick="${i}" aria-label="Card ${i+1}">
+            <div class="tarot-flip">
+              <div class="tarot-face back"><span class="tarot-seal">✦</span></div>
+              <div class="tarot-face front${tarot.upright === false ? " reversed" : ""}">${tarotArtSvg(tarot.card)}</div>
+            </div>
+          </button>
+        `).join("")}
+      </div>
+      <p class="match-status" id="tarot-pick-hint">Three cards. One morning. Trust your hand.</p>
+    `);
+    const picks = Array.from(document.querySelectorAll(".tarot-pick"));
+    let chosen = false;
+    picks.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if(chosen) return;
+        chosen = true;
+        const picked = btn;
+        picks.forEach(p => {
+          p.disabled = true;
+          if(p === picked) p.classList.add("flipped");
+          else p.classList.add("dim");
+        });
+        const hint = document.getElementById("tarot-pick-hint");
+        if(hint){
+          hint.textContent = (tarot.card || "Your card") + (tarot.upright === false ? " · reversed" : " · upright");
+        }
+        SFX && SFX.adopt && SFX.adopt();
+        setTimeout(() => renderMorningBriefModal(data), 900);
+      });
+    });
+  }
+
   async function openMorningBriefing(){
     openModal(`
       <h3>Morning on Willow Isle</h3>
-      <p class="modal-sub">The fortune teller shuffles the cards... fetching today's island news and one real-world story.</p>
-      <div class="flavor-box" id="morning-loading">Drawing your card for Day ${state.day}...</div>
+      <p class="modal-sub">The fortune teller shuffles the deck… fetching today's island news and one real-world story.</p>
+      <div class="flavor-box" id="morning-loading">Preparing your cards for Day ${state.day}...</div>
     `);
     let data = null;
     try{
@@ -10876,7 +10919,7 @@ const BREEDS = {
       };
     }
     applyMorningBrief(data);
-    renderMorningBriefModal(data);
+    openTarotPick(data);
   }
 
   function renderMorningBriefModal(data){
@@ -10888,10 +10931,14 @@ const BREEDS = {
       <h3>Day ${state.day} Morning</h3>
       <p class="modal-sub">Weather: <b>${WEATHER_LABELS[weather] || weather}</b> · Mood: <b>${escapeHtml(state.dayMood || "")}</b></p>
       <div class="morning-grid">
-        <div class="morning-card tarot">
-          <div class="field-label">Fortune teller</div>
-          <strong>${escapeHtml(tarot.card || "The Star")}${tarot.upright === false ? " (reversed)" : ""}</strong>
-          <p>${escapeHtml(tarot.reading || "")}</p>
+        <div class="morning-card tarot has-visual">
+          ${tarotCardMarkup(tarot.card || "The Star", tarot.upright !== false)}
+          <div>
+            <div class="field-label">Fortune teller</div>
+            <strong>${escapeHtml(tarot.card || "The Star")}</strong>
+            <span class="tarot-orient">${tarot.upright === false ? "Reversed" : "Upright"}</span>
+            <p style="margin-top:0.45rem">${escapeHtml(tarot.reading || "")}</p>
+          </div>
         </div>
         <div class="morning-card">
           <div class="field-label">Island news</div>
