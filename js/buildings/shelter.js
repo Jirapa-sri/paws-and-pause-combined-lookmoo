@@ -111,14 +111,9 @@
       const seedFn = typeof api.rescueSeed === "function" ? api.rescueSeed : (d) => String(d.name || "").length;
       const breedIdFn = typeof api.rescueBreedId === "function" ? api.rescueBreedId : null;
       const cutoutFn = typeof api.getBreedCutout === "function" ? api.getBreedCutout : null;
-      const photoFn = typeof api.getRescuePhoto === "function" ? api.getRescuePhoto : null;
-      const breedImgs = api.breedImages || {};
 
       function drawRescuePortrait(dog, dx, dy, dw, dh, opts){
         const natural = !!(opts && opts.natural);
-        // Real photos only on the Animals needing homes wall cards — not kennel bed sprites
-        const usePhoto = !natural && !!(opts && opts.photo);
-        const photo = (usePhoto && photoFn) ? photoFn(dog) : null;
         const breedId = breedIdFn ? breedIdFn(dog) : "mixed-rescue";
         const cut = cutoutFn ? cutoutFn(breedId) : null;
 
@@ -133,26 +128,7 @@
         ctx.ellipse(dx + dw * 0.5, dy + dh * (natural ? 0.9 : 0.86), dw * (natural ? 0.32 : 0.28), dh * 0.09, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Wall-board cards may show the real Soi Dog photo
-        if(photo && photo.complete && photo.naturalWidth){
-          try{
-            ctx.save();
-            roundRect(dx, dy, dw, dh, 6);
-            ctx.clip();
-            const iw = photo.naturalWidth;
-            const ih = photo.naturalHeight;
-            const scale = Math.max(dw / iw, dh / ih);
-            const tw = iw * scale, th = ih * scale;
-            const ox = dx + (dw - tw) / 2;
-            const oy = dy + (dh - th) * 0.25;
-            ctx.drawImage(photo, ox, oy, tw, th);
-            ctx.restore();
-            return true;
-          } catch(err){
-            try{ ctx.restore(); } catch(e){}
-          }
-        }
-
+        // Stylized breed cutout / silhouette only (real photos are hub-modal only)
         if(cut && (cut.width || cut.naturalWidth)){
           const iw = cut.naturalWidth || cut.width || dw;
           const ih = cut.naturalHeight || cut.height || dh;
@@ -174,7 +150,7 @@
           return true;
         }
 
-        // Fallback silhouette (no white plate) while photos/cutouts load
+        // Fallback silhouette while cutouts load
         const seed = seedFn(dog);
         const cols = paletteFn ? paletteFn(dog.colour, seed) : ["#C9A574", "#E8C49A", "#A9784F"];
         ctx.fillStyle = cols[0];
@@ -196,12 +172,13 @@
       ctx.textAlign = "center";
       ctx.fillText("ANIMALS NEEDING HOMES", HOUSE.x + 400, HOUSE.y + 92);
 
+      // Wall spotlight cards — stylized breed art only (real photos live in the hub modal)
       boardDogs.forEach((dog, i) => {
         const px = HOUSE.x + 245 + i * 82;
         const py = HOUSE.y + 105;
         ctx.fillStyle = "#fff";
         roundRect(px, py, 70, 48, 5); ctx.fill();
-        drawRescuePortrait(dog, px + 3, py + 3, 34, 42, { natural: false, photo: true });
+        drawRescuePortrait(dog, px + 3, py + 3, 34, 42, { natural: false, photo: false });
         ctx.fillStyle = "#8A5A8C";
         ctx.font = "700 8px ui-rounded, sans-serif";
         const label = String(dog.name || "Pup").slice(0, 9);

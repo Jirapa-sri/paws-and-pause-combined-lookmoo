@@ -11147,12 +11147,12 @@ const BREEDS = {
     const promptBtn = document.getElementById("prompt-btn");
     const promptText = document.getElementById("prompt-text");
     const info = BUILDING_INFO[currentBuilding];
-    // Generous exit door zone (bottom center)
-    if(player.y > HOUSE.y + HOUSE.h - HOUSE.wall - 48 &&
-       player.x > HOUSE.door.x - 24 && player.x < HOUSE.door.x + HOUSE.door.w + 24){
+    // Generous exit door zone (bottom center) — keep Leave prompt easy to trigger
+    if(player.y > HOUSE.y + HOUSE.h - HOUSE.wall - 72 &&
+       player.x > HOUSE.door.x - 40 && player.x < HOUSE.door.x + HOUSE.door.w + 40){
       currentTarget = { kind:"building-door" };
-      promptText.textContent = (currentBuilding === "cinema") ? "Exit through door" : "Leave";
-      promptBtn.style.display = "flex";
+      if(promptText) promptText.textContent = (currentBuilding === "cinema") ? "Exit through door" : "Leave";
+      if(promptBtn) promptBtn.style.display = "flex";
       return;
     }
     const cx = HOUSE.x + HOUSE.w/2, cy = HOUSE.y + 160;
@@ -11230,6 +11230,15 @@ const BREEDS = {
   }
 
   function interactBuilding(){
+    // Resolve door from feet first so E still leaves if the prompt desynced
+    try{
+      if(player.y > HOUSE.y + HOUSE.h - HOUSE.wall - 72 &&
+         player.x > HOUSE.door.x - 40 && player.x < HOUSE.door.x + HOUSE.door.w + 40){
+        if(performance.now() < enterGuardUntil) return;
+        exitBuilding();
+        return;
+      }
+    } catch(err){}
     if(!currentTarget) return;
     // Prevent the same E/Space that entered from immediately leaving
     if(currentTarget.kind === "building-door" && performance.now() < enterGuardUntil) return;
