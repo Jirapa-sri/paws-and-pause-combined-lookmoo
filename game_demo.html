@@ -1059,6 +1059,7 @@
       <div class="bar-track"><div class="bar-fill fill-bond" id="hud-bond-bar" style="width:0%"></div></div>
     </div>
     <div class="spacer"></div>
+    <button class="hud-btn" id="btn-sound" type="button" title="Click once to enable sound">Sound On</button>
     <button class="hud-btn" id="btn-map">Edit Map</button>
     <button class="hud-btn" id="btn-save">Save</button>
     <button class="hud-btn" id="btn-load">Load</button>
@@ -1138,13 +1139,14 @@
 <script src="js/buildings/guest-lavender.js"></script>
 <script src="js/buildings/guest-blue.js"></script>
 <script src="js/buildings/store.js"></script>
-<script src="js/buildings/cafe.js"></script>
+<script src="js/buildings/cafe/cafe.js"></script>
+<script src="js/buildings/cafe/cook.js"></script>
 <script src="js/buildings/boutique.js"></script>
 <script src="js/buildings/school.js"></script>
 <script src="js/buildings/cinema.js"></script>
 <script src="js/buildings/shelter.js"></script>
-<script src="js/buildings/arcade.js"></script>
-<script src="js/buildings/stadium.js"></script>
+<script src="js/buildings/arcade/arcade.js"></script>
+<script src="js/buildings/stadium/stadium.js"></script>
 <script src="js/buildings/concert.js"></script>
 <script src="js/buildings/farm.js"></script>
 <script src="js/buildings/lake.js"></script>
@@ -3641,56 +3643,77 @@ const BREEDS = {
       try { actx = new (window.AudioContext || window.webkitAudioContext)(); }
       catch(e){ actx = null; }
     }
-    if(actx && actx.state === "suspended") actx.resume();
+    if(actx && actx.state === "suspended"){
+      try {
+        const p = actx.resume();
+        if(p && typeof p.catch === "function") p.catch(() => {});
+      } catch(e){}
+    }
     return actx;
   }
-  window.addEventListener("keydown", ensureAudio, { once:true });
-  window.addEventListener("pointerdown", ensureAudio, { once:true });
+  window.PawsEnsureAudio = ensureAudio;
+  function unlockGameAudio(){ return ensureAudio(); }
+  ["keydown","pointerdown","mousedown","touchstart","click"].forEach((ev) => {
+    window.addEventListener(ev, unlockGameAudio, true);
+  });
 
-  function beep(freq, dur, type, vol, delay){
+  function withRunningAudio(fn){
     const ac = ensureAudio();
     if(!ac) return;
-    const t0 = ac.currentTime + (delay||0);
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = type || "sine";
-    osc.frequency.setValueAtTime(freq, t0);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(vol!=null?vol:0.15, t0+0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.start(t0); osc.stop(t0+dur+0.02);
+    const run = () => { if(ac.state === "running") { try { fn(ac); } catch(e){} } };
+    if(ac.state === "running") run();
+    else {
+      try {
+        const p = ac.resume();
+        if(p && typeof p.then === "function") p.then(run).catch(()=>{});
+      } catch(e){}
+    }
+  }
+
+  function beep(freq, dur, type, vol, delay){
+    withRunningAudio((ac) => {
+      const t0 = ac.currentTime + (delay||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const v = Math.max(0.0001, vol!=null?vol:0.15);
+      osc.type = type || "sine";
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(v, t0);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+Math.max(dur, 0.03));
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    });
   }
 
   function sweep(f0, f1, dur, type, vol, delay){
-    const ac = ensureAudio();
-    if(!ac) return;
-    const t0 = ac.currentTime + (delay||0);
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = type || "sine";
-    osc.frequency.setValueAtTime(f0, t0);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(1,f1), t0+dur);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(vol!=null?vol:0.15, t0+0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.start(t0); osc.stop(t0+dur+0.02);
+    withRunningAudio((ac) => {
+      const t0 = ac.currentTime + (delay||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const v = Math.max(0.0001, vol!=null?vol:0.15);
+      osc.type = type || "sine";
+      osc.frequency.setValueAtTime(f0, t0);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(1,f1), t0+dur);
+      gain.gain.setValueAtTime(v, t0);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+Math.max(dur, 0.03));
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    });
   }
 
   function noiseBurst(dur, vol){
-    const ac = ensureAudio();
-    if(!ac) return;
-    const bufferSize = Math.max(1, Math.floor(ac.sampleRate * dur));
-    const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
-    const data = buffer.getChannelData(0);
-    for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
-    const src = ac.createBufferSource();
-    src.buffer = buffer;
-    const gain = ac.createGain();
-    gain.gain.value = vol!=null?vol:0.12;
-    src.connect(gain); gain.connect(ac.destination);
-    src.start();
+    withRunningAudio((ac) => {
+      const bufferSize = Math.max(1, Math.floor(ac.sampleRate * dur));
+      const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+      const data = buffer.getChannelData(0);
+      for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+      const src = ac.createBufferSource();
+      src.buffer = buffer;
+      const gain = ac.createGain();
+      gain.gain.value = vol!=null?vol:0.12;
+      src.connect(gain); gain.connect(ac.destination);
+      src.start();
+    });
   }
 
   const SFX = {
@@ -13875,6 +13898,32 @@ const BREEDS = {
     if(home){ player.x = home.x + home.w/2; player.y = home.y + home.h + 30; }
     updateHud();
     beginNewPlayerFlow();
+  }
+
+  /* ---------- Sound unlock ---------- */
+  const btnSound = document.getElementById("btn-sound");
+  if(btnSound){
+    btnSound.addEventListener("click", () => {
+      unlockGameAudio();
+      withRunningAudio((ac) => {
+        const t0 = ac.currentTime;
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(660, t0);
+        gain.gain.setValueAtTime(0.2, t0);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.15);
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.start(t0); osc.stop(t0 + 0.18);
+        btnSound.textContent = "Sound On";
+      });
+      if(window.PawsArcadeAudio && typeof window.PawsArcadeAudio.unlock === "function"){
+        try { window.PawsArcadeAudio.unlock(); } catch(e){}
+      }
+      if(window.PawsStadiumAudio && typeof window.PawsStadiumAudio.unlock === "function"){
+        try { window.PawsStadiumAudio.unlock(); } catch(e){}
+      }
+    });
   }
 
   /* ---------- Save controls ---------- */
