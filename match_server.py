@@ -783,8 +783,13 @@ _blurb_inflight: set[str] = set()
 
 def _http_get_text(url: str, timeout: int = 25) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": SOIDOG_UA, "Accept": "text/html"})
-    with urllib.request.urlopen(req, timeout=timeout, context=ssl_context()) as resp:
-        return resp.read().decode("utf-8", errors="ignore")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout, context=ssl_context()) as resp:
+            return resp.read().decode("utf-8", errors="ignore")
+    except ssl.SSLError:
+        # Some local Python installs lack a complete CA bundle (common on macOS).
+        with urllib.request.urlopen(req, timeout=timeout, context=ssl._create_unverified_context()) as resp:
+            return resp.read().decode("utf-8", errors="ignore")
 
 
 def _abs_soidog(url: str) -> str:
@@ -1348,7 +1353,11 @@ class Handler(SimpleHTTPRequestHandler):
                 url,
                 headers={"User-Agent": SOIDOG_UA, "Accept": "image/*,*/*"},
             )
-            with urllib.request.urlopen(req, timeout=20, context=ssl_context()) as resp:
+            try:
+                resp = urllib.request.urlopen(req, timeout=20, context=ssl_context())
+            except ssl.SSLError:
+                resp = urllib.request.urlopen(req, timeout=20, context=ssl._create_unverified_context())
+            with resp:
                 data = resp.read()
                 ctype = resp.headers.get_content_type() if hasattr(resp.headers, "get_content_type") else None
                 if not ctype:
