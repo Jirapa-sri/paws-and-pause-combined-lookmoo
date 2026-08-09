@@ -10,12 +10,16 @@ Then open http://127.0.0.1:8765/game_demo.html
 
 from __future__ import annotations
 
+import base64
 import json
 import math
 import os
 import re
 import ssl
+import threading
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -744,6 +748,536 @@ def build_morning_brief(api_key: str, day: int, player_name: str) -> dict:
         return brief
 
 
+# ---------- Soi Dog Foundation adoption catalog (live scrape, cached) ----------
+SOIDOG_ORIGIN = "https://www.soidog.org"
+SOIDOG_CATALOG = f"{SOIDOG_ORIGIN}/adopt-a-dog"
+SOIDOG_UA = (
+    "Mozilla/5.0 (compatible; PawsAndPause/1.0; +local course project; "
+    "educational adoption spotlight)"
+)
+SOIDOG_COLOURS = {
+    "1": "Black",
+    "2": "Brown",
+    "3": "White",
+    "4": "Grey",
+    "5": "Cream",
+    "6": "Brindle",
+    "7": "Black and Tan",
+    "8": "Black and White",
+    "9": "Brown and White",
+    "10": "Tan and White",
+    "11": "Ginger",
+    "12": "Tan",
+    "13": "Sable",
+    "14": "Tricolour",
+    "15": "Sable and Tan",
+}
+_soi_cache: dict | None = None
+_soi_cache_at = 0.0
+SOI_CACHE_SECONDS = 45 * 60
+BLURB_CACHE_PATH = ROOT / ".cache" / "soi_dog_blurbs_v2.json"
+BLURB_CACHE_VERSION = 2
+_blurb_lock = threading.Lock()
+_blurb_inflight: set[str] = set()
+
+
+def _http_get_text(url: str, timeout: int = 25) -> str:
+    req = urllib.request.Request(url, headers={"User-Agent": SOIDOG_UA, "Accept": "text/html"})
+    with urllib.request.urlopen(req, timeout=timeout, context=ssl_context()) as resp:
+        return resp.read().decode("utf-8", errors="ignore")
+
+
+def _abs_soidog(url: str) -> str:
+    if not url:
+        return ""
+    if url.startswith("http"):
+        return url
+    if url.startswith("//"):
+        return "https:" + url
+    if not url.startswith("/"):
+        url = "/" + url
+    return SOIDOG_ORIGIN + url
+
+
+def _field(row: str, class_fragment: str) -> str:
+    m = re.search(
+        rf'views-field-{re.escape(class_fragment)}[^>]*>\s*<span class="field-content"[^>]*>(.*?)</span>',
+        row,
+        re.I | re.S,
+    )
+    if not m:
+        return ""
+    text = re.sub(r"<[^>]+>", " ", m.group(1))
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def parse_soidog_catalog_html(html: str) -> list[dict]:
+    dogs: list[dict] = []
+    for row in re.findall(
+        r'<div class="views-row">(.*?)</div>\s*(?=<div class="views-row"|<ul class="js-pager)',
+        html,
+        re.S,
+    ):
+        name_m = re.search(
+            r'views-field-name"><span class="field-content"><a href="(/adopt/[^"]+)">([^<]+)</a>',
+            row,
+        )
+        if not name_m:
+            continue
+        path, name = name_m.group(1), name_m.group(2).strip()
+        img_m = re.search(r'<img[^>]+src="([^"]+)"', row, re.I)
+        gender_size = _field(row, "views-soidog-animal-prop-gender-size-field")
+        age = _field(row, "views-soidog-animal-date-of-birth-field")
+        animal_id = _field(row, "id-1") or ""
+        if not animal_id:
+            id_m = re.search(r"-(\d+)$", path)
+            animal_id = id_m.group(1) if id_m else path
+        gender, size = "", ""
+        if "," in gender_size:
+            gender, size = [p.strip() for p in gender_size.split(",", 1)]
+        else:
+            gender = gender_size
+        travel = "travel donation" in row.lower()
+        country = _field(row, "views-soidog-animal-adopt-country-field")
+        dogs.append(
+            {
+                "id": str(animal_id),
+                "name": name,
+                "gender": gender,
+                "size": size,
+                "age": age,
+                "link": _abs_soidog(path),
+                "photo": _abs_soidog(img_m.group(1) if img_m else ""),
+                "travelDonation": travel,
+                "country": country or None,
+                "colour": None,
+                "kind": "Dog",
+            }
+        )
+    return dogs
+
+
+def fetch_soidog_colour_map(wanted_ids: set[str] | None = None) -> dict[str, str]:
+    """Build id→colour from public colour filter pages (parallel, early-exit)."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    colour_by_id: dict[str, str] = {}
+    wanted = set(wanted_ids or [])
+
+    def one(cid: str, label: str) -> list[tuple[str, str]]:
+        url = f"{SOIDOG_CATALOG}?soidog_animal_prop_dog_color_filter={cid}"
+        out: list[tuple[str, str]] = []
+        try:
+            html = _http_get_text(url, timeout=18)
+            for dog in parse_soidog_catalog_html(html):
+                out.append((dog["id"], label))
+        except Exception:
+            pass
+        return out
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        futs = [pool.submit(one, cid, label) for cid, label in SOIDOG_COLOURS.items()]
+        for fut in as_completed(futs):
+            for did, label in fut.result():
+                colour_by_id.setdefault(did, label)
+            if wanted and wanted.issubset(colour_by_id.keys()):
+                break
+    return colour_by_id
+
+
+def extract_soidog_profile_story(html: str, name: str = "") -> dict:
+    """Pull the adoption headline + story body from a Soi Dog profile page."""
+    heading = ""
+    hm = re.search(
+        r'class="soidog-animal-adopt-story-heading"[^>]*>\s*<h2[^>]*>(.*?)</h2>',
+        html,
+        re.I | re.S,
+    )
+    if hm:
+        heading = re.sub(r"<[^>]+>", " ", hm.group(1))
+        heading = re.sub(r"\s+", " ", heading).strip()
+
+    body = ""
+    story_m = re.search(
+        r'class="soidog-animal-adopt-story"[^>]*>(.*?)</div>\s*</div>\s*</div>\s*<div class="soidog-filter-button-wrapper',
+        html,
+        re.I | re.S,
+    )
+    if not story_m:
+        story_m = re.search(
+            r'class="soidog-animal-adopt-story"[^>]*>(.*?)</div>\s*</div>\s*</div>',
+            html,
+            re.I | re.S,
+        )
+    if not story_m:
+        story_m = re.search(
+            r'class="soidog-animal-adopt-story-wrapper"[^>]*>(.*?)</div>\s*</div>\s*<div class="soidog-animal',
+            html,
+            re.I | re.S,
+        )
+    if story_m:
+        chunk = story_m.group(1)
+        chunk = re.sub(
+            r'<div class="soidog-animal-adopt-story-heading"[\s\S]*?</div>',
+            " ",
+            chunk,
+            flags=re.I,
+        )
+        chunk = re.sub(r"<br\s*/?>", "\n", chunk, flags=re.I)
+        chunk = re.sub(r"</p\s*>", "\n", chunk, flags=re.I)
+        chunk = re.sub(r"<[^>]+>", " ", chunk)
+        chunk = re.sub(r"[ \t\r\f\v]+", " ", chunk)
+        chunk = re.sub(r"\n\s*\n+", "\n", chunk)
+        body = chunk.strip()
+        if name:
+            body = re.sub(rf"^Meet\s+{re.escape(name)}\s*", "", body, flags=re.I).strip()
+
+    return {"heading": heading, "body": body}
+
+
+def enrich_soidog_profile(dog: dict) -> dict:
+    """Optional personality + raw story excerpt from the dog's public profile page."""
+    try:
+        html = _http_get_text(dog["link"], timeout=18)
+    except Exception:
+        return dog
+    personalities = [
+        re.sub(r"\s+", " ", p).strip()
+        for p in re.findall(r'soidog-animal-prop-personality">\s*([^<]+)', html, re.I)
+    ]
+    personalities = [p for p in personalities if p]
+    story = extract_soidog_profile_story(html, dog.get("name") or "")
+    if personalities:
+        dog["personalities"] = personalities[:4]
+        dog["vibe"] = " · ".join(personalities[:3])
+    if story.get("body"):
+        dog["story"] = story["body"][:1200]
+        dog["storyHeading"] = story.get("heading") or ""
+        if not dog.get("blurb"):
+            excerpt = story["body"][:180].rstrip()
+            if len(story["body"]) > 180:
+                excerpt = excerpt.rsplit(" ", 1)[0] + "…"
+            dog["blurb"] = excerpt
+            dog["blurbSource"] = "soidog-profile"
+    return dog
+
+
+def _load_blurb_cache() -> dict:
+    try:
+        if BLURB_CACHE_PATH.exists():
+            return json.loads(BLURB_CACHE_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {}
+
+
+def _save_blurb_cache(cache: dict) -> None:
+    try:
+        BLURB_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        BLURB_CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as err:
+        print(f"Could not save Soi Dog blurb cache: {err}")
+
+
+def apply_cached_ai_blurbs(dogs: list[dict]) -> int:
+    """Attach disk-cached rewritten blurbs. Returns how many dogs already have a blurb."""
+    cache = _load_blurb_cache()
+    have = 0
+    for dog in dogs:
+        if dog.get("blurb") and dog.get("blurbSource") in ("ai-cache", "ai-story"):
+            have += 1
+            continue
+        entry = cache.get(str(dog.get("id") or ""))
+        if (
+            isinstance(entry, dict)
+            and entry.get("version") == BLURB_CACHE_VERSION
+            and entry.get("blurb")
+        ):
+            dog["blurb"] = str(entry["blurb"]).strip()[:240]
+            dog["blurbSource"] = "ai-cache"
+            have += 1
+    return have
+
+
+def _blurb_cache_entry_usable(entry) -> bool:
+    return (
+        isinstance(entry, dict)
+        and entry.get("version") == BLURB_CACHE_VERSION
+        and bool(entry.get("blurb"))
+    )
+
+
+def _blurb_cache_entry_failed(entry) -> bool:
+    return (
+        isinstance(entry, dict)
+        and entry.get("version") == BLURB_CACHE_VERSION
+        and bool(entry.get("failed"))
+    )
+
+
+def fetch_soidog_profile_for_rewrite(dog: dict) -> dict:
+    """Fetch profile HTML and return story + personality fields for rewriting."""
+    link = (dog.get("link") or "").strip()
+    if not link:
+        return {}
+    html = _http_get_text(link, timeout=18)
+    story = extract_soidog_profile_story(html, dog.get("name") or "")
+    personalities = [
+        re.sub(r"\s+", " ", p).strip()
+        for p in re.findall(r'soidog-animal-prop-personality">\s*([^<]+)', html, re.I)
+    ]
+    personalities = [p for p in personalities if p]
+    return {
+        "heading": story.get("heading") or "",
+        "body": story.get("body") or "",
+        "personalities": personalities[:4],
+    }
+
+
+def openai_rewrite_soidog_story(dog: dict, profile: dict, api_key: str) -> str:
+    """Rewrite a Soi Dog profile story into a cute 1–2 sentence game blurb."""
+    if not api_key:
+        return ""
+    name = str(dog.get("name") or "This pup").strip()[:40]
+    heading = (profile.get("heading") or "").strip()
+    body = (profile.get("body") or "").strip()
+    if not body and not heading:
+        return ""
+    body = body[:1400]
+    personalities = profile.get("personalities") or dog.get("personalities") or []
+    meta_bits = [dog.get("gender"), dog.get("size"), dog.get("age"), dog.get("colour")]
+    meta = ", ".join(str(x) for x in meta_bits if x)
+    vibe = " · ".join(personalities[:3]) if personalities else ""
+
+    prompt = f"""You write short adoption-spotlight blurbs for a cozy island game (Paws & Pause).
+
+Rewrite this real Soi Dog Foundation profile into a cute, heartwarming 1–2 sentence description (max 220 characters).
+
+Dog name: {name}
+Details: {meta or "unknown"}
+Personality tags: {vibe or "unknown"}
+Profile headline: {heading or "(none)"}
+Profile story:
+{body}
+
+Rules:
+- Keep the dog's spirit and distinctive traits from the story (energy, wink, tongue, playfulness, etc.)
+- Warm and hopeful — sound like a kind shelter volunteer
+- Soften graphic medical trauma into gentle wording if mentioned (e.g. "cheeky wink" is fine; skip gory details)
+- No guilt, no pressure to donate/adopt, no "enquire about me"
+- Do not invent facts that aren't in the profile
+- Do not mention AI, rewriting, or the website
+Return ONLY JSON: {{"blurb":"..."}}
+"""
+    payload = openai_chat_json(
+        api_key,
+        [{"role": "user", "content": prompt}],
+        max_tokens=220,
+        temperature=0.6,
+    )
+    content = ((payload.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+    parsed = parse_personality_json(content)
+    blurb = str(parsed.get("blurb") or "").strip()
+    blurb = re.sub(r"\s+", " ", blurb)
+    return blurb[:240]
+
+
+def local_soft_blurb_from_story(dog: dict, profile: dict) -> str:
+    """Offline fallback: first friendly sentence(s) from the profile story."""
+    name = str(dog.get("name") or "This pup").strip()
+    body = (profile.get("body") or "").strip()
+    if not body:
+        return ""
+    parts = re.split(r"(?<=[.!?])\s+", body)
+    first = (parts[0] if parts else body).strip()
+    if len(first) < 28 and len(parts) > 1:
+        first = " ".join(parts[:2]).strip()
+    first = re.sub(r"\s+", " ", first)
+    if len(first) > 200:
+        first = first[:197].rsplit(" ", 1)[0] + "…"
+    if name.lower() not in first.lower():
+        first = f"{name}: {first}"
+    return first[:240]
+
+
+def _generate_one_ai_blurb(dog: dict, api_key: str) -> None:
+    dog_id = str(dog.get("id") or "")
+    if not dog_id or not dog.get("link"):
+        return
+    with _blurb_lock:
+        if dog_id in _blurb_inflight:
+            return
+        cache = _load_blurb_cache()
+        entry = cache.get(dog_id)
+        if _blurb_cache_entry_usable(entry) or _blurb_cache_entry_failed(entry):
+            return
+        _blurb_inflight.add(dog_id)
+    try:
+        profile = fetch_soidog_profile_for_rewrite(dog)
+        blurb = ""
+        source = "ai-story"
+        try:
+            if api_key:
+                blurb = openai_rewrite_soidog_story(dog, profile, api_key)
+        except Exception as err:
+            print(f"Soi Dog story rewrite model failed for {dog.get('name')}: {friendly_error(err)}")
+        if not blurb:
+            blurb = local_soft_blurb_from_story(dog, profile)
+            source = "story-excerpt"
+        if not blurb:
+            with _blurb_lock:
+                cache = _load_blurb_cache()
+                cache[dog_id] = {
+                    "failed": True,
+                    "error": "empty story/blurb",
+                    "version": BLURB_CACHE_VERSION,
+                    "name": dog.get("name"),
+                    "updatedAt": int(time.time()),
+                }
+                _save_blurb_cache(cache)
+            return
+        with _blurb_lock:
+            cache = _load_blurb_cache()
+            cache[dog_id] = {
+                "blurb": blurb,
+                "version": BLURB_CACHE_VERSION,
+                "name": dog.get("name"),
+                "source": source,
+                "updatedAt": int(time.time()),
+            }
+            _save_blurb_cache(cache)
+            global _soi_cache
+            if _soi_cache and isinstance(_soi_cache.get("dogs"), list):
+                for d in _soi_cache["dogs"]:
+                    if str(d.get("id")) == dog_id:
+                        d["blurb"] = blurb
+                        d["blurbSource"] = source
+            print(f"Soi Dog story blurb ready for {dog.get('name')} ({dog_id}) via {source}")
+    except Exception as err:
+        msg = friendly_error(err)
+        print(f"Soi Dog story blurb failed for {dog.get('name')} ({dog_id}): {msg}")
+        with _blurb_lock:
+            cache = _load_blurb_cache()
+            cache[dog_id] = {
+                "failed": True,
+                "error": msg[:180],
+                "version": BLURB_CACHE_VERSION,
+                "name": dog.get("name"),
+                "updatedAt": int(time.time()),
+            }
+            _save_blurb_cache(cache)
+    finally:
+        with _blurb_lock:
+            _blurb_inflight.discard(dog_id)
+
+
+def schedule_ai_blurbs(dogs: list[dict], max_new: int = 10) -> int:
+    """Background: rewrite Soi Dog profile stories into short blurbs."""
+    key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+    api_key = "" if key_err else normalize_api_key(
+        os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY")
+    )
+    cache = _load_blurb_cache()
+    pending: list[dict] = []
+    for dog in dogs:
+        dog_id = str(dog.get("id") or "")
+        if not dog_id or not dog.get("link"):
+            continue
+        if dog.get("blurb") and dog.get("blurbSource") in ("ai-cache", "ai-story", "story-excerpt"):
+            continue
+        entry = cache.get(dog_id)
+        if _blurb_cache_entry_usable(entry) or _blurb_cache_entry_failed(entry):
+            continue
+        with _blurb_lock:
+            if dog_id in _blurb_inflight:
+                continue
+        pending.append(dog)
+        if len(pending) >= max_new:
+            break
+    if not pending:
+        return 0
+
+    def worker():
+        for dog in pending:
+            _generate_one_ai_blurb(dog, api_key)
+
+    threading.Thread(target=worker, name="soi-story-blurbs", daemon=True).start()
+    return len(pending)
+
+
+
+def fetch_soidog_dogs(
+    limit: int = 18,
+    enrich: int = 0,
+    with_colours: bool = False,
+    with_ai_blurbs: bool = True,
+) -> dict:
+    """Live catalog sync: first pages (+ optional colour + profile story rewrites)."""
+    global _soi_cache, _soi_cache_at
+    from concurrent.futures import ThreadPoolExecutor, wait
+
+    now = time.time()
+    if _soi_cache and (now - _soi_cache_at) < SOI_CACHE_SECONDS:
+        dogs = _soi_cache.get("dogs") or []
+        have = apply_cached_ai_blurbs(dogs)
+        pending = schedule_ai_blurbs(dogs) if with_ai_blurbs else 0
+        _soi_cache["aiBlurbsReady"] = have
+        _soi_cache["aiBlurbsPending"] = pending
+        return _soi_cache
+
+    dogs: list[dict] = []
+    seen: set[str] = set()
+    for page in (0, 1, 2):
+        url = SOIDOG_CATALOG if page == 0 else f"{SOIDOG_CATALOG}?page={page}"
+        html = _http_get_text(url, timeout=15)
+        for dog in parse_soidog_catalog_html(html):
+            if dog["id"] in seen:
+                continue
+            seen.add(dog["id"])
+            dogs.append(dog)
+            if len(dogs) >= limit:
+                break
+        if len(dogs) >= limit:
+            break
+
+    if with_colours and dogs:
+        try:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                fut = pool.submit(fetch_soidog_colour_map, {d["id"] for d in dogs})
+                done, not_done = wait([fut], timeout=8)
+                if done:
+                    colour_map = fut.result()
+                    for dog in dogs:
+                        dog["colour"] = colour_map.get(dog["id"])
+                for fut in not_done:
+                    fut.cancel()
+        except Exception:
+            pass
+
+    if enrich > 0 and dogs:
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            futs = [pool.submit(enrich_soidog_profile, dog) for dog in dogs[:enrich]]
+            wait(futs, timeout=8)
+
+    have = apply_cached_ai_blurbs(dogs)
+    pending = schedule_ai_blurbs(dogs) if with_ai_blurbs else 0
+
+    payload = {
+        "source": "soidog",
+        "sourceUrl": SOIDOG_CATALOG,
+        "fetchedAt": int(now),
+        "cacheSeconds": SOI_CACHE_SECONDS,
+        "count": len(dogs),
+        "dogs": dogs,
+        "aiBlurbsReady": have,
+        "aiBlurbsPending": pending,
+        "note": "Not in-game adoptions. Listings mirrored from Soi Dog Foundation for awareness.",
+    }
+    _soi_cache = payload
+    _soi_cache_at = now
+    return payload
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -766,11 +1300,70 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path.startswith("/api/"):
             self.send_response(204)
             self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Content-Type")
             self.end_headers()
             return
         self.send_error(404)
+
+    def do_GET(self):
+        raw = self.path
+        path = raw.split("?", 1)[0].rstrip("/")
+        if path == "/api/soi-dogs":
+            try:
+                want_colours = "colours=1" in raw or "colors=1" in raw
+                no_blurbs = "blurbs=0" in raw
+                return self._json(200, fetch_soidog_dogs(
+                    with_colours=want_colours,
+                    with_ai_blurbs=not no_blurbs,
+                ))
+            except Exception as err:
+                return self._json(502, {
+                    "error": "Could not reach Soi Dog catalog right now.",
+                    "detail": str(err)[:200],
+                    "sourceUrl": SOIDOG_CATALOG,
+                    "dogs": [],
+                })
+        if path == "/api/soi-photo":
+            return self._proxy_soi_photo(raw)
+        return super().do_GET()
+
+    def _proxy_soi_photo(self, raw_path: str):
+        """Same-origin proxy for Soi Dog CDN photos (hub cards + shelter canvas)."""
+        try:
+            qs = urllib.parse.urlparse(raw_path).query
+            params = urllib.parse.parse_qs(qs)
+            url = (params.get("u") or [""])[0].strip()
+            if not url:
+                return self.send_error(400, "Missing photo url")
+            parsed = urllib.parse.urlparse(url)
+            host = (parsed.hostname or "").lower()
+            if parsed.scheme not in ("http", "https") or not (
+                host == "www.soidog.org"
+                or host.endswith(".soidog.org")
+                or "soidog" in host
+            ):
+                return self.send_error(403, "Only Soi Dog images allowed")
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": SOIDOG_UA, "Accept": "image/*,*/*"},
+            )
+            with urllib.request.urlopen(req, timeout=20, context=ssl_context()) as resp:
+                data = resp.read()
+                ctype = resp.headers.get_content_type() if hasattr(resp.headers, "get_content_type") else None
+                if not ctype:
+                    ctype = (resp.headers.get("Content-Type") or "image/jpeg").split(";")[0].strip()
+            if len(data) > 6_000_000:
+                return self.send_error(413, "Image too large")
+            self.send_response(200)
+            self.send_header("Content-Type", ctype or "image/jpeg")
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+        except Exception as err:
+            return self._json(502, {"error": "Could not fetch Soi Dog photo", "detail": str(err)[:160]})
 
     def do_POST(self):
         path = self.path.rstrip("/")
