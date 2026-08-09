@@ -30,7 +30,7 @@
         ctx.strokeStyle = "rgba(251,240,222,0.35)"; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(0, 20); ctx.lineTo(0, 52); ctx.stroke();
         // crop plots beside
-        if(FarmAtlas.has("crops")){
+        if(FarmAtlas && typeof FarmAtlas.has === "function" && FarmAtlas.has("crops")){
           FarmAtlas.drawSoil(ctx, -58, 40, 1.8, false);
           FarmAtlas.drawCropTile(ctx, 2, 7, -58, 34, 1.8);
           FarmAtlas.drawSoil(ctx, 36, 42, 1.8, true);
@@ -60,36 +60,37 @@
       const drawBuildingTable = api.drawBuildingTable;
       const drawBuildingChair = api.drawBuildingChair;
       const performance = api.performance || window.performance;
-        ensureFarm();
+        if(typeof ensureFarm === "function") ensureFarm();
         // barn backdrop
-        if(FarmAtlas.has("barns")){
+        if(FarmAtlas && typeof FarmAtlas.has === "function" && FarmAtlas.has("barns")){
           FarmAtlas.drawBarn(ctx, HOUSE.x + 55, HOUSE.y + 70, 0, 1.15);
           FarmAtlas.drawBarn(ctx, HOUSE.x + HOUSE.w - 160, HOUSE.y + 75, 2, 1.05);
         }
         // well
         const wellFrame = Math.floor(t / 280) % 4;
-        if(FarmAtlas.has("well")){
+        const atlasOk = FarmAtlas && typeof FarmAtlas.has === "function";
+        if(atlasOk && FarmAtlas.has("well")){
           FarmAtlas.drawWell(ctx, HOUSE.x + HOUSE.w/2 - 20, HOUSE.y + 95, wellFrame, 2.4);
         }
         // fence strip
-        if(FarmAtlas.has("fence")){
+        if(atlasOk && FarmAtlas.has("fence")){
           const img = FarmAtlas.images.fence;
           ctx.imageSmoothingEnabled = false;
           ctx.drawImage(img, 0, 0, 48, 32, HOUSE.x + 130, HOUSE.y + 175, 96, 48);
           ctx.drawImage(img, 48, 0, 48, 32, HOUSE.x + HOUSE.w - 230, HOUSE.y + 175, 96, 48);
         }
         // 6 plots from farm state
-        const plots = state.farm.plots || [];
+        const plots = (state.farm && state.farm.plots) || [];
         for(let r=0;r<2;r++) for(let c=0;c<3;c++){
           const i = r*3 + c;
           const p = plots[i] || { crop:null, stage:0, watered:false };
           const px = HOUSE.x + 150 + c * 170;
           const py = HOUSE.y + 230 + r * 85;
-          if(FarmAtlas.has("crops")){
+          if(atlasOk && FarmAtlas.has("crops")){
             FarmAtlas.drawSoil(ctx, px, py, 4, !!p.watered);
             if(p.crop && p.stage > 0){
               const crop = CROP_TYPES[p.crop];
-              const tile = crop ? cropSpriteTile(crop, p.stage) : null;
+              const tile = crop && typeof cropSpriteTile === "function" ? cropSpriteTile(crop, p.stage) : null;
               if(tile) FarmAtlas.drawCropTile(ctx, tile[0], tile[1], px + 4, py - 8, 4);
             }
             if(p.watered){
@@ -104,12 +105,12 @@
           }
         }
         // animals
-        if(FarmAtlas.has("chicken")){
+        if(atlasOk && FarmAtlas.has("chicken")){
           const bob = Math.sin(t/400)*3;
           FarmAtlas.drawChicken(ctx, HOUSE.x + 95, HOUSE.y + 360 + bob, Math.floor(t/200)%4, 1.8);
           FarmAtlas.drawChicken(ctx, HOUSE.x + HOUSE.w - 140, HOUSE.y + 370 - bob, Math.floor(t/220+2)%4, 1.7);
         }
-        if(FarmAtlas.has("cow")){
+        if(atlasOk && FarmAtlas.has("cow")){
           const img = FarmAtlas.images.cow;
           ctx.imageSmoothingEnabled = false;
           ctx.drawImage(img, 0, 0, 32, 32, HOUSE.x + 220, HOUSE.y + 100, 56, 56);
@@ -118,7 +119,7 @@
         drawBuildingPatron(cx + 40, cy - 28, "#D9A066", "#6B8E4E", "#3A2417", Math.sin(t/520)*1.1);
         drawNpcNameTag(cx + 40, cy - 52, "Fern");
         // tool rack hint
-        if(FarmAtlas.has("tools")){
+        if(atlasOk && FarmAtlas.has("tools")){
           FarmAtlas.drawToolIcon(ctx, "hoe", HOUSE.x + 70, HOUSE.y + 120, 2.2);
           FarmAtlas.drawToolIcon(ctx, "can", HOUSE.x + 110, HOUSE.y + 120, 2.2);
         }

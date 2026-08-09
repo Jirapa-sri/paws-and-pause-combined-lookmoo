@@ -27,16 +27,26 @@
     drawIcon(id, ctx, api, cx, cy) {
       const m = this.get(id);
       if (m && typeof m.drawIcon === "function") {
-        m.drawIcon(ctx, api, cx, cy);
-        return true;
+        try {
+          m.drawIcon(ctx, api, cx, cy);
+          return true;
+        } catch (err) {
+          console.warn("[PawsBuildings] drawIcon failed:", id, err);
+          return false;
+        }
       }
       return false;
     },
     drawInterior(id, ctx, api, t, cx, cy) {
       const m = this.get(id);
       if (m && typeof m.drawInterior === "function") {
-        m.drawInterior(ctx, api, t, cx, cy);
-        return true;
+        try {
+          m.drawInterior(ctx, api, t, cx, cy);
+          return true;
+        } catch (err) {
+          console.warn("[PawsBuildings] drawInterior failed:", id, err);
+          return false;
+        }
       }
       return false;
     },

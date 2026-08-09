@@ -77,16 +77,22 @@
         ctx.fillText("OPEN", cx, HOUSE.y + 101);
 
         // packed shelves
-        drawStoreGoodsShelf(HOUSE.x + 48, HOUSE.y + 95);
-        drawStoreGoodsShelf(HOUSE.x + HOUSE.w - 128, HOUSE.y + 95);
-        drawBuildingShelf(HOUSE.x + 145, HOUSE.y + 100, 55, 70, ["#D9705C","#3E7C74","#D98F2B","#5A7FB0"]);
-        drawBuildingShelf(HOUSE.x + HOUSE.w - 200, HOUSE.y + 100, 55, 70, ["#E3998A","#8A6BAE","#6B8E6B","#D98F2B"]);
+        if(typeof drawStoreGoodsShelf === "function"){
+          drawStoreGoodsShelf(HOUSE.x + 48, HOUSE.y + 95);
+          drawStoreGoodsShelf(HOUSE.x + HOUSE.w - 128, HOUSE.y + 95);
+        }
+        if(typeof drawBuildingShelf === "function"){
+          drawBuildingShelf(HOUSE.x + 145, HOUSE.y + 100, 55, 70, ["#D9705C","#3E7C74","#D98F2B","#5A7FB0"]);
+          drawBuildingShelf(HOUSE.x + HOUSE.w - 200, HOUSE.y + 100, 55, 70, ["#E3998A","#8A6BAE","#6B8E6B","#D98F2B"]);
+        }
 
         // display tables
-        drawStoreDisplayTable(HOUSE.x + 55, HOUSE.y + 290, "plants");
-        drawStoreDisplayTable(HOUSE.x + HOUSE.w - 155, HOUSE.y + 290, "lamps");
-        drawStoreDisplayTable(HOUSE.x + 280, HOUSE.y + 310, "pillows");
-        drawStoreDisplayTable(HOUSE.x + 460, HOUSE.y + 310, "plants");
+        if(typeof drawStoreDisplayTable === "function"){
+          drawStoreDisplayTable(HOUSE.x + 55, HOUSE.y + 290, "plants");
+          drawStoreDisplayTable(HOUSE.x + HOUSE.w - 155, HOUSE.y + 290, "lamps");
+          drawStoreDisplayTable(HOUSE.x + 280, HOUSE.y + 310, "pillows");
+          drawStoreDisplayTable(HOUSE.x + 460, HOUSE.y + 310, "plants");
+        }
 
         // flower baskets
         ctx.fillStyle = "#8C5A3B";
