@@ -90,8 +90,6 @@
       const drawBuildingPatron = api.drawBuildingPatron;
       const drawNpcNameTag = api.drawNpcNameTag;
       const drawBuildingPlant = api.drawBuildingPlant;
-      const drawBuildingTable = api.drawBuildingTable;
-      const drawBuildingChair = api.drawBuildingChair;
       const drawBuildingShelf = api.drawBuildingShelf;
 
       const left = HOUSE.x + HOUSE.wall;
@@ -272,41 +270,7 @@
         ctx.beginPath(); ctx.arc(x0 + 48, top + 278, 3.5, 0, Math.PI * 2); ctx.fill();
       }
 
-      // ---------- left lounge (below bait, clear of center aisle) ----------
-      ctx.fillStyle = "rgba(62,124,116,0.22)";
-      roundRect(left + 24, top + 270, 200, 95, 16); ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,0.12)";
-      roundRect(left + 34, top + 280, 180, 75, 12); ctx.fill();
-
-      drawBuildingTable(left + 50, top + 285, 150, 48);
-      drawBuildingChair(left + 40, top + 332);
-      drawBuildingChair(left + 155, top + 332);
-
-      ctx.fillStyle = "#CFE7F2";
-      roundRect(left + 70, top + 292, 90, 36, 4); ctx.fill();
-      ctx.strokeStyle = "#3E7C74";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.ellipse(left + 115, top + 310, 26, 11, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.fillStyle = "#3E7C74";
-      ctx.font = "700 8px Nunito, sans-serif";
-      ctx.fillText("WILLOW LAKE", left + 115, top + 304);
-
-      // fishbowl beside lounge
-      ctx.fillStyle = "rgba(126,184,200,0.55)";
-      roundRect(left + 240, top + 290, 64, 50, 12); ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.45)";
-      ctx.lineWidth = 2;
-      roundRect(left + 240, top + 290, 64, 50, 12); ctx.stroke();
-      ctx.fillStyle = "#E8A33D";
-      ctx.beginPath();
-      ctx.ellipse(left + 265 + Math.sin(t / 500) * 8, top + 314, 9, 3.5, 0.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#6B8E4E";
-      ctx.beginPath(); ctx.ellipse(left + 272, top + 328, 11, 3.5, 0, 0, Math.PI * 2); ctx.fill();
-
-      // barrels bottom-left (out of door lane)
+      // ---------- left floor: bait barrels only (no lounge table — kept aisle clear) ----------
       [[left + 48, bottom - 90], [left + 108, bottom - 84]].forEach(([bx, by], i) => {
         ctx.fillStyle = i ? "#8C5A3B" : "#A9784F";
         ctx.beginPath(); ctx.ellipse(bx, by + 26, 24, 10, 0, 0, Math.PI * 2); ctx.fill();
