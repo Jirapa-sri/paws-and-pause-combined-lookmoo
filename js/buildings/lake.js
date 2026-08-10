@@ -293,40 +293,40 @@
       ctx.fillText("Bass biting", left + 255, top + 258);
       ctx.fillText("Sell at Harbour", left + 255, top + 272);
 
-      // ---------- center lounge / map table ----------
+      // ---------- side lounge / map table (left — keep center aisle to door clear) ----------
       // soft rug
       ctx.fillStyle = "rgba(62,124,116,0.22)";
-      roundRect(left + 250, top + 290, 280, 110, 18); ctx.fill();
+      roundRect(left + 70, top + 200, 220, 100, 18); ctx.fill();
       ctx.fillStyle = "rgba(255,255,255,0.12)";
-      roundRect(left + 265, top + 302, 250, 86, 14); ctx.fill();
+      roundRect(left + 82, top + 210, 196, 80, 14); ctx.fill();
 
-      drawBuildingTable(left + 300, top + 310, 180, 58);
-      drawBuildingChair(left + 285, top + 365);
-      drawBuildingChair(left + 430, top + 365);
+      drawBuildingTable(left + 100, top + 220, 160, 52);
+      drawBuildingChair(left + 85, top + 270);
+      drawBuildingChair(left + 210, top + 270);
       // lake chart on table
       ctx.fillStyle = "#CFE7F2";
-      roundRect(left + 330, top + 320, 90, 40, 4); ctx.fill();
+      roundRect(left + 125, top + 228, 90, 40, 4); ctx.fill();
       ctx.strokeStyle = "#3E7C74";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.ellipse(left + 375, top + 340, 28, 12, 0, 0, Math.PI * 2);
+      ctx.ellipse(left + 170, top + 248, 28, 12, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.fillStyle = "#3E7C74";
       ctx.font = "700 8px Nunito, sans-serif";
-      ctx.fillText("WILLOW LAKE", left + 375, top + 334);
+      ctx.fillText("WILLOW LAKE", left + 170, top + 242);
 
-      // fishbowl aquarium
+      // fishbowl aquarium (mid-left, still clear of door)
       ctx.fillStyle = "rgba(126,184,200,0.55)";
-      roundRect(left + 520, top + 300, 70, 55, 12); ctx.fill();
+      roundRect(left + 300, top + 210, 70, 55, 12); ctx.fill();
       ctx.strokeStyle = "rgba(255,255,255,0.45)";
       ctx.lineWidth = 2;
-      roundRect(left + 520, top + 300, 70, 55, 12); ctx.stroke();
+      roundRect(left + 300, top + 210, 70, 55, 12); ctx.stroke();
       ctx.fillStyle = "#E8A33D";
       ctx.beginPath();
-      ctx.ellipse(left + 548 + Math.sin(t / 500) * 8, top + 328, 10, 4, 0.2, 0, Math.PI * 2);
+      ctx.ellipse(left + 328 + Math.sin(t / 500) * 8, top + 238, 10, 4, 0.2, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#6B8E4E";
-      ctx.beginPath(); ctx.ellipse(left + 555, top + 345, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(left + 335, top + 255, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
 
       // cast dock stripe near counter (activity feel)
       const pulse = 0.12 + Math.sin(t / 450) * 0.05;

@@ -10456,12 +10456,12 @@ const BREEDS = {
       solids.push(
         // bait bar loft
         { x: HOUSE.x + 40, y: HOUSE.y + 250, w: 160, h: 95 },
-        // worm / shiny barrels
-        { x: HOUSE.x + 35, y: HOUSE.y + HOUSE.h - 160, w: 110, h: 55 },
+        // worm / shiny barrels (left of door aisle)
+        { x: HOUSE.x + 35, y: HOUSE.y + HOUSE.h - 160, w: 90, h: 50 },
         // rod rack + shelf
         { x: HOUSE.x + HOUSE.w - 200, y: HOUSE.y + 220, w: 130, h: 150 },
-        // lounge table (keep clear of door spawn)
-        { x: HOUSE.x + 300, y: HOUSE.y + 330, w: 180, h: 55 }
+        // lounge table on the left — center path to door stays open
+        { x: HOUSE.x + 100, y: HOUSE.y + 240, w: 160, h: 55 }
       );
     } else if(id === "shelter"){
       solids.push(
