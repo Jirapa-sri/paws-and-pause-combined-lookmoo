@@ -212,12 +212,14 @@
         ctx.beginPath(); ctx.arc(lx, ly + 36, 26, 0, Math.PI * 2); ctx.fill();
       });
 
-      // ---------- left: bait counter loft ----------
+      // Layout zones (keep center aisle open for the door):
+      // LEFT: bait + lounge + barrels | CENTER: weather board + Finn | RIGHT: trophies + rods
+
+      // ---------- left: bait counter ----------
       ctx.fillStyle = "#8C5A3B";
       roundRect(left + 18, top + 150, 150, 88, 10); ctx.fill();
       ctx.fillStyle = "#C4895A";
       roundRect(left + 24, top + 156, 138, 24, 6); ctx.fill();
-      // jars
       ["#3E7C74", "#D98F2B", "#6B8E6B", "#5A7FB0"].forEach((col, i) => {
         const jx = left + 42 + i * 30;
         ctx.fillStyle = col;
@@ -230,39 +232,20 @@
       ctx.textAlign = "center";
       ctx.fillText("BAIT BAR", left + 93, top + 172);
 
-      // barrels
-      [[left + 40, bottom - 95], [left + 95, bottom - 88]].forEach(([bx, by], i) => {
-        ctx.fillStyle = i ? "#8C5A3B" : "#A9784F";
-        ctx.beginPath(); ctx.ellipse(bx, by + 26, 26, 11, 0, 0, Math.PI * 2); ctx.fill();
-        roundRect(bx - 26, by - 8, 52, 36, 6); ctx.fill();
-        ctx.fillStyle = "#6E5C49";
-        ctx.beginPath(); ctx.ellipse(bx, by - 8, 26, 9, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#FBF0DE";
-        ctx.font = "700 9px Nunito, sans-serif";
-        ctx.fillText(i ? "WORMS" : "SHINY", bx, by + 12);
-      });
+      // ---------- center-back: weather board ----------
+      ctx.fillStyle = "#2A4038";
+      roundRect(left + 290, top + 150, 130, 78, 8); ctx.fill();
+      ctx.fillStyle = "#FBF0DE";
+      ctx.font = "700 10px Nunito, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("TODAY", left + 355, top + 170);
+      ctx.font = "600 9px Nunito, sans-serif";
+      ctx.fillText("Soft rain", left + 355, top + 188);
+      ctx.fillText("Bass biting", left + 355, top + 204);
+      ctx.fillText("Sell at Harbour", left + 355, top + 220);
 
-      // ---------- right: rod rack + trophy wall ----------
-      drawBuildingShelf(right - 90, top + 150, 70, 100, ["#3E7C74", "#E8A33D", "#CFE7F2", "#D9705C"]);
-
-      // rod rack
-      ctx.fillStyle = "#8C5A3B";
-      roundRect(right - 160, top + 160, 12, 130, 3); ctx.fill();
-      ctx.strokeStyle = "#6E5C49";
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      for (let i = 0; i < 6; i++) {
-        const x0 = right - 175 + i * 12;
-        ctx.beginPath();
-        ctx.moveTo(x0, top + 168);
-        ctx.lineTo(x0 + 48, top + 278);
-        ctx.stroke();
-        ctx.fillStyle = ["#D9705C", "#3E7C74", "#D98F2B"][i % 3];
-        ctx.beginPath(); ctx.arc(x0 + 48, top + 278, 3.5, 0, Math.PI * 2); ctx.fill();
-      }
-
-      // trophy plaques
-      [[right - 280, top + 160, "#E8A33D"], [right - 280, top + 220, "#7EB8C8"]].forEach(([px, py, col], i) => {
+      // ---------- right: trophies + shelf + rods ----------
+      [[right - 300, top + 150, "#E8A33D"], [right - 300, top + 210, "#7EB8C8"]].forEach(([px, py, col], i) => {
         ctx.fillStyle = "#8C5A3B";
         roundRect(px, py, 100, 48, 6); ctx.fill();
         ctx.fillStyle = col;
@@ -272,85 +255,91 @@
         ctx.fillText(i ? "LAKE BASS" : "GOLDEN", px + 50, py + 14);
       });
 
-      // hanging net lattice
-      ctx.strokeStyle = "rgba(251,240,222,0.5)";
-      ctx.lineWidth = 1.2;
-      for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 4; col++) {
-          ctx.strokeRect(left + 200 + col * 24, top + 155 + row * 16, 20, 12);
-        }
+      drawBuildingShelf(right - 90, top + 150, 70, 100, ["#3E7C74", "#E8A33D", "#CFE7F2", "#D9705C"]);
+
+      ctx.fillStyle = "#8C5A3B";
+      roundRect(right - 170, top + 160, 12, 130, 3); ctx.fill();
+      ctx.strokeStyle = "#6E5C49";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      for (let i = 0; i < 6; i++) {
+        const x0 = right - 185 + i * 12;
+        ctx.beginPath();
+        ctx.moveTo(x0, top + 168);
+        ctx.lineTo(x0 + 48, top + 278);
+        ctx.stroke();
+        ctx.fillStyle = ["#D9705C", "#3E7C74", "#D98F2B"][i % 3];
+        ctx.beginPath(); ctx.arc(x0 + 48, top + 278, 3.5, 0, Math.PI * 2); ctx.fill();
       }
 
-      // weather / catch board
-      ctx.fillStyle = "#2A4038";
-      roundRect(left + 200, top + 210, 110, 70, 8); ctx.fill();
-      ctx.fillStyle = "#FBF0DE";
-      ctx.font = "700 10px Nunito, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("TODAY", left + 255, top + 228);
-      ctx.font = "600 9px Nunito, sans-serif";
-      ctx.fillText("Soft rain", left + 255, top + 244);
-      ctx.fillText("Bass biting", left + 255, top + 258);
-      ctx.fillText("Sell at Harbour", left + 255, top + 272);
-
-      // ---------- side lounge / map table (left — keep center aisle to door clear) ----------
-      // soft rug
+      // ---------- left lounge (below bait, clear of center aisle) ----------
       ctx.fillStyle = "rgba(62,124,116,0.22)";
-      roundRect(left + 70, top + 200, 220, 100, 18); ctx.fill();
+      roundRect(left + 24, top + 270, 200, 95, 16); ctx.fill();
       ctx.fillStyle = "rgba(255,255,255,0.12)";
-      roundRect(left + 82, top + 210, 196, 80, 14); ctx.fill();
+      roundRect(left + 34, top + 280, 180, 75, 12); ctx.fill();
 
-      drawBuildingTable(left + 100, top + 220, 160, 52);
-      drawBuildingChair(left + 85, top + 270);
-      drawBuildingChair(left + 210, top + 270);
-      // lake chart on table
+      drawBuildingTable(left + 50, top + 285, 150, 48);
+      drawBuildingChair(left + 40, top + 332);
+      drawBuildingChair(left + 155, top + 332);
+
       ctx.fillStyle = "#CFE7F2";
-      roundRect(left + 125, top + 228, 90, 40, 4); ctx.fill();
+      roundRect(left + 70, top + 292, 90, 36, 4); ctx.fill();
       ctx.strokeStyle = "#3E7C74";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.ellipse(left + 170, top + 248, 28, 12, 0, 0, Math.PI * 2);
+      ctx.ellipse(left + 115, top + 310, 26, 11, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.fillStyle = "#3E7C74";
       ctx.font = "700 8px Nunito, sans-serif";
-      ctx.fillText("WILLOW LAKE", left + 170, top + 242);
+      ctx.fillText("WILLOW LAKE", left + 115, top + 304);
 
-      // fishbowl aquarium (mid-left, still clear of door)
+      // fishbowl beside lounge
       ctx.fillStyle = "rgba(126,184,200,0.55)";
-      roundRect(left + 300, top + 210, 70, 55, 12); ctx.fill();
+      roundRect(left + 240, top + 290, 64, 50, 12); ctx.fill();
       ctx.strokeStyle = "rgba(255,255,255,0.45)";
       ctx.lineWidth = 2;
-      roundRect(left + 300, top + 210, 70, 55, 12); ctx.stroke();
+      roundRect(left + 240, top + 290, 64, 50, 12); ctx.stroke();
       ctx.fillStyle = "#E8A33D";
       ctx.beginPath();
-      ctx.ellipse(left + 328 + Math.sin(t / 500) * 8, top + 238, 10, 4, 0.2, 0, Math.PI * 2);
+      ctx.ellipse(left + 265 + Math.sin(t / 500) * 8, top + 314, 9, 3.5, 0.2, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#6B8E4E";
-      ctx.beginPath(); ctx.ellipse(left + 335, top + 255, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(left + 272, top + 328, 11, 3.5, 0, 0, Math.PI * 2); ctx.fill();
 
-      // cast dock stripe near counter (activity feel)
+      // barrels bottom-left (out of door lane)
+      [[left + 48, bottom - 90], [left + 108, bottom - 84]].forEach(([bx, by], i) => {
+        ctx.fillStyle = i ? "#8C5A3B" : "#A9784F";
+        ctx.beginPath(); ctx.ellipse(bx, by + 26, 24, 10, 0, 0, Math.PI * 2); ctx.fill();
+        roundRect(bx - 24, by - 6, 48, 34, 6); ctx.fill();
+        ctx.fillStyle = "#6E5C49";
+        ctx.beginPath(); ctx.ellipse(bx, by - 6, 24, 8, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#FBF0DE";
+        ctx.font = "700 9px Nunito, sans-serif";
+        ctx.fillText(i ? "WORMS" : "SHINY", bx, by + 12);
+      });
+
+      // cast hint near Finn
       const pulse = 0.12 + Math.sin(t / 450) * 0.05;
       ctx.fillStyle = `rgba(62,124,116,${pulse})`;
-      roundRect(cx - 100, cy + 40, 200, 26, 10); ctx.fill();
-      ctx.fillStyle = "rgba(58,44,34,0.5)";
+      roundRect(cx - 100, cy + 36, 200, 24, 10); ctx.fill();
+      ctx.fillStyle = "rgba(58,44,34,0.55)";
       ctx.font = "700 11px Nunito, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("Ask Finn · head out to cast", cx, cy + 57);
+      ctx.fillText("Ask Finn · head out to cast", cx, cy + 52);
 
-      // ---------- people ----------
+      // people
       if (typeof drawBuildingPatron === "function") {
         drawBuildingPatron(cx + 10, cy - 8, "#DCE6F2", "#3E7C74", "#4A3728", Math.sin(t / 520) * 1);
         if (typeof drawNpcNameTag === "function") drawNpcNameTag(cx + 10, cy - 32, "Finn");
 
-        drawBuildingPatron(left + 95, top + 145, "#F0C08A", "#C4895A", "#6B4423", Math.sin(t / 480) * 1.1);
-        if (typeof drawNpcNameTag === "function") drawNpcNameTag(left + 95, top + 121, "Ivy");
+        drawBuildingPatron(left + 200, top + 175, "#F0C08A", "#C4895A", "#6B4423", Math.sin(t / 480) * 1.1);
+        if (typeof drawNpcNameTag === "function") drawNpcNameTag(left + 200, top + 151, "Ivy");
 
-        const walk = Math.sin(t / 2000) * 50;
-        drawBuildingPatron(left + 280 + walk, bottom - 70, "#F7D9B6", "#5A7FB0", "#3A2417", Math.sin(t / 450) * 1.2);
-        if (typeof drawNpcNameTag === "function") drawNpcNameTag(left + 280 + walk, bottom - 94, "Theo");
+        drawBuildingPatron(left + 360, bottom - 78, "#F7D9B6", "#5A7FB0", "#3A2417", Math.sin(t / 450) * 1.2);
+        if (typeof drawNpcNameTag === "function") drawNpcNameTag(left + 360, bottom - 102, "Theo");
 
-        drawBuildingPatron(right - 200, bottom - 100, "#D9A066", "#8A6BAE", "#B5651D", Math.sin(t / 500 + 1) * 1.1);
-        if (typeof drawNpcNameTag === "function") drawNpcNameTag(right - 200, bottom - 124, "Sora");
+        drawBuildingPatron(right - 220, bottom - 95, "#D9A066", "#8A6BAE", "#B5651D", Math.sin(t / 500 + 1) * 1.1);
+        if (typeof drawNpcNameTag === "function") drawNpcNameTag(right - 220, bottom - 119, "Sora");
       }
     },
   });
