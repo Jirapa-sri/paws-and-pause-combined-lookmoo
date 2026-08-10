@@ -130,6 +130,27 @@
         ctx.fillStyle = "#D98F2B";
         roundRect(cx + 49, cy - 4, 20, 6, 2); ctx.fill();
 
+        // Player purchases subtly change the shop: packed orders wait by the till.
+        const islandCount = Object.values((state && state.islandInventory) || {}).reduce((n,v) => n + (Number(v) || 0), 0);
+        const furnitureCount = Object.values((state && state.furnitureInventory) || {}).reduce((n,v) => n + (Number(v) || 0), 0);
+        const parcelCount = Math.min(3, islandCount + furnitureCount);
+        for(let i=0; i<parcelCount; i++){
+          const px = cx + 88 + i*24;
+          const py = cy + 40 - (i%2)*7;
+          ctx.fillStyle = i%2 ? "#D9C199" : "#C4895A";
+          roundRect(px, py, 21, 17, 3); ctx.fill();
+          ctx.strokeStyle = "rgba(90,64,48,0.35)"; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(px+10.5,py); ctx.lineTo(px+10.5,py+17); ctx.stroke();
+          ctx.fillStyle = "#FBF0DE";
+          roundRect(px+5, py+5, 11, 5, 1); ctx.fill();
+        }
+        if(parcelCount){
+          ctx.fillStyle = "#6E5C49";
+          ctx.font = "700 8px ui-rounded, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("PICKUP", cx + 110, cy + 68);
+        }
+
         // NPCs
         drawBuildingPatron(cx - 35, cy - 30, "#D9A066", "#C07840", "#3A2417", Math.sin(t/550)*1.2);
         drawNpcNameTag(cx - 35, cy - 54, "Willow");

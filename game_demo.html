@@ -153,6 +153,22 @@
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
   .toast.show{ opacity:1; transform: translateY(0); }
+  .reward-pop{
+    position:fixed; left:50%; top:34%; z-index:80; pointer-events:none;
+    transform:translate(-50%,-50%); font-family:var(--display); font-size:2rem; font-weight:800;
+    color:var(--marigold); text-shadow:0 3px 0 #8C5A3B,0 8px 20px rgba(58,44,34,.28);
+    animation:rewardFloat 1.25s ease-out forwards;
+  }
+  .reward-pop::before,.reward-pop::after{content:"✦";margin:0 .45rem;color:#FFF1B8;}
+  @keyframes rewardFloat{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}25%{opacity:1;transform:translate(-50%,-12px) scale(1.12)}100%{opacity:0;transform:translate(-50%,-70px) scale(.95)}}
+  .feedback-wrong{animation:feedbackShake .28s ease-in-out}
+  .feedback-good{animation:feedbackGlow .42s ease-out}
+  @keyframes feedbackShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  @keyframes feedbackGlow{0%{filter:none}45%{filter:drop-shadow(0 0 12px rgba(232,163,61,.75));transform:scale(1.008)}100%{filter:none;transform:none}}
+  .daily-list{display:grid;gap:.55rem;margin-top:.7rem}
+  .daily-row{display:flex;align-items:center;justify-content:space-between;gap:.7rem;padding:.65rem .75rem;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.55)}
+  .daily-row span{font-size:.78rem;color:var(--ink-soft)}
+  .daily-row b{font-family:var(--mono);font-size:.7rem;color:var(--teal);white-space:nowrap}
 
   /* Modal */
   .modal-backdrop{
@@ -1247,6 +1263,81 @@
     font-family: var(--mono); font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
     color: var(--ink-faint);
   }
+  .concert-song-picks{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0.45rem;
+    margin:0.55rem 0 0.75rem;
+  }
+  .concert-song-pick{
+    text-align:left; border-radius:12px; padding:0.55rem 0.65rem;
+    border:1px solid var(--line); background:rgba(255,255,255,0.62);
+    font-family:var(--display); color:var(--ink); cursor:pointer;
+  }
+  .concert-song-pick b{ display:block; font-size:0.88rem; line-height:1.2; }
+  .concert-song-pick span{
+    display:block; margin-top:0.15rem; font-family:var(--mono); font-size:0.62rem;
+    letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .concert-song-pick.active{
+    border-color: rgba(196,90,140,0.65);
+    background: linear-gradient(160deg, rgba(196,90,140,0.18), rgba(232,163,61,0.16));
+    box-shadow: 0 8px 18px -14px rgba(90,40,70,0.45);
+  }
+  .concert-song-pick:hover{ transform: translateY(-1px); }
+  .cinema-hub{
+    --cine-wood:#3A2A1E;
+    --cine-wood2:#5A4030;
+    --cine-red:#8B1E2D;
+    --cine-carpet:#6E1824;
+    --cine-gold:#E8C57A;
+    --cine-cream:#F7E9D2;
+    background:
+      linear-gradient(180deg, rgba(26,18,14,0.08), rgba(26,18,14,0.02)),
+      repeating-linear-gradient(90deg, rgba(90,64,48,0.08) 0 12px, rgba(58,42,30,0.05) 12px 24px);
+    border:1px solid rgba(90,64,48,0.28);
+    border-radius:18px;
+    padding:0.85rem;
+    margin-top:0.35rem;
+  }
+  .cinema-hub .item-grid{ gap:0.7rem; }
+  .cinema-card{
+    min-width:154px; max-width:176px;
+    background: linear-gradient(180deg, #FBF4E8, #EFE0C8);
+    border:1px solid rgba(90,64,48,0.28);
+    border-radius:14px;
+    padding:0.55rem;
+    box-shadow: 0 10px 22px -16px rgba(40,20,12,0.55);
+  }
+  .cinema-card .cine-meta{
+    font-size:0.72rem; opacity:0.72; text-align:center; line-height:1.35;
+  }
+  .cinema-card .cine-title{
+    font-family: var(--display); font-weight:800; font-size:0.9rem;
+    text-align:center; color: var(--cine-wood); line-height:1.2; margin:0.35rem 0 0.15rem;
+  }
+  .cinema-poster{
+    height:150px; border-radius:10px; overflow:hidden; position:relative;
+    border:1px solid rgba(90,64,48,0.22);
+    background:#2A1C16;
+  }
+  .cinema-poster img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cinema-poster .cine-poster-fallback{
+    position:absolute; inset:0; display:flex; align-items:flex-end; padding:0.55rem;
+    color:#fff; font-weight:700; font-size:0.82rem;
+    background: linear-gradient(160deg, rgba(0,0,0,0.15), rgba(0,0,0,0.72));
+  }
+  .cinema-trailer-frame{
+    position:relative; width:100%; aspect-ratio:16/9; border-radius:14px; overflow:hidden;
+    background:#120c0a; border:2px solid rgba(232,197,122,0.45);
+    box-shadow: 0 18px 36px -20px rgba(0,0,0,0.55);
+  }
+  .cinema-trailer-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .cinema-marquee{
+    display:flex; align-items:center; justify-content:center; gap:0.45rem;
+    margin:0.15rem 0 0.65rem; padding:0.45rem 0.7rem; border-radius:999px;
+    background: linear-gradient(90deg, #5A2018, #8B1E2D, #5A2018);
+    color:#F7E9D2; font-family: var(--mono); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase;
+  }
+  .cinema-marquee::before, .cinema-marquee::after{ content:"✦"; color:#E8C57A; }
   .morning-link{ display:inline-block; margin-top:0.45rem; font-family: var(--mono); font-size:0.68rem; color: var(--teal-deep); }
   .mini-event-stage{
     position:relative; height:180px; border-radius:14px; overflow:hidden; margin:0.4rem 0 0.7rem;
@@ -2560,7 +2651,7 @@ const BREEDS = {
     guestLavender: { label:"Mara's Home", wall:"#E8DCEC", floor:"#F4ECF6", accent:"#8A6BAE", activity:"Visit Mara", blurb:"Tea steam, lavender sachets, and a second cup waiting." },
     guestBlue:     { label:"Theo's Home",  wall:"#DCE6F2", floor:"#EAF0F7", accent:"#4A7DBF", activity:"Visit Theo", blurb:"Salt air, sea glass jars, and quiet reading light." },
     farm:    { label:"Sunny Farm",    wall:"#E8F0D8", floor:"#C4A574", accent:"#6B8E4E", activity:"Tend crops",  blurb:"Plant, water, and harvest under the sun." },
-    cinema:  { label:"Island Cinema", wall:"#2A2438", floor:"#3A3348", accent:"#E8A33D", activity:"Buy tickets", blurb:"Big lobby, ticket booth, and now showing." },
+    cinema:  { label:"Island Cinema", wall:"#4A3428", floor:"#6E1824", accent:"#E8C57A", activity:"Buy tickets", blurb:"Cozy home theater — wood walls, red carpet, soft seats." },
     airport: { label:"Willow Airlines", wall:"#E8EEF4", floor:"#F4F7FA", accent:"#4AA3D9", activity:"Talk to Sky", blurb:"Gates, boarding pass smiles, and island hop dreams." },
     harbour: { label:"Sea Harbour", wall:"#C9B89A", floor:"#D4B896", accent:"#3E7C74", activity:"Harbour board", blurb:"Walk the pier — sell fish at market, sail from the port." },
   };
@@ -2994,9 +3085,9 @@ const BREEDS = {
       ],
       questions:[
         { q:"How do I join the show?", a:"Unlock the Festival, walk in, and start the activity at the counter. Follow the lights — I'll be on stage!" },
+        { q:"Can I change the music?", a:"Yes! On the festival board or during the show, tap any BLACKPINK or LISA track — How You Like That, Pink Venom, LALISA, Rockstar, and more." },
         { q:"Why music here?", a:"Because pause is not silence. Sometimes pause is a beat you can sway to." },
         { q:"Got a dance tip?", a:"Smile first, then move. Confidence is the best choreography." },
-        { q:"Who should I bring?", a:"A puppy, a friend, or just yourself. All three are VIP." },
       ],
     },
     {
@@ -3625,6 +3716,7 @@ const BREEDS = {
       { id:"floorlamp",  type:"floorlamp",  x:250, y:160, w:42,  h:110 },
       { id:"nightstand", type:"nightstand", x:250, y:220, w:55,  h:60 },
       { id:"diydesk",    type:"diydesk",    x:560, y:320, w:90,  h:60 },
+      { id:"willow-tv",  type:"tv",         x:690, y:245, w:105, h:80 },
     ];
   }
 
@@ -3642,7 +3734,7 @@ const BREEDS = {
     rug:"Rug", bed:"Bed", cabinet:"Cabinet", table:"Table", plant:"Plant",
     dogbed:"Dog bed", mirror:"Mirror", wardrobe:"Wardrobe", chair:"Chair", bookshelf:"Bookshelf",
     floorlamp:"Floor lamp", nightstand:"Nightstand", sofa:"Sofa",
-    painting:"Painting", toybox:"Toy chest", desk:"Desk", diydesk:"DIY Desk",
+    painting:"Painting", toybox:"Toy chest", desk:"Desk", diydesk:"DIY Desk", tv:"Willow TV",
   };
 
   /* ---------- State ---------- */
@@ -3744,6 +3836,7 @@ const BREEDS = {
       caredToday: false,
       playerName: "",
       setupDone: false,
+      tutorialSeen: false,
       unlocked: defaultUnlocked(),
       mapVersion: 5,
       furnitureLayout: defaultFurnitureLayout(),
@@ -3764,6 +3857,8 @@ const BREEDS = {
       materials: { wood: 4, petals: 3, stone: 2 },
       child: { skin: SKIN_TONES[1], hair: HAIR_COLORS[0], outfit: OUTFIT_COLORS[0], hairstyle: "short", clothing: "tshirt", eyeStyle: "round", eyeColor: EYE_COLORS[0], mouthStyle: "smile", accessory: "none", faceShape: "round", browStyle: "natural", noseStyle: "dot", avatar: null },
       weather: "clear",
+      weatherLocation: "",
+      concertSong: "hyllt",
       dayMood: "soft-hearted",
       morning: null,
       idCard: { number: "", title: "", motto: "", photoThumb: "", summary: "" },
@@ -3837,9 +3932,9 @@ const BREEDS = {
       runtime:"2h 15m",
       genre:"Action · Superhero",
       poster:"#C0483E",
-      posterImg:"https://r2-media.wdwnt.com/2026/05/spider-man-brand-new-day-poster.jpeg",
+      posterImg:"https://i.ytimg.com/vi/fbeZ0zKnL5A/hqdefault.jpg",
+      youtubeId:"fbeZ0zKnL5A",
       blurb:"Peter Parker faces a brand-new day of web-slinging trouble across New York — and a few surprises from old friends.",
-      trailer:"https://www.youtube.com/results?search_query=Spider-Man+Brand+New+Day+official+trailer",
       price: 10,
     },
     {
@@ -3849,9 +3944,9 @@ const BREEDS = {
       runtime:"2h 40m",
       genre:"Epic · Adventure",
       poster:"#3E7C74",
-      posterImg:"https://image.tmdb.org/t/p/w500/kXfqcdQKsTbDkJefOwltfNzJm95.jpg",
+      posterImg:"https://i.ytimg.com/vi/Mzw2ttJD2qQ/hqdefault.jpg",
+      youtubeId:"Mzw2ttJD2qQ",
       blurb:"A sweeping voyage home across mythic seas — courage, cleverness, and the long road back.",
-      trailer:"https://www.youtube.com/results?search_query=The+Odyssey+Christopher+Nolan+trailer",
       price: 12,
     },
     {
@@ -3861,9 +3956,9 @@ const BREEDS = {
       runtime:"1h 45m",
       genre:"Family · Animation",
       poster:"#E8A33D",
-      posterImg:"https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBr3M1m4jJ9.jpg",
+      posterImg:"https://i.ytimg.com/vi/QftAW9TTmuQ/hqdefault.jpg",
+      youtubeId:"QftAW9TTmuQ",
       blurb:"The toys are back in the playroom for another heartfelt adventure about growing up and hanging on.",
-      trailer:"https://www.youtube.com/results?search_query=Toy+Story+5+official+trailer",
       price: 8,
     },
     {
@@ -3873,9 +3968,9 @@ const BREEDS = {
       runtime:"1h 48m",
       genre:"Romance · Comedy",
       poster:"#C45A7A",
-      posterImg:"https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg",
+      posterImg:"https://i.ytimg.com/vi/AvKoSR3O4NQ/hqdefault.jpg",
+      youtubeId:"AvKoSR3O4NQ",
       blurb:"A near-miss meet-cute turns into a night of detours, awkward laughs, and maybe something real.",
-      trailer:"https://www.youtube.com/results?search_query=One+Night+Only+2026+trailer",
       price: 9,
     },
     {
@@ -3885,9 +3980,9 @@ const BREEDS = {
       runtime:"1h 30m",
       genre:"Kids · Adventure",
       poster:"#5A7FB0",
-      posterImg:"https://upload.wikimedia.org/wikipedia/en/a/ae/PAW_Patrol_The_Mighty_Movie_poster.jpg",
+      posterImg:"https://i.ytimg.com/vi/xgI5iYmOf5Q/hqdefault.jpg",
+      youtubeId:"xgI5iYmOf5Q",
       blurb:"Adventure Bay digs up dino-sized trouble — and only the pups can save the day.",
-      trailer:"https://www.youtube.com/results?search_query=PAW+Patrol+The+Dino+Movie+trailer",
       price: 7,
     },
     {
@@ -3897,9 +3992,9 @@ const BREEDS = {
       runtime:"1h 26m",
       genre:"Horror · Thriller",
       poster:"#4A2C6E",
-      posterImg:"https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hK1pGGWdaD.jpg",
+      posterImg:"https://i.ytimg.com/vi/hXx9CKXg0YI/hqdefault.jpg",
+      youtubeId:"hXx9CKXg0YI",
       blurb:"Something chilling rolls through the neighborhood when the ice cream truck never seems to leave.",
-      trailer:"https://www.youtube.com/results?search_query=Ice+Cream+Man+2026+trailer",
       price: 9,
     },
   ];
@@ -4067,6 +4162,27 @@ const BREEDS = {
     toastsEl.appendChild(el);
     requestAnimationFrame(() => el.classList.add("show"));
     setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 300); }, 2200);
+  }
+  function celebrateReward(amount){
+    if(!amount)return;
+    const el=document.createElement("div");el.className="reward-pop";el.textContent="+$"+amount;document.body.appendChild(el);
+    setTimeout(()=>el.remove(),1400);
+  }
+  function animateFeedback(el,kind){
+    if(!el)return;const cls=kind==="wrong"?"feedback-wrong":"feedback-good";el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),500);
+  }
+
+  function openFirstDayTutorial(step){
+    const pages=[
+      {title:"Welcome to Willow Isle",icon:"⌂",text:"Walk with WASD or the arrow keys. Explore each building and approach people, furniture, or signs."},
+      {title:"Look for the E prompt",icon:"E",text:"When the interaction prompt appears, press E. At Home you can use Willow TV, your wardrobe, and the checkers table."},
+      {title:"Shop, work, and unwind",icon:"✦",text:"Talk to Willow at the Store to browse or work. Visit Lila at the Boutique for outfits, Fashion Rush, and style opinions."},
+      {title:"Your day at a glance",icon:"✓",text:"Open Home → Daily Planner to see remaining jobs, rewards, and whether today's TV bulletin is ready."},
+    ];
+    step=Math.max(0,Math.min(Number(step)||0,pages.length-1));const page=pages[step];
+    openModal(`<div style="text-align:center"><div style="width:72px;height:72px;margin:0 auto .7rem;border-radius:24px;display:grid;place-items:center;background:linear-gradient(145deg,#F3DBAA,#E8D0DC);font-family:var(--display);font-size:1.8rem;color:#6E4A36">${page.icon}</div><h3>${page.title}</h3><p class="modal-sub" style="max-width:440px;margin:.4rem auto 1rem">${page.text}</p><div class="mg-scoreline"><span>Willow Isle Guide</span><span>${step+1} / ${pages.length}</span></div><div class="action-row" style="justify-content:center;margin-top:1rem">${step?'<button class="action-btn ghost" id="tutorial-prev">Back</button>':''}<button class="action-btn" id="tutorial-next">${step===pages.length-1?'Start exploring':'Next'}</button></div></div>`);
+    const prev=document.getElementById("tutorial-prev");if(prev)prev.addEventListener("click",()=>openFirstDayTutorial(step-1));
+    document.getElementById("tutorial-next").addEventListener("click",()=>{if(step<pages.length-1){openFirstDayTutorial(step+1);return;}state.tutorialSeen=true;saveState(true);closeModal();toast("Guide saved in Home → Daily Planner");});
   }
 
   /* ---------- Sound Effects ---------- */
@@ -7771,6 +7887,14 @@ const BREEDS = {
         currentTarget = { kind:"cabinet", ref:f };
         promptText.textContent = "Open catalog";
         promptBtn.style.display = "flex";
+      } else if(f.type === "tv"){
+        currentTarget = { kind:"tv", ref:f };
+        promptText.textContent = "Watch Willow TV";
+        promptBtn.style.display = "flex";
+      } else if(f.type === "table"){
+        currentTarget = { kind:"checkers", ref:f };
+        promptText.textContent = "Play checkers with AI";
+        promptBtn.style.display = "flex";
       } else if(f.type === "dogbed" && hasDogs()){
         currentTarget = { kind:"house-puppy", ref:state.activeDogId };
         promptText.textContent = "Care for " + ((getActiveDog() && getActiveDog().name) || "puppy");
@@ -7823,6 +7947,10 @@ const BREEDS = {
     } else if(currentTarget.kind === "cabinet"){
       homeTab = "room";
       openHomeMenu();
+    } else if(currentTarget.kind === "tv"){
+      openWillowTV("weather");
+    } else if(currentTarget.kind === "checkers"){
+      openCheckersGame();
     } else if(currentTarget.kind === "house-puppy"){
       if(currentTarget.ref) setActiveDog(currentTarget.ref);
       openPetCare();
@@ -8032,6 +8160,26 @@ const BREEDS = {
         sparkle(x + w - 22, y + 48);
         break;
 
+      case "tv":
+        shade();
+        ctx.fillStyle = wood;
+        roundRect(x, y + 6, w, h - 16, 12); ctx.fill();
+        outline(); roundRect(x, y + 6, w, h - 16, 12); ctx.stroke();
+        ctx.fillStyle = "#263845";
+        roundRect(x + 9, y + 14, w - 30, h - 34, 9); ctx.fill();
+        ctx.fillStyle = state.weather === "rain" ? "#8FC1D6" : (state.weather === "soft" ? "#CFE1DC" : "#F3DBAA");
+        roundRect(x + 14, y + 19, w - 40, h - 44, 6); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.72)";
+        ctx.font = "700 8px ui-rounded, sans-serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("WILLOW TV", x + (w-11)/2, y + h/2 - 2);
+        ctx.fillStyle = butter;
+        ctx.beginPath(); ctx.arc(x + w - 13, y + h/2 - 4, 4, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = wood;
+        ctx.fillRect(x + 18, y + h - 12, 8, 12);
+        ctx.fillRect(x + w - 26, y + h - 12, 8, 12);
+        break;
+
       case "cabinet":
         shade();
         ctx.fillStyle = wood;
@@ -8062,15 +8210,10 @@ const BREEDS = {
         ctx.fillStyle = cream;
         roundRect(x + 6, y + 14, w - 12, h * 0.34, 12); ctx.fill();
         outline(); roundRect(x, y + 10, w, h * 0.42, 14); ctx.stroke();
-        // teapot + plant
-        ctx.fillStyle = "#F4E7D6";
-        roundRect(x + 18, y + 22, 24, 16, 6); ctx.fill();
-        ctx.strokeStyle = ink; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(x + 42, y + 30, 5, -0.9, 0.9); ctx.stroke();
-        ctx.fillStyle = sage;
-        ctx.beginPath(); ctx.ellipse(x + w - 30, y + 28, 11, 8, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = blush;
-        ctx.beginPath(); ctx.arc(x + w - 30, y + 22, 3, 0, Math.PI * 2); ctx.fill();
+        // Small playable checkers board.
+        const topY=y+10,topH=h*.42,bs=Math.min(w-28,topH-8),bx=x+(w-bs)/2,by=topY+(topH-bs)/2,sq=bs/8;
+        for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++){ctx.fillStyle=(rr+cc)%2?"#6E4A36":"#F3DBAA";ctx.fillRect(bx+cc*sq,by+rr*sq,sq,sq);}
+        [[1,1,"#C45A7A"],[2,4,"#405A78"],[5,3,"#C45A7A"],[6,6,"#405A78"]].forEach(([rr,cc,color])=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(bx+(cc+.5)*sq,by+(rr+.5)*sq,sq*.32,0,Math.PI*2);ctx.fill();});
         break;
 
       case "plant":
@@ -8597,11 +8740,16 @@ const BREEDS = {
       openHarbourHub();
       return;
     }
+    if(id === "boutique"){
+      SFX.enterZone();
+      openBoutiqueOwnerMenu();
+      return;
+    }
     exitBuilding(true);
     SFX.enterZone();
     if(id === "cafe") openJob();
     else if(id === "store") openStore();
-    else if(id === "boutique") openClothingStore();
+    else if(id === "boutique") openBoutiqueOwnerMenu();
     else if(id === "lake") openLakeHub();
     else if(id === "shelter") openShelter();
     else if(id === "stadium") openStadium();
@@ -11219,6 +11367,32 @@ const BREEDS = {
       }
       return;
     }
+    if(currentBuilding === "boutique"){
+      const posterX = HOUSE.x + HOUSE.w - 109, posterY = HOUSE.y + 236;
+      if(Math.hypot(player.x - posterX, player.y - posterY) < 90){
+        currentTarget = { kind:"boutique-poster" };
+        promptText.textContent = "View Style Challenge poster";
+        promptBtn.style.display = "flex";
+        return;
+      }
+      // Match Lila's visible position and allow interaction from the customer
+      // side of the counter.
+      const lilaX = cx - 25, lilaY = cy - 28;
+      if(Math.hypot(player.x - lilaX, player.y - lilaY) < 125){
+        currentTarget = { kind:"boutique-owner" };
+        promptText.textContent = "Talk to Lila";
+        promptBtn.style.display = "flex";
+      } else { currentTarget = null; promptBtn.style.display = "none"; }
+      return;
+    }
+    if(currentBuilding === "store"){
+      if(Math.hypot(player.x - cx, player.y - cy) < 82){
+        currentTarget = { kind:"store-owner" };
+        promptText.textContent = "Talk to Willow";
+        promptBtn.style.display = "flex";
+      } else { currentTarget = null; promptBtn.style.display = "none"; }
+      return;
+    }
     if(Math.hypot(player.x - cx, player.y - cy) < 70){
       currentTarget = { kind:"building-act" };
       promptText.textContent = info ? info.activity : "Use";
@@ -11246,6 +11420,9 @@ const BREEDS = {
     else if(currentTarget.kind === "harbour-market"){ SFX.enterZone(); openFishMarket(); }
     else if(currentTarget.kind === "harbour-boat"){ SFX.enterZone(); openBoatDrive(); }
     else if(currentTarget.kind === "building-act") startBuildingActivity();
+    else if(currentTarget.kind === "store-owner") openStoreOwnerMenu();
+    else if(currentTarget.kind === "boutique-owner") openBoutiqueOwnerMenu();
+    else if(currentTarget.kind === "boutique-poster") openBoutiqueChallengePoster();
   }
 
   function drawBuildingScene(){
@@ -11319,30 +11496,85 @@ const BREEDS = {
     // counter
     const cx = HOUSE.x + HOUSE.w/2, cy = HOUSE.y + 145;
     if(id === "cinema"){
-      // big theater lobby carpet
-      ctx.fillStyle = "#1A1524";
-      roundRect(HOUSE.x + 70, HOUSE.y + 190, HOUSE.w - 140, 230, 16); ctx.fill();
-      // marquee screen
-      ctx.fillStyle = "#E8A33D";
-      roundRect(HOUSE.x + 140, HOUSE.y + 210, HOUSE.w - 280, 120, 10); ctx.fill();
-      ctx.fillStyle = "#2A2438";
-      roundRect(HOUSE.x + 155, HOUSE.y + 222, HOUSE.w - 310, 96, 8); ctx.fill();
-      ctx.fillStyle = "#FBF0DE";
-      ctx.font = "700 18px ui-rounded, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("NOW SHOWING", cx, HOUSE.y + 275);
-      // seat rows
-      ctx.fillStyle = "#C45A7A";
-      for(let r=0;r<2;r++) for(let i=0;i<8;i++){
-        roundRect(HOUSE.x + 120 + i*85, HOUSE.y + 350 + r*36, 55, 24, 5); ctx.fill();
+      // Cozy home-theater room: wood walls, red carpet, screen, recliners, concessions
+      const rx = HOUSE.x, ry = HOUSE.y, rw = HOUSE.w, rh = HOUSE.h;
+      // wood panel walls already painted by room; deepen floor carpet
+      ctx.fillStyle = "#6E1824";
+      roundRect(rx + 48, ry + 96, rw - 96, rh - 150, 14); ctx.fill();
+      // patterned rug under seats
+      ctx.fillStyle = "#8B2E3A";
+      roundRect(rx + 210, ry + 300, 420, 120, 10); ctx.fill();
+      ctx.fillStyle = "rgba(232,197,122,0.22)";
+      for(let i=0;i<7;i++){
+        ctx.fillRect(rx + 230 + i*55, ry + 312, 28, 96);
       }
-      // popcorn stand
-      ctx.fillStyle = "#C4895A";
-      roundRect(HOUSE.x + 70, HOUSE.y + 120, 70, 55, 8); ctx.fill();
+      // neon rail lights
+      ctx.strokeStyle = "rgba(220,60,70,0.75)";
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(rx + 70, ry + 120); ctx.lineTo(rx + rw - 70, ry + 120); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(rx + 70, ry + rh - 70); ctx.lineTo(rx + rw - 70, ry + rh - 70); ctx.stroke();
+      // wall sconces
+      [[rx+95, ry+150],[rx+rw-110, ry+150],[rx+95, ry+260],[rx+rw-110, ry+260]].forEach(([sx,sy]) => {
+        ctx.fillStyle = "#D4B06A";
+        roundRect(sx, sy, 14, 8, 3); ctx.fill();
+        ctx.fillStyle = "rgba(255,236,180,0.55)";
+        ctx.beginPath(); ctx.moveTo(sx+7, sy+8); ctx.lineTo(sx-10, sy+38); ctx.lineTo(sx+24, sy+38); ctx.closePath(); ctx.fill();
+      });
+      // projection screen on stand
+      ctx.fillStyle = "#2A2018";
+      roundRect(cx - 150, ry + 132, 300, 150, 8); ctx.fill();
+      ctx.fillStyle = "#F4EFE4";
+      roundRect(cx - 138, ry + 144, 276, 118, 6); ctx.fill();
+      ctx.fillStyle = "#5A4030";
+      ctx.fillRect(cx - 6, ry + 280, 12, 28);
+      ctx.fillStyle = "#3A2A1E";
+      roundRect(cx - 34, ry + 300, 68, 12, 4); ctx.fill();
+      // soft screen glow text
+      ctx.fillStyle = "#8B1E2D";
+      ctx.font = "700 16px ui-rounded, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("NOW SHOWING", cx, ry + 208);
+      // recliner seats (2x3)
+      for(let r=0;r<2;r++){
+        for(let i=0;i<3;i++){
+          const sx = cx - 150 + i*110;
+          const sy = ry + 330 + r*48;
+          ctx.fillStyle = "#1E1612";
+          roundRect(sx, sy, 78, 34, 8); ctx.fill();
+          ctx.fillStyle = "#2C221C";
+          roundRect(sx + 6, sy - 14, 66, 18, 7); ctx.fill();
+          ctx.fillStyle = "#C9B29A";
+          roundRect(sx + 12, sy + 8, 54, 8, 3); ctx.fill();
+        }
+      }
+      // concession counter + popcorn machine (left)
+      ctx.fillStyle = "#2A1C16";
+      roundRect(rx + 70, ry + 150, 120, 70, 8); ctx.fill();
+      ctx.fillStyle = "#C0483E";
+      roundRect(rx + 82, ry + 118, 44, 40, 6); ctx.fill();
+      ctx.fillStyle = "#E8A33D";
+      roundRect(rx + 88, ry + 124, 32, 22, 4); ctx.fill();
+      ctx.fillStyle = "#FBF0DE";
+      ctx.font = "700 9px ui-rounded, sans-serif";
+      ctx.fillText("POP", rx + 104, ry + 138);
+      // soda fountain
+      ctx.fillStyle = "#5A7FB0";
+      roundRect(rx + 136, ry + 128, 40, 28, 5); ctx.fill();
       ctx.fillStyle = "#F5E9D3";
-      roundRect(HOUSE.x + 82, HOUSE.y + 128, 46, 34, 6); ctx.fill();
+      for(let i=0;i<3;i++) ctx.fillRect(rx + 142 + i*10, ry + 134, 6, 14);
+      // snack boxes on shelf
+      ctx.fillStyle = "#6E4A2E";
+      roundRect(rx + 70, ry + 230, 120, 16, 4); ctx.fill();
+      ["#E8A33D","#C45A7A","#5A7FB0","#3E7C74"].forEach((c,i) => {
+        ctx.fillStyle = c;
+        roundRect(rx + 78 + i*28, ry + 214, 22, 18, 3); ctx.fill();
+      });
+      // plants
+      ctx.fillStyle = "#3E7C74";
+      ctx.beginPath(); ctx.ellipse(rx + rw - 95, ry + rh - 95, 16, 12, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(rx + 95, ry + rh - 100, 14, 11, 0, 0, Math.PI*2); ctx.fill();
     }
-    if(id !== "concert" && id !== "airport" && id !== "harbour" && id !== "lake" && id !== "guestLavender" && id !== "guestBlue"){
+    if(id !== "concert" && id !== "airport" && id !== "harbour" && id !== "lake" && id !== "cinema" && id !== "guestLavender" && id !== "guestBlue"){
       ctx.fillStyle = "#8C5A3B";
       roundRect(cx - 95, cy - 12, 190, 52, 10); ctx.fill();
       ctx.fillStyle = "#C4895A";
@@ -11458,21 +11690,124 @@ const BREEDS = {
     renderStore();
   }
 
+  function openStoreOwnerMenu(){
+    openModal(`<h3>Willow · Shopkeeper</h3><div class="npc-quote">“Welcome in! Browse whenever you like — or take a shift if you want to help around the shop.”</div><div class="action-row" style="margin-top:0.85rem"><button class="action-btn" id="willow-shop">Browse the shop</button><button class="action-btn secondary" id="willow-work">Work</button><button class="action-btn ghost" id="willow-later">Maybe later</button></div>`);
+    document.getElementById("willow-shop").addEventListener("click", openStore);
+    document.getElementById("willow-work").addEventListener("click", openStoreWorkMenu);
+    document.getElementById("willow-later").addEventListener("click", closeModal);
+  }
+
+  function openStoreWorkMenu(){
+    const games=ensureLookmooGames(),requestsLeft=Math.max(0,3-games.storeRequestPlaysToday);
+    openModal(`<h3>Work at Willow Goods</h3><p class="modal-sub">Choose a customer-facing shift or help Willow behind the counter.</p><div class="item-grid"><div class="item-card"><div class="store-preview icon" style="font-size:1.6rem">✉</div><span>Customer Request</span><span style="font-family:var(--mono);font-size:.62rem;color:var(--ink-faint)">${requestsLeft} / 3 jobs left today</span><button id="work-request" ${requestsLeft?"":"disabled"}>${requestsLeft?"Take a request":"Come back tomorrow"}</button></div><div class="item-card"><div class="store-preview icon" style="font-size:1.6rem">▦</div><span>Organize Shelves</span><span style="font-family:var(--mono);font-size:.62rem;color:var(--ink-faint)">Sort deliveries by category</span><button id="work-organize">Choose shift</button></div></div><div class="action-row"><button class="action-btn ghost" id="work-back">Back to Willow</button></div>`);
+    const request=document.getElementById("work-request");if(request)request.addEventListener("click",openStoreCustomerRequest);
+    document.getElementById("work-organize").addEventListener("click",openStoreOrganizerMenu);document.getElementById("work-back").addEventListener("click",openStoreOwnerMenu);
+  }
+
   function openClothingStore(){
     renderBoutique();
   }
 
+  const BOUTIQUE_LOOKS = [
+    {id:"island-classic",name:"Island Classic",price:0,top:0,bottom:0,outer:-1,dress:-1,shoes:0,hat:-1,topColor:"#5A7FB0",bottomColor:"#405A78",accent:"#F3DBAA",tag:"Starter"},
+    {id:"coral-picnic",name:"Coral Picnic",price:24,top:2,bottom:1,outer:-1,dress:-1,shoes:1,hat:0,topColor:"#D9705C",bottomColor:"#E8D9C0",accent:"#D98F2B",tag:"Sunny"},
+    {id:"sage-stroll",name:"Sage Stroll",price:30,top:5,bottom:3,outer:0,dress:-1,shoes:0,hat:-1,topColor:"#6B8E6B",bottomColor:"#405A78",accent:"#F3DBAA",tag:"Cozy"},
+    {id:"lilac-dream",name:"Lilac Dream",price:38,top:-1,bottom:-1,outer:-1,dress:0,shoes:2,hat:2,topColor:"#8A6BAE",bottomColor:"#8A6BAE",accent:"#E8A33D",tag:"Elegant"},
+    {id:"harbour-blue",name:"Harbour Blue",price:34,top:1,bottom:4,outer:1,dress:-1,shoes:1,hat:1,topColor:"#5A7FB0",bottomColor:"#E8D9C0",accent:"#8FC1D6",tag:"Breezy"},
+    {id:"festival-pop",name:"Festival Pop",price:45,top:3,bottom:2,outer:-1,dress:-1,shoes:2,hat:2,topColor:"#C45A7A",bottomColor:"#8A6BAE",accent:"#E8A33D",tag:"Special"},
+  ];
+
+  function ensureBoutiqueCloset(){
+    const games=ensureLookmooGames();
+    if(!Array.isArray(games.boutiqueOwnedLooks)) games.boutiqueOwnedLooks=["island-classic"];
+    if(!games.boutiqueOwnedLooks.includes("island-classic")) games.boutiqueOwnedLooks.unshift("island-classic");
+    return games;
+  }
+
+  function boutiqueLookPreview(look,large){
+    const size=large?180:86;
+    return `<svg viewBox="0 0 120 150" width="${size}" height="${Math.round(size*1.18)}" aria-label="${escapeHtml(look.name)} outfit preview"><ellipse cx="60" cy="139" rx="38" ry="7" fill="rgba(58,44,34,.12)"/><circle cx="60" cy="28" r="17" fill="#E8B98F"/><path d="M36 50h48l-6 42H42z" fill="${look.topColor}"/><path d="M43 90h34l14 39H29z" fill="${look.bottomColor}"/><path d="M38 52l22 18 22-18" fill="none" stroke="${look.accent}" stroke-width="4"/><circle cx="88" cy="65" r="9" fill="${look.accent}"/></svg>`;
+  }
+
+  function wearBoutiqueLook(look){
+    ensureChildDefaults();
+    const av=childToAvatarConfig(state.child);
+    av.tops=look.top; av.bottoms=look.bottom; av.outer=look.outer; av.dresses=look.dress; av.shoes=look.shoes; av.hats=look.hat;
+    av.colors=Object.assign({},av.colors,{top:look.topColor,bottom:look.bottomColor,hat:look.accent,shoes:look.accent});
+    applyAvatarToChild(av); warmPlayerAvatar(); updateHud(); saveState(true);
+  }
+
+  function buyOrWearBoutiqueLook(id){
+    const look=BOUTIQUE_LOOKS.find(item=>item.id===id); if(!look)return;
+    const closet=ensureBoutiqueCloset(), owned=closet.boutiqueOwnedLooks.includes(id);
+    if(!owned){
+      if(state.money<look.price){toast("You need $"+(look.price-state.money)+" more for this look");return;}
+      state.money-=look.price; closet.boutiqueOwnedLooks.push(id); SFX.purchase();
+      toast(look.name+" added to your wardrobe!");
+    } else SFX.purchase();
+    closet.boutiqueEquippedLook=id; wearBoutiqueLook(look); renderBoutique();
+  }
+
+  function openBoutiqueLookDetail(id){
+    const look=BOUTIQUE_LOOKS.find(item=>item.id===id); if(!look)return;
+    const closet=ensureBoutiqueCloset(), owned=closet.boutiqueOwnedLooks.includes(id), equipped=closet.boutiqueEquippedLook===id;
+    openModal(`<h3>${escapeHtml(look.name)}</h3><p class="modal-sub">Lila has prepared the fitting mirror. Buying once adds this complete look to your wardrobe forever.</p><div class="boutique-fit"><div class="boutique-mirror" style="min-height:270px;display:grid;place-items:center;background:linear-gradient(#CFE7F2,#F3E6EA)">${boutiqueLookPreview(look,true)}</div><div><div class="field-label">${escapeHtml(look.tag)} collection</div><div class="flavor-box"><b>Complete look</b><br>Top, bottoms, shoes, and matching accessory are included.<br><br>${owned?"Already in your wardrobe.":`Price: <b>$${look.price}</b> · You have <b>$${state.money}</b>`}</div><div class="action-row"><button class="action-btn" id="look-buy" ${equipped||(!owned&&state.money<look.price)?"disabled":""}>${equipped?"Currently wearing":owned?"Wear this look":`Buy & Wear · $${look.price}`}</button><button class="action-btn ghost" id="look-back">Back to collection</button></div></div></div>`);
+    const buy=document.getElementById("look-buy"); if(buy)buy.addEventListener("click",()=>buyOrWearBoutiqueLook(id));
+    document.getElementById("look-back").addEventListener("click",renderBoutique);
+  }
+
+  async function openFashionCritic(){
+    ensureChildDefaults();
+    const colors=(state.child.avatar&&state.child.avatar.colors)||{};
+    const nearest=(group,color)=>{const opts=STYLE_OPTIONS[group]||[],rgb=h=>{const n=parseInt(String(h||"").replace("#",""),16);return Number.isFinite(n)?[(n>>16)&255,(n>>8)&255,n&255]:[128,128,128];},target=rgb(color);return (opts.reduce((best,o)=>{const c=rgb(o.color),d=c.reduce((sum,v,i)=>sum+(v-target[i])**2,0);return !best||d<best.d?{name:o.name,d}:best;},null)||{name:"Soft Neutral"}).name;};
+    const look={top:nearest("top",colors.top||state.child.outfit),bottom:nearest("bottom",colors.bottom),accessory:nearest("accessory",colors.hat)};
+    const previewLook={name:"Current outfit",topColor:colors.top||state.child.outfit||"#5A7FB0",bottomColor:colors.bottom||"#405A78",accent:colors.hat||"#E8A33D"};
+    openModal(`<h3>Lila is studying your look...</h3><div class="flavor-box">Checking the colors, mood, and perfect Willow Isle occasion.</div>`);
+    let result=null;
+    try{const res=await fetch(apiUrl("/api/fashion-critique"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({look})});result=await res.json();if(!res.ok)throw new Error("offline");}
+    catch(_){result={name:look.top+" Island Look",critique:`Lila loves how the ${look.top} top works with ${look.bottom} bottoms. The ${look.accessory} detail makes it feel playful and personal.`,occasion:"Perfect for a café visit or an afternoon in the plaza.",aiGenerated:false};}
+    openModal(`<h3>${escapeHtml(result.name||"Your Island Look")}</h3><p class="modal-sub">${result.aiGenerated?"AI stylist review":"Lila's offline style notes"}</p><div class="boutique-fit"><div class="boutique-mirror" style="min-height:220px;display:grid;place-items:center;background:linear-gradient(#F8EAF0,#E6F1F5)">${boutiqueLookPreview(previewLook,true)}</div><div><div class="npc-quote">“${escapeHtml(result.critique||"")}”</div><div class="flavor-box" style="margin-top:.7rem"><b>Wear it to:</b> ${escapeHtml(result.occasion||"")}</div></div></div><div class="action-row"><button class="action-btn secondary" id="critic-again">Review again</button><button class="action-btn" id="critic-done">Thanks, Lila</button></div>`);
+    document.getElementById("critic-again").addEventListener("click",openFashionCritic);document.getElementById("critic-done").addEventListener("click",openBoutiqueOwnerMenu);
+  }
+
+  function openBoutiqueOwnerMenu(){
+    openModal(`<h3>Lila · Boutique Stylist</h3><div class="npc-quote">“Welcome! You can preview every look before buying. Once it is yours, it stays in your wardrobe forever.”</div><div class="action-row" style="margin-top:.85rem"><button class="action-btn" id="lila-shop">Browse outfits</button><button class="action-btn secondary" id="lila-critic">Get Lila's Opinion</button><button class="action-btn secondary" id="lila-challenge">Fashion Rush</button><button class="action-btn ghost" id="lila-chat">Chat with Lila</button></div>`);
+    document.getElementById("lila-shop").addEventListener("click",openClothingStore);
+    document.getElementById("lila-challenge").addEventListener("click",openBoutiquePhotoHunt);
+    document.getElementById("lila-critic").addEventListener("click",openFashionCritic);
+    document.getElementById("lila-chat").addEventListener("click",()=>{
+      openModal(`<h3>A moment with Lila</h3><div class="npc-quote">“Clothes do not need to be perfect. The best look is the one that makes an ordinary island day feel special.”</div><div class="action-row"><button class="action-btn" id="lila-chat-back">Browse with Lila</button><button class="action-btn ghost" id="lila-chat-done">See you later</button></div>`);
+      document.getElementById("lila-chat-back").addEventListener("click",openBoutiqueOwnerMenu);
+      document.getElementById("lila-chat-done").addEventListener("click",closeModal);
+    });
+  }
+
+  function openBoutiqueChallengePoster(){
+    openModal(`<h3>Willow Style Challenge</h3><p class="modal-sub">Today's poster challenge is open to every islander.</p><div class="flavor-box">Study the brief, compare the looks, and choose the outfit that fits the occasion best.</div><div class="action-row" style="margin-top:0.85rem"><button class="action-btn" id="poster-join">Join challenge</button><button class="action-btn ghost" id="poster-back">Not now</button></div>`);
+    document.getElementById("poster-join").addEventListener("click", openBoutiquePhotoHunt);
+    document.getElementById("poster-back").addEventListener("click", closeModal);
+  }
+
   function openWardrobe(){
+    const closet=ensureBoutiqueCloset();
+    const ownedLooks=BOUTIQUE_LOOKS.filter(look=>closet.boutiqueOwnedLooks.includes(look.id));
     openModal(`
       <h3>Wardrobe</h3>
-      <p class="modal-sub">Dress-up corner — change face, hair, clothes, and colors. Saves as you go.</p>
+      <p class="modal-sub">Wear a Boutique look, or use the custom dresser for your own combination.</p>
       <div class="flavor-box" style="margin-bottom:0.75rem">Your closet door swings open. Pick a look for the day.</div>
+      <div class="field-label">Purchased Boutique looks</div>
+      <div class="item-grid" style="margin-bottom:.9rem">${ownedLooks.map(look=>`<div class="item-card"><div class="store-preview icon" style="width:76px;height:96px;display:grid;place-items:center;background:#F8EAF0">${boutiqueLookPreview(look,false)}</div><span>${escapeHtml(look.name)}</span><button data-wardrobe-look="${look.id}" class="${closet.boutiqueEquippedLook===look.id?'equipped':''}">${closet.boutiqueEquippedLook===look.id?'Wearing':'Wear'}</button></div>`).join("")}</div>
+      <div class="field-label">Custom dresser</div>
       ${miiMakerHtml()}
       <div class="action-row" style="margin-top:0.85rem">
         <button class="action-btn" id="wardrobe-done">All set</button>
       </div>
     `);
     wireMiiMaker(() => { updateHud(); });
+    modalBody.querySelectorAll("[data-wardrobe-look]").forEach(btn=>btn.addEventListener("click",()=>{
+      const look=BOUTIQUE_LOOKS.find(item=>item.id===btn.dataset.wardrobeLook); if(!look)return;
+      closet.boutiqueEquippedLook=look.id; wearBoutiqueLook(look); openWardrobe(); toast(look.name+" equipped");
+    }));
     const done = document.getElementById("wardrobe-done");
     if(done) done.addEventListener("click", () => {
       SFX.purchase();
@@ -11482,27 +11817,216 @@ const BREEDS = {
   }
 
   function renderBoutique(){
-    miiMakerCat = "clothes";
+    const closet=ensureBoutiqueCloset();
     openModal(`
       <h3>Willow Boutique</h3>
-      <p class="modal-sub">Mii Maker fitting room — face, hair, clothes, extras. Changes save right away.</p>
-      <div class="flavor-box" style="margin-bottom:0.75rem">"Welcome in! Pick anything that feels like you - Lila will pin the hem while you decide."</div>
-      ${miiMakerHtml()}
+      <p class="modal-sub">Preview complete looks, buy your favorites, and wear anything you already own.</p>
+      <div class="flavor-box" style="margin-bottom:0.75rem"><b>Your coins: $${state.money}</b> · Wardrobe collection: ${closet.boutiqueOwnedLooks.length} / ${BOUTIQUE_LOOKS.length}</div>
+      <div class="item-grid">${BOUTIQUE_LOOKS.map(look=>{const owned=closet.boutiqueOwnedLooks.includes(look.id),equipped=closet.boutiqueEquippedLook===look.id;return `<div class="item-card"><div class="store-preview icon" style="width:82px;height:112px;display:grid;place-items:center;background:${owned?'linear-gradient(#FFF8EC,#E7F2EC)':'linear-gradient(#F8EAF0,#E6F1F5)'}">${boutiqueLookPreview(look,false)}</div><span>${escapeHtml(look.name)}</span><span style="font-family:var(--mono);font-size:.62rem;color:${owned?'var(--teal)':'var(--ink-faint)'}">${owned?'✓ Unlocked':escapeHtml(look.tag)+' · $'+look.price}</span><button class="${equipped?'equipped':''}" data-look-preview="${look.id}">${equipped?"Wearing":owned?"View / Wear":"Try outfit"}</button></div>`}).join("")}</div>
       <div class="action-row" style="margin-top:0.85rem">
-        <button class="action-btn" id="boutique-done">Love this look</button>
+        <button class="action-btn secondary" id="boutique-challenge">Play Fashion Rush</button>
+        <button class="action-btn ghost" id="boutique-done">Back to Lila</button>
       </div>
     `);
-    wireBoutique();
+    modalBody.querySelectorAll("[data-look-preview]").forEach(btn=>btn.addEventListener("click",()=>openBoutiqueLookDetail(btn.dataset.lookPreview)));
+    document.getElementById("boutique-challenge").addEventListener("click",openBoutiquePhotoHunt);
+    document.getElementById("boutique-done").addEventListener("click",openBoutiqueOwnerMenu);
   }
 
-  function wireBoutique(){
-    wireMiiMaker(() => { updateHud(); });
-    const done = document.getElementById("boutique-done");
-    if(done) done.addEventListener("click", () => {
-      SFX.purchase();
-      toast("Looking sharp!");
-      closeModal();
-    });
+  function ensureLookmooGames(){
+    if(!state.lookmooGames) state.lookmooGames = { boutiqueRewardDay:0, storeRewardDay:0, storePlayDay:state.day, storePlaysToday:0 };
+    // Dress the Mannequin used boutiqueRewardDay in an earlier build. Keep a
+    // separate key so old Photo Hunt saves do not accidentally eat this prize.
+    if(!Number.isFinite(state.lookmooGames.boutiqueFashionRewardDay)) state.lookmooGames.boutiqueFashionRewardDay = 0;
+    if(!Number.isFinite(state.lookmooGames.storeRequestRewardDay)) state.lookmooGames.storeRequestRewardDay = 0;
+    if(!Number.isFinite(state.lookmooGames.storeRequestDay)) state.lookmooGames.storeRequestDay = 0;
+    if(!Number.isFinite(state.lookmooGames.storeRequestPlayDay)) state.lookmooGames.storeRequestPlayDay = state.day;
+    if(state.lookmooGames.storeRequestPlayDay!==state.day){state.lookmooGames.storeRequestPlayDay=state.day;state.lookmooGames.storeRequestPlaysToday=0;state.lookmooGames.storeRequestData=null;}
+    if(!Number.isFinite(state.lookmooGames.storeRequestPlaysToday)) state.lookmooGames.storeRequestPlaysToday = 0;
+    state.lookmooGames.storeRequestPlaysToday=Math.max(0,Math.min(3,state.lookmooGames.storeRequestPlaysToday));
+    if(state.lookmooGames.storePlayDay !== state.day){
+      state.lookmooGames.storePlayDay = state.day;
+      state.lookmooGames.storePlaysToday = 0;
+    }
+    if(!Number.isFinite(state.lookmooGames.storePlaysToday)) state.lookmooGames.storePlaysToday = 0;
+    state.lookmooGames.storePlaysToday=Math.max(0,Math.min(3,state.lookmooGames.storePlaysToday));
+    return state.lookmooGames;
+  }
+
+  function openBoutiquePhotoHunt(){
+    const claimed = ensureLookmooGames().boutiqueFashionRewardDay === state.day;
+    openModal(`<h3>Fashion Rush</h3><p class="modal-sub">Style three customers in a row. Finish the rush and keep your final outfit!</p>${claimed?`<div class="flavor-box"><b>Daily reward complete ✓</b><br>You can still replay and keep a new outfit, but no more coins will be awarded until tomorrow.</div>`:""}<div class="item-grid">${[
+      ["easy","Easy","3 clear orders · no timer","$8"],
+      ["normal","Normal","3 occasion orders · 75 seconds","$15"],
+      ["hard","Hard","3 mood orders · 55 seconds","$25"],
+    ].map(([id,name,desc,reward]) => `<div class="item-card"><div class="store-preview icon"><svg viewBox="0 0 64 44"><circle cx="32" cy="8" r="6" fill="#C4895A"/><path d="M18 18h28l6 22H12z" fill="#C45A7A"/></svg></div><span>${name}</span><span style="font-family:var(--mono);font-size:0.62rem;color:var(--ink-faint)">${desc}</span><button data-style-level="${id}">${claimed?"Replay · outfit only":`Play · ${reward}`}</button></div>`).join("")}</div><div class="action-row"><button class="action-btn ghost" id="style-back">Back to poster</button></div>`);
+    modalBody.querySelectorAll("[data-style-level]").forEach(btn => btn.addEventListener("click", () => loadBoutiqueStyleBrief(btn.dataset.styleLevel)));
+    document.getElementById("style-back").addEventListener("click", openBoutiqueChallengePoster);
+  }
+
+  const STYLE_OPTIONS = {
+    top:[{id:"sky",name:"Sky Blue",color:"#5A7FB0"},{id:"coral",name:"Coral",color:"#D9705C"},{id:"sage",name:"Sage",color:"#6B8E6B"},{id:"lilac",name:"Lilac",color:"#8A6BAE"},{id:"cream",name:"Cream",color:"#F3DBAA"}],
+    bottom:[{id:"navy",name:"Navy",color:"#405A78"},{id:"lilac",name:"Lilac",color:"#8A6BAE"},{id:"cream",name:"Cream",color:"#E8D9C0"},{id:"rose",name:"Rose",color:"#B5654A"}],
+    accessory:[{id:"sunny",name:"Sunny Yellow",color:"#D98F2B"},{id:"gold",name:"Gold",color:"#E8A33D"},{id:"sky",name:"Sky Blue",color:"#8FC1D6"},{id:"cream",name:"Cream",color:"#F3DBAA"},{id:"coral",name:"Coral",color:"#E3998A"}],
+  };
+  const LOCAL_STYLE_BRIEFS = [
+    {title:"Rainy-day Picnic",brief:"Lila needs a sky-blue top, navy bottoms, and a sunny yellow accessory.",target:{top:"sky",bottom:"navy",accessory:"sunny"}},
+    {title:"Festival Night",brief:"Create a bright festival look with a coral top, lilac bottoms, and a gold accessory.",target:{top:"coral",bottom:"lilac",accessory:"gold"}},
+    {title:"Lakeside Afternoon",brief:"Choose a sage top, cream bottoms, and a sky-blue accessory for a breezy lake visit.",target:{top:"sage",bottom:"cream",accessory:"sky"}},
+  ];
+
+  async function loadBoutiqueStyleBrief(level){
+    openModal(`<h3>Lila is preparing the brief...</h3><div class="flavor-box">Pinning colors and choosing an island occasion.</div>`);
+    let challenge = null;
+    try{
+      const res = await fetch(apiUrl("/api/style-brief"), {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({difficulty:level})});
+      challenge = await res.json().catch(() => null);
+      if(!res.ok || !challenge || !challenge.target) throw new Error("Style brief unavailable");
+    } catch(_){
+      const base = LOCAL_STYLE_BRIEFS[Math.floor(Math.random()*LOCAL_STYLE_BRIEFS.length)];
+      challenge = Object.assign({}, base, {target:Object.assign({},base.target),successPraise:"Lila smiles: Every detail fits the brief beautifully!",tryAgain:"Lila says: Lovely idea — check the colors in the brief once more.",aiGenerated:false});
+    }
+    const valid = ["top","bottom","accessory"].every(group => STYLE_OPTIONS[group].some(o => o.id===challenge.target[group]));
+    if(!valid){ const base=LOCAL_STYLE_BRIEFS[0]; challenge=Object.assign({},base,{target:Object.assign({},base.target),successPraise:"Every detail fits!",tryAgain:"Check the brief once more.",aiGenerated:false}); }
+    startBoutiqueStyleGame(level, challenge);
+  }
+
+  function startBoutiqueStyleGame(level, challenge){
+    const cfg={easy:{time:0,reward:8},normal:{time:75,reward:15},hard:{time:55,reward:25}}[level] || {time:0,reward:8};
+    const extras=LOCAL_STYLE_BRIEFS.filter(b=>b.title!==challenge.title).sort(()=>Math.random()-.5).slice(0,2).map(b=>Object.assign({},b,{target:Object.assign({},b.target),successPraise:"Perfect match — next customer!",tryAgain:"Almost! Check the customer's colors once more.",aiGenerated:false}));
+    const rounds=[challenge,...extras];
+    while(rounds.length<3){const b=LOCAL_STYLE_BRIEFS[rounds.length%LOCAL_STYLE_BRIEFS.length];rounds.push(Object.assign({},b,{target:Object.assign({},b.target)}));}
+    const choice={top:STYLE_OPTIONS.top[0].id,bottom:STYLE_OPTIONS.bottom[0].id,accessory:STYLE_OPTIONS.accessory[0].id};
+    let seconds=cfg.time, ended=false, timer=null, round=0, streak=0;
+    const find=(group,id)=>STYLE_OPTIONS[group].find(o=>o.id===id) || STYLE_OPTIONS[group][0];
+    const render=()=>{
+      challenge=rounds[round];
+      const top=find("top",choice.top), bottom=find("bottom",choice.bottom), accessory=find("accessory",choice.accessory);
+      modalBody.innerHTML=`<h3>${escapeHtml(challenge.title || "Style Challenge")}</h3><p class="modal-sub">${escapeHtml(challenge.brief || "Follow Lila's color brief.")}</p><div class="mg-scoreline"><span>Customer <b>${round+1} / 3</b></span><span>${cfg.time?`Time <b id="style-time">${seconds}</b>s`:"Take your time"}</span><span>Streak <b>${streak}</b> ✦</span></div><div class="boutique-fit"><div class="boutique-mirror" style="min-height:230px;display:grid;place-items:center;background:linear-gradient(#CFE7F2,#F3E6EA)"><svg viewBox="0 0 150 220" width="150" height="220" aria-label="Styled mannequin"><ellipse cx="75" cy="205" rx="48" ry="10" fill="rgba(58,44,34,.14)"/><rect x="72" y="155" width="6" height="48" fill="#A9784F"/><circle cx="75" cy="38" r="22" fill="#C4895A"/><path d="M38 70h74l-10 58H48z" fill="${top.color}"/><path d="M49 126h52l18 57H31z" fill="${bottom.color}"/><circle cx="111" cy="91" r="14" fill="${accessory.color}"/><path d="M58 68l17 18 17-18" fill="none" stroke="#FFF7EA" stroke-width="4"/></svg></div><div><div class="field-label">Top</div><div class="swatch-row">${STYLE_OPTIONS.top.map(o=>`<button class="swatch ${choice.top===o.id?'selected':''}" style="background:${o.color}" data-style-group="top" data-style-choice="${o.id}" aria-label="${o.name}" title="${o.name}"></button>`).join("")}</div><div class="field-label">Bottom</div><div class="swatch-row">${STYLE_OPTIONS.bottom.map(o=>`<button class="swatch ${choice.bottom===o.id?'selected':''}" style="background:${o.color}" data-style-group="bottom" data-style-choice="${o.id}" aria-label="${o.name}" title="${o.name}"></button>`).join("")}</div><div class="field-label">Accessory</div><div class="swatch-row">${STYLE_OPTIONS.accessory.map(o=>`<button class="swatch ${choice.accessory===o.id?'selected':''}" style="background:${o.color}" data-style-group="accessory" data-style-choice="${o.id}" aria-label="${o.name}" title="${o.name}"></button>`).join("")}</div><div class="flavor-box" style="margin-top:.7rem">${escapeHtml(top.name)} top · ${escapeHtml(bottom.name)} bottoms · ${escapeHtml(accessory.name)} accessory</div></div></div><div class="action-row"><button class="action-btn" id="style-submit">Send to runway</button><button class="action-btn ghost" id="style-quit">Leave challenge</button></div>`;
+      backdrop.classList.add("open");
+      modalBody.querySelectorAll("[data-style-choice]").forEach(btn=>btn.addEventListener("click",()=>{choice[btn.dataset.styleGroup]=btn.dataset.styleChoice;render();}));
+      document.getElementById("style-submit").addEventListener("click",submitLook);
+      document.getElementById("style-quit").addEventListener("click",()=>finish(false,true));
+    };
+    const equipFinalLook=()=>{
+      ensureChildDefaults();
+      const av=childToAvatarConfig(state.child);
+      av.colors=Object.assign({},av.colors,{top:find("top",choice.top).color,bottom:find("bottom",choice.bottom).color,hat:find("accessory",choice.accessory).color});
+      applyAvatarToChild(av);
+      if(state.lookmooGames) state.lookmooGames.boutiqueEquippedLook="";
+      warmPlayerAvatar();
+    };
+    const submitLook=()=>{
+      if(ended)return;
+      const correct=["top","bottom","accessory"].every(group=>choice[group]===challenge.target[group]);
+      if(!correct){streak=0;SFX.hit();animateFeedback(modalBody,"wrong");toast(challenge.tryAgain||"Check the brief once more");render();return;}
+      streak++; SFX.purchase();animateFeedback(modalBody,"good");
+      if(round<2){toast(challenge.successPraise||"Perfect — next customer!");round++;render();return;}
+      finish(true,false);
+    };
+    const finish=(submitted,quit)=>{
+      if(ended) return;
+      const correct=submitted && round===2;
+      ended=true; if(timer) clearInterval(timer);
+      const games=ensureLookmooGames(), firstToday=correct && games.boutiqueFashionRewardDay!==state.day;
+      const pay=firstToday?cfg.reward:0;
+      if(correct){equipFinalLook();games.boutiqueFashionRewardDay=state.day;if(firstToday){state.money+=pay;celebrateReward(pay);}updateHud();saveState(true);}
+      openModal(`<h3>${correct?"Fashion Rush complete!":"Challenge ended"}</h3><div class="flavor-box">${escapeHtml(correct?(challenge.successPraise||"Lila loves the finished look!"):"The customers will be back for the next rush.")}${correct?` Your final look is now equipped.${firstToday?` You earned $${pay}.`:" Today's prize was already collected."}`:""}</div><div class="action-row"><button class="action-btn secondary" id="style-again">Choose difficulty</button><button class="action-btn" id="style-done">Done</button></div>`);
+      document.getElementById("style-again").addEventListener("click",openBoutiquePhotoHunt);
+      document.getElementById("style-done").addEventListener("click",closeModal);
+    };
+    modalCleanup=()=>{ended=true;if(timer)clearInterval(timer);};
+    render();
+    if(cfg.time){timer=setInterval(()=>{if(ended)return;seconds--;const el=document.getElementById("style-time");if(el)el.textContent=String(seconds);if(seconds<=0)finish(false,false);},1000);}
+  }
+
+  const STORE_SORT_GOODS = [
+    {id:"fern",name:"Tall Fern",cat:"plants",symbol:"♣",color:"#6B8E6B"},
+    {id:"succulent",name:"Tiny Succulent",cat:"plants",symbol:"♧",color:"#3E7C74"},
+    {id:"daisy",name:"Daisy Pot",cat:"plants",symbol:"✿",color:"#E3998A"},
+    {id:"table-lamp",name:"Table Lamp",cat:"lamps",symbol:"✦",color:"#D98F2B"},
+    {id:"path-lamp",name:"Path Lamp",cat:"lamps",symbol:"◆",color:"#F3C45A"},
+    {id:"moon-lamp",name:"Moon Lamp",cat:"lamps",symbol:"☾",color:"#8FC1D6"},
+    {id:"round-pillow",name:"Round Pillow",cat:"soft",symbol:"●",color:"#C45A7A"},
+    {id:"star-cushion",name:"Star Cushion",cat:"soft",symbol:"★",color:"#8A6BAE"},
+    {id:"woven-blanket",name:"Woven Blanket",cat:"soft",symbol:"▦",color:"#D9705C"},
+    {id:"clock",name:"Tiny Clock",cat:"decor",symbol:"◷",color:"#5A7FB0"},
+    {id:"basket",name:"Flower Basket",cat:"decor",symbol:"❀",color:"#C4895A"},
+    {id:"frame",name:"Photo Frame",cat:"decor",symbol:"▣",color:"#A9784F"},
+  ];
+
+  async function openStoreCustomerRequest(){
+    const daily=ensureLookmooGames();
+    if(daily.storeRequestPlaysToday>=3){toast("All 3 customer jobs are complete today");openStoreWorkMenu();return;}
+    openModal(`<h3>Today's Customer Request</h3><div class="flavor-box">Willow is reading the next order...</div>`);
+    daily.storeRequestPlaysToday++;saveState(true);
+    let req=null;
+    try{const res=await fetch(apiUrl("/api/store-request"),{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});req=await res.json();if(!res.ok||!Array.isArray(req.targets))throw new Error("offline");}
+    catch(_){const local=[{customer:"Mara",request:"I need something leafy and one soft piece for my reading corner.",targets:["plants","soft"],praise:"The corner feels calm and cozy!"},{customer:"Theo",request:"Find me a gentle light and a small finishing touch for my desk.",targets:["lamps","decor"],praise:"Practical and warm — perfect!"}];req=local[Math.floor(Math.random()*local.length)];req.aiGenerated=false;}
+    const base=["plants","lamps","soft","decor"].map(cat=>STORE_SORT_GOODS.filter(g=>g.cat===cat).sort(()=>Math.random()-.5)[0]);
+    const choices=base.concat(STORE_SORT_GOODS.filter(g=>!base.includes(g)).sort(()=>Math.random()-.5).slice(0,4)).sort(()=>Math.random()-.5);
+    const selected=new Set();let seconds=45,ended=false,timer=null;
+    const finish=won=>{if(ended)return;ended=true;if(timer)clearInterval(timer);if(won){state.money+=8;celebrateReward(8);updateHud();saveState(true);SFX.purchase();}openModal(`<h3>${won?"Order complete!":"Customer left"}</h3><div class="npc-quote">“${escapeHtml(won?(req.praise||"Exactly what I needed!"):"Maybe next time — I need to catch the ferry.")}”</div><div class="flavor-box">${won?"Willow pays you <b>$8</b>.":"This job still counts as one of today's 3 requests."}</div><div class="action-row"><button class="action-btn" id="request-done">Back to work</button></div>`);document.getElementById("request-done").addEventListener("click",openStoreWorkMenu);};
+    const render=()=>{modalBody.innerHTML=`<h3>${escapeHtml(req.customer||"Customer")}'s Two-item Request</h3><div class="mg-scoreline"><span>Selected <b>${selected.size} / 2</b></span><span>Time <b id="request-time">${seconds}</b>s</span><span>${3-daily.storeRequestPlaysToday} jobs left after this</span></div><div class="npc-quote">“${escapeHtml(req.request||"")}”</div><p class="modal-sub">Choose exactly two products that solve both parts of the request.</p><div class="item-grid">${choices.map(g=>`<div class="item-card" style="${selected.has(g.id)?'outline:3px solid #D98F2B':''}"><div class="store-preview icon" style="display:grid;place-items:center;font-size:2rem;color:${g.color}">${g.symbol}</div><span>${escapeHtml(g.name)}</span><button data-request-item="${g.id}">${selected.has(g.id)?"Selected":"Choose"}</button></div>`).join("")}</div><div class="action-row"><button class="action-btn" id="request-submit" ${selected.size===2?"":"disabled"}>Complete order</button><button class="action-btn ghost" id="request-back">Forfeit job</button></div>`;backdrop.classList.add("open");modalBody.querySelectorAll("[data-request-item]").forEach(btn=>btn.addEventListener("click",()=>{const id=btn.dataset.requestItem;if(selected.has(id))selected.delete(id);else if(selected.size<2)selected.add(id);else toast("Choose only two products");render();}));document.getElementById("request-submit").addEventListener("click",()=>{const cats=[...selected].map(id=>choices.find(g=>g.id===id).cat).sort(),targets=req.targets.slice().sort();if(JSON.stringify(cats)===JSON.stringify(targets))finish(true);else{SFX.hit();selected.clear();toast("Close — reread both parts of the request");render();}});document.getElementById("request-back").addEventListener("click",()=>finish(false));};
+    modalCleanup=()=>{ended=true;if(timer)clearInterval(timer);};render();timer=setInterval(()=>{if(ended)return;seconds--;const el=document.getElementById("request-time");if(el)el.textContent=seconds;if(seconds<=0)finish(false);},1000);
+  }
+
+  function openStoreOrganizerMenu(){
+    const games = ensureLookmooGames();
+    const claimed = games.storeRewardDay === state.day;
+    const playsLeft = Math.max(0, 3 - games.storePlaysToday);
+    openModal(`<h3>Help Willow Organize</h3><p class="modal-sub">Select an item, then choose the correct shelf. Faster shifts have more categories and better pay.</p><div class="flavor-box">${playsLeft===0?"<b>Daily shift limit reached ✓</b><br>You have completed all 3 shelf shifts today. Willow will have more work tomorrow.":`<b>Shifts remaining today: ${playsLeft} / 3</b>${claimed ? "<br>You already earned today's full helper pay. Replays pay half." : ""}`}</div><div class="item-grid">${[
+      ["easy","Easy","6 items · 2 shelves · no timer","$8"],
+      ["normal","Normal","9 items · 3 shelves · 60 seconds","$18"],
+      ["hard","Hard","12 items · 4 shelves · 45 seconds","$35"],
+    ].map(([id,name,desc,reward]) => `<div class="item-card"><div class="store-preview icon" style="display:grid;place-items:center;font-size:1.7rem;color:#C07840">▦</div><span>${name}</span><span style="font-family:var(--mono);font-size:0.62rem;color:var(--ink-faint)">${desc}</span><button data-sort-level="${id}" ${playsLeft>0?"":"disabled"}>${playsLeft>0?`Play · ${reward}`:"Come back tomorrow"}</button></div>`).join("")}</div><div class="action-row"><button class="action-btn ghost" id="sort-back">Back to Willow</button></div>`);
+    modalBody.querySelectorAll("[data-sort-level]").forEach(btn => btn.addEventListener("click", () => startStoreOrganizer(btn.dataset.sortLevel)));
+    document.getElementById("sort-back").addEventListener("click", openStoreOwnerMenu);
+  }
+
+  function startStoreOrganizer(level){
+    const config = {
+      easy:{count:6,cats:["plants","lamps"],time:0,mistakes:99,reward:8,label:"Easy"},
+      normal:{count:9,cats:["plants","lamps","soft"],time:60,mistakes:3,reward:18,label:"Normal"},
+      hard:{count:12,cats:["plants","lamps","soft","decor"],time:45,mistakes:2,reward:35,label:"Hard"},
+    }[level] || null;
+    if(!config) return;
+    const playState = ensureLookmooGames();
+    if(playState.storePlaysToday >= 3){ toast("Willow has no more shelf shifts today"); openStoreOrganizerMenu(); return; }
+    playState.storePlaysToday += 1;
+    saveState(true);
+    const labels = {plants:"Plants",lamps:"Lamps",soft:"Pillows & Textiles",decor:"Home Decor"};
+    let goods = STORE_SORT_GOODS.filter(g => config.cats.includes(g.cat)).map(g => Object.assign({}, g, {done:false})).sort(() => Math.random()-0.5).slice(0,config.count);
+    while(goods.length < config.count) goods = goods.concat(goods.slice(0,config.count-goods.length).map((g,i) => Object.assign({},g,{id:g.id+"-"+i})));
+    let selected = null, placed = 0, mistakes = 0, seconds = config.time, ended = false, timer = null;
+    const render = () => {
+      modalBody.innerHTML = `<h3>Willow's Shelf Shift · ${config.label}</h3><div class="mg-scoreline"><span>Sorted <b>${placed}</b> / ${config.count}</span><span>Mistakes <b>${mistakes}</b>${config.mistakes<99?` / ${config.mistakes}`:""}</span><span>${config.time?`Time <b>${seconds}</b>s`:"Take your time"}</span></div><p class="modal-sub">Click a parcel, then click the shelf where it belongs.</p><div class="item-grid" style="margin-bottom:0.8rem">${goods.filter(g=>!g.done).map(g => `<div class="item-card ${selected===g.id?'selected':''}" style="${selected===g.id?'outline:3px solid #D98F2B':''}"><div class="store-preview icon" style="display:grid;place-items:center;font-size:2rem;color:${g.color}">${g.symbol}</div><span>${g.name}</span><button data-sort-item="${g.id}">${selected===g.id?'Selected':'Pick up'}</button></div>`).join("")}</div><div class="field-label">Shop shelves</div><div class="item-grid">${config.cats.map(cat => `<div class="item-card" style="background:#F7F0E4"><div class="store-preview icon" style="display:grid;place-items:center;font-size:1.5rem;color:#8C5A3B">▤</div><span>${labels[cat]}</span><button data-sort-shelf="${cat}" ${selected?'':'disabled'}>Place here</button></div>`).join("")}</div><div class="action-row"><button class="action-btn ghost" id="sort-quit">Forfeit shift · attempt will be used</button></div>`;
+      backdrop.classList.add("open");
+      modalBody.querySelectorAll("[data-sort-item]").forEach(btn => btn.addEventListener("click", () => { selected=btn.dataset.sortItem; render(); }));
+      modalBody.querySelectorAll("[data-sort-shelf]").forEach(btn => btn.addEventListener("click", () => {
+        const item = goods.find(g => g.id===selected);
+        if(!item) return;
+        if(item.cat === btn.dataset.sortShelf){ item.done=true; placed++; selected=null; SFX.purchase();animateFeedback(modalBody,"good"); if(placed>=config.count){ finish(true); return; } }
+        else { mistakes++; selected=null; SFX.hit();animateFeedback(modalBody,"wrong"); if(mistakes>=config.mistakes){ finish(false); return; } }
+        render();
+      }));
+      document.getElementById("sort-quit").addEventListener("click", () => finish(false));
+    };
+    const finish = won => {
+      if(ended) return; ended=true; if(timer) clearInterval(timer);
+      const games = ensureLookmooGames();
+      const dailyLimitReached = games.storePlaysToday >= 3;
+      const fullPay = won && games.storeRewardDay !== state.day;
+      const pay = won ? (fullPay ? config.reward : Math.ceil(config.reward/2)) : 0;
+      if(won){ if(fullPay) games.storeRewardDay=state.day; state.money+=pay; celebrateReward(pay); updateHud(); saveState(true); SFX.purchase(); }
+      openModal(`<h3>${won?"Shelves sorted!":"Shift ended"}</h3><div class="flavor-box">${won?`Willow checks every shelf and smiles. You earned $${pay}${fullPay?"":" replay pay"}.`:`You sorted ${placed} of ${config.count} items. Willow saves the rest for another shift.`}${dailyLimitReached?"<br><br><b>Daily limit reached:</b> You have used all 3 shifts. Come back tomorrow!":`<br><br>${3-games.storePlaysToday} shift${3-games.storePlaysToday===1?"":"s"} remaining today.`}</div><div class="action-row"><button class="action-btn secondary" id="sort-again">${dailyLimitReached?"View daily limit":"Choose difficulty"}</button><button class="action-btn" id="sort-done">Done</button></div>`);
+      if(dailyLimitReached) toast("All 3 store shifts completed — come back tomorrow!");
+      document.getElementById("sort-again").addEventListener("click", openStoreOrganizerMenu);
+      document.getElementById("sort-done").addEventListener("click", closeModal);
+    };
+    modalCleanup = () => { ended=true; if(timer) clearInterval(timer); };
+    render();
+    if(config.time){ timer=setInterval(() => { if(ended) return; seconds--; const el=modalBody.querySelector('.mg-scoreline span:last-child b'); if(el) el.textContent=String(seconds); if(seconds<=0) finish(false); },1000); }
   }
 
   function renderStore(){
@@ -11529,7 +12053,6 @@ const BREEDS = {
     modalBody.querySelectorAll("[data-store-tab]").forEach(b => b.addEventListener("click", () => {
       storeTab = b.dataset.storeTab; renderStore();
     }));
-
     modalBody.querySelectorAll("[data-buy-island]").forEach(b => b.addEventListener("click", () => {
       const type = b.dataset.buyIsland;
       const item = islandItemCatalog(type);
@@ -11965,13 +12488,14 @@ const BREEDS = {
     renderHome();
   }
   function renderHome(){
-    const tabs = [["sleep","Sleep"], ["me","Me"], ["room","My Room"]];
+    const tabs = [["planner","Daily Planner"],["sleep","Sleep"], ["me","Me"], ["room","My Room"]];
     if(hasDogs()) tabs.push(["puppy","Puppy"]);
     const tabsHtml = tabs.map(([id,label]) =>
       `<button class="tab-btn ${homeTab===id?'active':''}" data-tab="${id}">${label}</button>`).join("");
 
     let panel = "";
-    if(homeTab === "sleep") panel = sleepPanel();
+    if(homeTab === "planner") panel = dailyPlannerPanel();
+    else if(homeTab === "sleep") panel = sleepPanel();
     else if(homeTab === "me") panel = mePanel();
     else if(homeTab === "room") panel = roomPanel();
     else if(homeTab === "puppy") panel = puppyPanel();
@@ -11987,6 +12511,9 @@ const BREEDS = {
       homeTab = b.dataset.tab; renderHome();
     }));
     wirePanel();
+    if(homeTab==="planner"){
+      const guide=document.getElementById("planner-guide");if(guide)guide.addEventListener("click",()=>openFirstDayTutorial(0));
+    }
     if(homeTab === "puppy"){
       paintTamaPet();
       const dog = getActiveDog();
@@ -12000,9 +12527,83 @@ const BREEDS = {
     }
   }
 
+  function dailyPlannerPanel(){
+    const games=ensureLookmooGames(),requests=Math.max(0,3-games.storeRequestPlaysToday),shelves=Math.max(0,3-games.storePlaysToday);
+    const fashionDone=games.boutiqueFashionRewardDay===state.day,newsReady=!!(state.morning&&state.morning.day===state.day&&(state.morning.worldNewsItems||state.morning.worldNews));
+    return `<div class="flavor-box"><b>Day ${state.day} · Willow Isle Planner</b><br>A gentle checklist — nothing expires until you sleep.</div><div class="daily-list"><div class="daily-row"><span>Customer requests at Store</span><b>${requests} / 3 left</b></div><div class="daily-row"><span>Organize-shelf shifts</span><b>${shelves} / 3 left</b></div><div class="daily-row"><span>Fashion Rush daily reward</span><b>${fashionDone?'Complete ✓':'Available'}</b></div><div class="daily-row"><span>Willow TV bulletin</span><b>${newsReady?'Ready ✓':'Refresh TV'}</b></div></div><div class="action-row" style="margin-top:.85rem"><button class="action-btn secondary" id="planner-guide">Review island guide</button></div>`;
+  }
+
+  function openCheckersGame(){
+    // 1 = player, -1 = AI, 2/-2 = flying kings.
+    let board=Array(64).fill(0), selected=-1, turn=1, ended=false, message="Your turn · you are coral", forced=-1, aiMode="Hybrid AI · API with offline fallback";
+    for(let r=0;r<3;r++)for(let c=0;c<8;c++)if((r+c)%2)board[r*8+c]=-1;
+    for(let r=5;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2)board[r*8+c]=1;
+    const side=v=>v>0?1:v<0?-1:0, king=v=>Math.abs(v)===2;
+    const movesFrom=(b,i,capturesOnly)=>{
+      const v=b[i], s=side(v);if(!s)return[];const r=Math.floor(i/8),c=i%8,out=[];
+      if(king(v)){
+        [-1,1].forEach(dr=>[-1,1].forEach(dc=>{let nr=r+dr,nc=c+dc,captured=-1;while(nr>=0&&nr<8&&nc>=0&&nc<8){const n=nr*8+nc;if(!b[n]){if(captured>=0)out.push({from:i,to:n,cap:captured});else if(!capturesOnly)out.push({from:i,to:n,cap:-1});}else{if(captured>=0||side(b[n])===s)break;captured=n;}nr+=dr;nc+=dc;}}));return out;
+      }
+      const dirs=s===1?[-1]:[1];
+      dirs.forEach(dr=>[-1,1].forEach(dc=>{const nr=r+dr,nc=c+dc;if(nr<0||nr>7||nc<0||nc>7)return;const n=nr*8+nc;if(!b[n]&&!capturesOnly)out.push({from:i,to:n,cap:-1});else if(b[n]&&side(b[n])===-s){const jr=r+dr*2,jc=c+dc*2;if(jr>=0&&jr<8&&jc>=0&&jc<8&&!b[jr*8+jc])out.push({from:i,to:jr*8+jc,cap:n});}}));return out;
+    };
+    const allMoves=(b,s,onlyFrom=-1)=>{const moves=[];for(let i=0;i<64;i++)if(side(b[i])===s&&(onlyFrom<0||i===onlyFrom))moves.push(...movesFrom(b,i,false));return moves;};
+    const apply=(b,m)=>{const nb=b.slice(),v=nb[m.from];nb[m.from]=0;nb[m.to]=v;if(m.cap>=0)nb[m.cap]=0;const r=Math.floor(m.to/8);if(v===1&&r===0)nb[m.to]=2;if(v===-1&&r===7)nb[m.to]=-2;return nb;};
+    const score=b=>b.reduce((n,v)=>n+(v===-1?10:v===-2?17:v===1?-10:v===2?-17:0),0);
+    const minimax=(b,s,depth,a,beta)=>{const ms=allMoves(b,s);if(!depth||!ms.length)return score(b);if(s===-1){let best=-999;for(const m of ms){best=Math.max(best,minimax(apply(b,m),1,depth-1,a,beta));a=Math.max(a,best);if(beta<=a)break;}return best;}let best=999;for(const m of ms){best=Math.min(best,minimax(apply(b,m),-1,depth-1,a,beta));beta=Math.min(beta,best);if(beta<=a)break;}return best;};
+    const finishIfNeeded=()=>{const pm=allMoves(board,1),am=allMoves(board,-1);if(!board.some(v=>v>0)||!pm.length){ended=true;message="AI wins this round — good game!";return true;}if(!board.some(v=>v<0)||!am.length){ended=true;message="You beat the AI! Brilliant game.";return true;}return false;};
+    const aiTurn=async(onlyFrom=-1)=>{if(ended)return;message="Willow AI is thinking...";render();await new Promise(resolve=>setTimeout(resolve,320));const ms=onlyFrom>=0?movesFrom(board,onlyFrom,true):allMoves(board,-1);if(!ms.length){turn=1;finishIfNeeded();message=ended?message:"Your turn · you are coral";render();return;}let best=null,aiLine="";try{const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),4500);const legalMoves=ms.map((m,i)=>({id:`m${i}`,from:m.from,to:m.to,capture:m.cap>=0,king:king(board[m.from])}));const res=await fetch(apiUrl("/api/checkers-move"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({board,legalMoves}),signal:controller.signal});clearTimeout(timeout);const data=await res.json().catch(()=>({}));if(!res.ok||!data.moveId)throw new Error("offline");const index=legalMoves.findIndex(m=>m.id===data.moveId);if(index<0)throw new Error("invalid move");best=ms[index];aiLine=data.line||"Willow studies the board and moves.";aiMode="API opponent · legal moves verified by game";}catch(_){let bestScore=-9999;ms.forEach(m=>{const sc=minimax(apply(board,m),1,3,-9999,9999)+Math.random()*.2;if(sc>bestScore){bestScore=sc;best=m;}});aiMode="Offline opponent · minimax fallback";aiLine="Willow's local strategy takes over.";}if(ended||!best)return;board=apply(board,best);const more=best.cap>=0?movesFrom(board,best.to,true):[];if(more.length){message=aiLine+" · Willow chooses to continue the jump";render();aiTurn(best.to);return;}turn=1;finishIfNeeded();message=ended?message:`${aiLine} · Your turn`;render();};
+    const endPlayerTurn=()=>{forced=-1;selected=-1;turn=-1;if(!finishIfNeeded())aiTurn();else render();};
+    const clickCell=i=>{if(ended||turn!==1)return;const valid=forced>=0?movesFrom(board,forced,true):allMoves(board,1);if(forced<0&&side(board[i])===1&&valid.some(m=>m.from===i)){selected=i;render();return;}const move=valid.find(m=>m.from===selected&&m.to===i);if(!move){toast(forced>=0?"Choose a highlighted jump or end your turn":"Choose a coral piece, then a highlighted square");return;}board=apply(board,move);selected=-1;const more=move.cap>=0?movesFrom(board,move.to,true):[];if(more.length){forced=move.to;selected=move.to;message="Another jump is available · continue or end your turn";render();return;}endPlayerTurn();};
+    const render=()=>{const valid=turn===1?(forced>=0?movesFrom(board,forced,true):allMoves(board,1)):[];const destinations=new Set(valid.filter(m=>m.from===selected).map(m=>m.to));modalBody.innerHTML=`<h3>Checkers at Home</h3><p class="modal-sub">${escapeHtml(aiMode)} · captures and chain jumps are optional · flying kings move across open diagonals.</p><div class="flavor-box" style="margin-bottom:.7rem"><b>${escapeHtml(message)}</b></div><div style="width:min(92vw,440px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);margin:auto;border:6px solid #8C5A3B;border-radius:10px;overflow:hidden">${board.map((v,i)=>{const r=Math.floor(i/8),c=i%8,dark=(r+c)%2,sel=i===selected,can=destinations.has(i);return `<button data-check-cell="${i}" style="border:0;padding:0;position:relative;background:${sel?'#F3C45A':can?'#A8D8B2':dark?'#76513D':'#F3DBAA'};cursor:${dark?'pointer':'default'}">${v?`<span style="display:grid;place-items:center;width:72%;height:72%;margin:auto;border-radius:50%;background:${v>0?'#D9705C':'#405A78'};border:3px solid ${v>0?'#9E3F57':'#263B55'};color:#FFF;font-weight:900;box-shadow:0 3px 4px #0003">${king(v)?'★':''}</span>`:can?'<span style="display:block;width:22%;height:22%;margin:auto;border-radius:50%;background:#FFF9"></span>':''}</button>`}).join("")}</div><div class="action-row" style="margin-top:.8rem">${forced>=0?'<button class="action-btn" id="check-end-chain">End turn</button>':''}<button class="action-btn secondary" id="check-new">New game</button><button class="action-btn ghost" id="check-done">Leave table</button></div>`;backdrop.classList.add("open");modalBody.querySelectorAll("[data-check-cell]").forEach(btn=>btn.addEventListener("click",()=>clickCell(Number(btn.dataset.checkCell))));const endChain=document.getElementById("check-end-chain");if(endChain)endChain.addEventListener("click",endPlayerTurn);document.getElementById("check-new").addEventListener("click",()=>{ended=true;openCheckersGame();});document.getElementById("check-done").addEventListener("click",closeModal);};
+    modalCleanup=()=>{ended=true;};render();
+  }
+
+  function openWillowTV(tab){
+    tab = tab || "weather";
+    const morning = state.morning || {};
+    const real = morning.realWeather;
+    const world = morning.worldNews || {};
+    const worldItems = Array.isArray(morning.worldNewsItems) && morning.worldNewsItems.length ? morning.worldNewsItems.slice(0,3) : (world.title ? [world] : []);
+    let panel = "";
+    if(tab === "weather"){
+      panel = real
+        ? `<div class="morning-card"><div class="field-label">Live weather · ${escapeHtml(real.location || state.weatherLocation || "")}</div><strong>${escapeHtml(String(real.temperatureC))}°C</strong><p>Feels like ${escapeHtml(String(real.feelsLikeC))}°C · Willow Isle is ${escapeHtml(WEATHER_LABELS[state.weather] || state.weather)}.</p><p class="match-status">Source: ${escapeHtml(real.source || "Open-Meteo")}</p></div>`
+        : `<div class="flavor-box">${state.weatherLocation ? `Live weather for ${escapeHtml(state.weatherLocation)} is not cached yet.` : "Choose a city below to connect Willow TV to real weather."}</div>`;
+      panel += `<div class="field-label" style="margin-top:0.75rem">Weather city</div><input class="name-input" id="tv-location" maxlength="80" placeholder="Bangkok, London, Tokyo..." value="${escapeHtml(state.weatherLocation || "")}"><div class="action-row"><button class="action-btn" id="tv-refresh">Refresh broadcast</button></div>`;
+    } else if(tab === "news"){
+      panel = worldItems.length
+        ? `<div class="field-label" style="margin-bottom:.55rem">Top stories · ${worldItems.length} headlines</div>${worldItems.map((story,index)=>`<div class="morning-card" style="margin-bottom:.6rem"><div class="field-label">Story ${index+1} · ${escapeHtml(story.source || "News")}</div><strong>${escapeHtml(story.title || "World news")}</strong><p>${escapeHtml(story.summary || "")}</p>${story.url ? `<a class="morning-link" href="${escapeHtml(story.url)}" target="_blank" rel="noopener">Read source</a>` : ""}</div>`).join("")}<div class="action-row"><button class="action-btn" id="tv-refresh">Refresh headlines</button></div>`
+        : `<div class="flavor-box">No broadcast has arrived yet. Refresh Willow TV or sleep to begin a new morning.</div><div class="action-row"><button class="action-btn" id="tv-refresh">Find headlines</button></div>`;
+    } else {
+      panel = `<div class="morning-card"><div class="field-label">Willow Isle bulletin</div><strong>Day ${state.day}</strong><p>${escapeHtml(morning.islandNews || "The island is having a quiet day. Check again after the morning ritual.")}</p></div>${morning.miniEvent ? `<div class="flavor-box"><b>Today's activity:</b> ${escapeHtml(morning.miniEvent.title || "Mini Event")} · ${escapeHtml(morning.miniEvent.blurb || "")}</div>` : ""}`;
+    }
+    openModal(`<h3>Willow TV</h3><p class="modal-sub">Weather, world stories, and gentle island updates — anytime.</p><div class="tabs">${[["weather","Weather"],["news","World News"],["island","Island Bulletin"]].map(([id,label]) => `<button class="tab-btn ${tab===id?'active':''}" data-tv-tab="${id}">${label}</button>`).join("")}</div><div class="tab-panel">${panel}</div>`);
+    modalBody.querySelectorAll("[data-tv-tab]").forEach(btn => btn.addEventListener("click", () => openWillowTV(btn.dataset.tvTab)));
+    const refresh = document.getElementById("tv-refresh");
+    if(refresh) refresh.addEventListener("click", async () => {
+      const input = document.getElementById("tv-location");
+      state.weatherLocation = input ? input.value.trim().slice(0,80) : state.weatherLocation;
+      refresh.disabled = true; refresh.textContent = "Tuning in...";
+      saveState(true);
+      try{
+        const res = await fetch(morningApiUrl(), { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({day:state.day, playerName:state.playerName||"Friend", location:state.weatherLocation||""}) });
+        const data = await res.json().catch(() => ({}));
+        if(!res.ok) throw new Error(data.error || "Broadcast unavailable");
+        applyMorningBrief(data); openWillowTV(tab === "news" ? "news" : "weather");
+      } catch(_){
+        toast("Willow TV is offline — showing the last broadcast");
+        openWillowTV(tab === "news" ? "news" : "weather");
+      }
+    });
+  }
+
   function sleepPanel(){
     return `
       <div class="flavor-box">You feel ${state.energy < 30 ? "pretty tired" : state.energy < 70 ? "a little worn out" : "still pretty energetic"}. Sleeping restores energy, draws tomorrow's tarot, sets the weather, and brings island + world news.</div>
+      <div class="field-label" style="margin-top:0.75rem">Real-weather city (optional)</div>
+      <input class="name-input" id="weather-location" maxlength="80" placeholder="Bangkok, London, Tokyo..." value="${escapeHtml(state.weatherLocation || "")}">
+      <p class="modal-sub">When set, Willow Isle mirrors current conditions from Open-Meteo. Leave blank for fictional island weather.</p>
       <div class="action-row"><button class="action-btn" id="btn-sleep">Sleep - Morning Ritual (Day ${state.day+1})</button></div>
     `;
   }
@@ -12046,6 +12647,7 @@ const BREEDS = {
     el.addEventListener("change", (e) => {
       const av = e.detail || el.value;
       applyAvatarToChild(av);
+      if(state.lookmooGames) state.lookmooGames.boutiqueEquippedLook = "";
       saveState(true);
       warmPlayerAvatar();
       if(onChange) onChange();
@@ -12276,7 +12878,11 @@ const BREEDS = {
 
   function wirePanel(){
     const sleepBtn = modalBody.querySelector("#btn-sleep");
-    if(sleepBtn) sleepBtn.addEventListener("click", doSleep);
+    if(sleepBtn) sleepBtn.addEventListener("click", () => {
+      const locationInput = modalBody.querySelector("#weather-location");
+      if(locationInput) state.weatherLocation = locationInput.value.trim().slice(0,80);
+      doSleep();
+    });
 
     const meName = modalBody.querySelector("#me-name");
     if(meName){
@@ -12459,7 +13065,9 @@ const BREEDS = {
       tarot: (data && data.tarot) || null,
       islandNews: (data && data.islandNews) || "",
       worldNews: (data && data.worldNews) || null,
+      worldNewsItems: (data && data.worldNewsItems) || ((data && data.worldNews) ? [data.worldNews] : []),
       miniEvent: (data && data.miniEvent) || null,
+      realWeather: (data && data.realWeather) || null,
       weather: state.weather,
       mood: state.dayMood,
     };
@@ -12607,7 +13215,7 @@ const BREEDS = {
       const res = await fetch(morningApiUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ day: state.day, playerName: state.playerName || "Friend" }),
+        body: JSON.stringify({ day: state.day, playerName: state.playerName || "Friend", location: state.weatherLocation || "" }),
       });
       data = await res.json().catch(() => ({}));
       if(!res.ok) throw new Error(data.error || "Morning brief failed");
@@ -12631,9 +13239,11 @@ const BREEDS = {
     const world = data.worldNews || {};
     const weather = state.weather || "soft";
     const mini = data.miniEvent;
+    const real = data.realWeather;
     openModal(`
       <h3>Day ${state.day} Morning</h3>
       <p class="modal-sub">Weather: <b>${WEATHER_LABELS[weather] || weather}</b> · Mood: <b>${escapeHtml(state.dayMood || "")}</b></p>
+      ${real ? `<div class="flavor-box" style="margin-bottom:0.7rem"><b>Live weather · ${escapeHtml(real.location || state.weatherLocation || "")}</b><br>${escapeHtml(String(real.temperatureC))}°C · feels like ${escapeHtml(String(real.feelsLikeC))}°C · source: ${escapeHtml(real.source || "Open-Meteo")}</div>` : (state.weatherLocation ? `<div class="flavor-box" style="margin-bottom:0.7rem">Live weather unavailable for ${escapeHtml(state.weatherLocation)} — using Willow Isle's offline forecast.</div>` : "")}
       <div class="morning-grid">
         <div class="morning-card tarot has-visual">
           ${tarotCardMarkup(tarot.card || "The Star", tarot.upright !== false)}
@@ -14528,9 +15138,18 @@ const BREEDS = {
         stopMatchCamera();
         showMatchResult(match);
       } catch(err){
-        setStatus(serverHint(err && err.message), true);
-        analyzing = false;
-        refreshAnalyzeBtn();
+        // Restricted API keys often lack model.request — fall back to local photo match.
+        try{
+          setStatus("AI unavailable - matching from your photo colors...");
+          const local = await buildLocalDogMatchFromPhoto(filled[0]);
+          stopMatchCamera();
+          showMatchResult(local);
+          toast("Puppy matched offline from your photo");
+        } catch(localErr){
+          setStatus(serverHint(err && err.message), true);
+          analyzing = false;
+          refreshAnalyzeBtn();
+        }
       }
     }
 
@@ -14654,25 +15273,84 @@ const BREEDS = {
 
   /* ---------- Concert Festival (Lisa hosts) ---------- */
   const CONCERT_W = 700, CONCERT_H = 420;
-  const CONCERT_TRACK = {
-    title: "How You Like That",
-    artist: "BLACKPINK",
-    previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/16/6f/31/166f31f0-255e-6ab4-a4bb-7b94116c238b/mzaf_10977079639410315979.plus.aac.p.m4a",
-  };
+  const CONCERT_PLAYLIST = [
+    { id:"hyllt", title:"How You Like That", artist:"BLACKPINK", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/16/6f/31/166f31f0-255e-6ab4-a4bb-7b94116c238b/mzaf_10977079639410315979.plus.aac.p.m4a" },
+    { id:"pinkvenom", title:"Pink Venom", artist:"BLACKPINK", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b5/17/54/b51754e6-8bd1-9d97-8934-e713b68f82a0/mzaf_605229577143140327.plus.aac.p.m4a" },
+    { id:"shutdown", title:"Shut Down", artist:"BLACKPINK", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c3/15/06/c31506be-4ea9-81b8-4f7f-803ee7305721/mzaf_5655789092813624412.plus.aac.p.m4a" },
+    { id:"ktl", title:"Kill This Love", artist:"BLACKPINK", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/37/10/8b/37108b15-6634-df07-dadf-f20f6525dceb/mzaf_3091360070584533991.plus.aac.p.m4a" },
+    { id:"typagirl", title:"Typa Girl", artist:"BLACKPINK", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a4/09/cf/a409cfec-d357-87cb-4bcf-28ed226d61e3/mzaf_3385389478240672113.plus.aac.p.m4a" },
+    { id:"ddudu", title:"DDU-DU DDU-DU", artist:"BLACKPINK", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1f/19/0b/1f190b1d-4279-9eb9-8485-0f4342b84090/mzaf_5657825060835883930.plus.aac.p.m4a" },
+    { id:"lalisa", title:"LALISA", artist:"LISA", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f5/10/49/f5104946-08c2-cb9c-4b8a-aa52bafa093d/mzaf_5120615441669569555.plus.aac.p.m4a" },
+    { id:"rockstar", title:"Rockstar", artist:"LISA", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ed/d1/67/edd1672c-0362-0cb9-a107-6b0a9d2730d9/mzaf_15834600298397736731.plus.aac.p.m4a" },
+    { id:"newwoman", title:"New Woman", artist:"LISA", previewUrl:"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4b/4f/d2/4b4fd28e-882a-b5da-2357-3043bb76fb9b/mzaf_14214582532282335473.plus.aac.p.m4a" },
+  ];
   let concertMusic = null;
+  let concertMusicTrackId = "";
+
+  function getConcertTrack(){
+    const id = (state && state.concertSong) || "hyllt";
+    return CONCERT_PLAYLIST.find(t => t.id === id) || CONCERT_PLAYLIST[0];
+  }
+
+  function setConcertSong(id, opts){
+    const track = CONCERT_PLAYLIST.find(t => t.id === id) || CONCERT_PLAYLIST[0];
+    if(!state) return track;
+    const changed = state.concertSong !== track.id;
+    state.concertSong = track.id;
+    saveState(true);
+    if(changed || (opts && opts.forcePlay)){
+      const shouldPlay = (opts && opts.forcePlay) || (concertMusic && !concertMusic.paused) || activeAmbience === "concert";
+      stopConcertMusic();
+      if(shouldPlay) startConcertMusic();
+    }
+    return track;
+  }
+
+  function concertPlaylistHtml(activeId){
+    const cur = activeId || getConcertTrack().id;
+    return `<div class="concert-song-picks" id="concert-song-picks">
+      ${CONCERT_PLAYLIST.map(t => `
+        <button type="button" class="concert-song-pick ${t.id===cur?'active':''}" data-concert-song="${t.id}">
+          <b>${escapeHtml(t.title)}</b>
+          <span>${escapeHtml(t.artist)}</span>
+        </button>`).join("")}
+    </div>`;
+  }
+
+  function bindConcertSongPicks(root, onPick){
+    const host = root || document;
+    host.querySelectorAll("[data-concert-song]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const track = setConcertSong(btn.dataset.concertSong, { forcePlay: true });
+        host.querySelectorAll("[data-concert-song]").forEach(b => {
+          b.classList.toggle("active", b.dataset.concertSong === track.id);
+        });
+        const now = document.getElementById("concert-now-playing");
+        if(now) now.innerHTML = `<b>${escapeHtml(track.title)}</b> · ${escapeHtml(track.artist)}`;
+        toast("Now playing: " + track.title);
+        if(typeof onPick === "function") onPick(track);
+      });
+    });
+  }
 
   function startConcertMusic(){
-    if(!concertMusic){
-      concertMusic = new Audio(CONCERT_TRACK.previewUrl);
+    const track = getConcertTrack();
+    if(!concertMusic || concertMusicTrackId !== track.id){
+      if(concertMusic){
+        concertMusic.pause();
+        concertMusic = null;
+      }
+      concertMusic = new Audio(track.previewUrl);
       concertMusic.preload = "auto";
       concertMusic.loop = true;
       concertMusic.volume = 0.35;
+      concertMusicTrackId = track.id;
     }
     concertMusic.currentTime = 0;
     const playAttempt = concertMusic.play();
     if(playAttempt && playAttempt.catch){
       playAttempt.catch(() => {
-        toast("Tap Join the show to start the concert music");
+        toast("Tap a song or Join the show to start the music");
       });
     }
   }
@@ -14976,15 +15654,16 @@ const BREEDS = {
   /* ---------- Cinema ---------- */
   function moviePosterHtml(m, h){
     h = h || 150;
-    const fallback = `linear-gradient(145deg,${m.poster},#1a1524)`;
-    if(m.posterImg){
-      return `<div style="height:${h}px;border-radius:12px;overflow:hidden;background:${fallback};position:relative">
-        <img src="${escapeHtml(m.posterImg)}" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block"
-          onerror="this.remove()">
-        <div style="position:absolute;left:0;right:0;bottom:0;padding:0.45rem 0.55rem;color:#fff;font-weight:700;font-size:0.82rem;background:linear-gradient(transparent,rgba(0,0,0,0.72))">${escapeHtml(m.title)}</div>
+    const fallback = `linear-gradient(145deg,${m.poster || "#5A4030"},#1a120e)`;
+    const img = m.posterImg || (m.youtubeId ? (`https://i.ytimg.com/vi/${m.youtubeId}/hqdefault.jpg`) : "");
+    if(img){
+      return `<div class="cinema-poster" style="height:${h}px;background:${fallback}">
+        <img src="${escapeHtml(img)}" alt="${escapeHtml(m.title || "")}" loading="lazy" referrerpolicy="no-referrer"
+          onerror="this.style.display='none'; const f=this.nextElementSibling; if(f) f.hidden=false;">
+        <div class="cine-poster-fallback" hidden>${escapeHtml(m.title || "Now Showing")}</div>
       </div>`;
     }
-    return `<div style="height:${h}px;border-radius:12px;background:${fallback};display:flex;align-items:flex-end;padding:0.55rem;color:#fff;font-weight:700;font-size:0.9rem">${escapeHtml(m.title)}</div>`;
+    return `<div class="cinema-poster" style="height:${h}px;background:${fallback}"><div class="cine-poster-fallback">${escapeHtml(m.title || "Now Showing")}</div></div>`;
   }
 
   function openCinemaTicketBooth(){
@@ -14995,82 +15674,99 @@ const BREEDS = {
     const owned = (state.cinemaTickets || {});
     const cards = NOW_SHOWING.map(m => {
       const has = !!owned[m.id];
-      return `<div class="item-card" style="min-width:150px;max-width:170px">
-        ${moviePosterHtml(m, 160)}
-        <span style="font-size:0.78rem;opacity:0.85;text-align:center">${escapeHtml(m.title)}</span>
-        <span style="font-size:0.72rem;opacity:0.7">${m.genre} · $${m.price || 8}</span>
-        <button class="action-btn" data-movie="${m.id}" style="padding:0.35rem 0.55rem;font-size:0.82rem">Details</button>
-        <button class="action-btn ${has?'ghost':''}" data-buy-ticket="${m.id}" style="padding:0.35rem 0.55rem;font-size:0.82rem">${has ? "Ticket ✓" : "Buy ticket $"+ (m.price||8)}</button>
+      return `<div class="item-card cinema-card">
+        ${moviePosterHtml(m, 150)}
+        <div class="cine-title">${escapeHtml(m.title)}</div>
+        <div class="cine-meta">${escapeHtml(m.genre)} · $${m.price || 8}</div>
+        <button class="action-btn" data-movie="${m.id}" style="padding:0.35rem 0.55rem;font-size:0.82rem;margin-top:0.35rem">Details</button>
+        <button class="action-btn ${has?'ghost':''}" data-buy-ticket="${m.id}" style="padding:0.35rem 0.55rem;font-size:0.82rem">${has ? "Play trailer" : "Buy ticket $"+ (m.price||8)}</button>
       </div>`;
     }).join("");
     openModal(`
-      <h3>Nora's Ticket Booth</h3>
-      <p class="modal-sub">"Pick a film, I'll punch your ticket. Trailers are free — seats need a ticket."</p>
-      <div class="flavor-box" style="margin-bottom:0.7rem">You have <b>$${state.money}</b> · Walk to the glowing <b>EXIT</b> door when you're done.</div>
-      <div class="item-grid">${cards}</div>
-      <div class="action-row" style="margin-top:0.85rem"><button class="action-btn ghost" id="cinema-done">Back to lobby</button></div>
+      <h3>Island Home Theater</h3>
+      <p class="modal-sub">Dim lights, soft seats, popcorn glow — buy a ticket to start the trailer.</p>
+      <div class="cinema-hub">
+        <div class="cinema-marquee">Now Showing</div>
+        <div class="flavor-box" style="margin-bottom:0.7rem;background:rgba(247,233,210,0.72)">You have <b>$${state.money}</b> · Details = synopsis · Ticket = play trailer · Walk to <b>EXIT</b> when done.</div>
+        <div class="item-grid">${cards}</div>
+      </div>
+      <div class="action-row" style="margin-top:0.85rem"><button class="action-btn ghost" id="cinema-done">Back to seats</button></div>
     `);
     document.getElementById("cinema-done").addEventListener("click", closeModal);
     document.querySelectorAll("[data-movie]").forEach(btn => {
       btn.addEventListener("click", () => openMovieDetail(btn.dataset.movie));
     });
     document.querySelectorAll("[data-buy-ticket]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.buyTicket;
-        const m = NOW_SHOWING.find(x => x.id === id);
-        if(!m) return;
-        if(!state.cinemaTickets) state.cinemaTickets = {};
-        if(state.cinemaTickets[id]){ toast("You already have a ticket"); return; }
-        const price = m.price || 8;
-        if(state.money < price){ toast("Need $"+price+" for a ticket"); return; }
-        state.money -= price;
-        state.cinemaTickets[id] = true;
-        SFX.purchase();
-        toast("Ticket for " + m.title + "!");
-        saveState(true); updateHud();
-        openCinemaHub();
-      });
+      btn.addEventListener("click", () => buyCinemaTicketAndPlay(btn.dataset.buyTicket));
     });
+  }
+
+  function buyCinemaTicketAndPlay(id){
+    const m = NOW_SHOWING.find(x => x.id === id);
+    if(!m) return;
+    if(!state.cinemaTickets) state.cinemaTickets = {};
+    if(state.cinemaTickets[id]){
+      openMovieTrailer(id);
+      return;
+    }
+    const price = m.price || 8;
+    if(state.money < price){ toast("Need $"+price+" for a ticket"); return; }
+    state.money -= price;
+    state.cinemaTickets[id] = true;
+    SFX.purchase();
+    toast("Ticket for " + m.title + " — starting trailer");
+    saveState(true); updateHud();
+    openMovieTrailer(id);
+  }
+
+  function openMovieTrailer(id){
+    const m = NOW_SHOWING.find(x => x.id === id);
+    if(!m || !m.youtubeId){ toast("Trailer not available"); return; }
+    SFX.enterZone();
+    openModal(`
+      <h3>${escapeHtml(m.title)}</h3>
+      <p class="modal-sub">Your ticket is punched · enjoy the trailer</p>
+      <div class="cinema-hub">
+        <div class="cinema-trailer-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(m.youtubeId)}?autoplay=1&rel=0&modestbranding=1&playsinline=1"
+            title="${escapeHtml(m.title)} trailer"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="action-row" style="margin-top:0.85rem">
+        <button class="action-btn" id="trailer-booth">All movies</button>
+      </div>
+    `);
+    document.getElementById("trailer-booth").addEventListener("click", () => openCinemaHub());
   }
 
   function openMovieDetail(id){
     const m = NOW_SHOWING.find(x => x.id === id);
     if(!m) return;
-    const has = !!(state.cinemaTickets && state.cinemaTickets[id]);
     openModal(`
       <h3>${escapeHtml(m.title)}</h3>
-      <p class="modal-sub">${m.genre} · ${m.rating} · ${m.runtime}</p>
-      <div style="display:flex;gap:0.85rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:0.75rem">
-        <div style="width:140px;flex:0 0 140px">${moviePosterHtml(m, 200)}</div>
-        <div class="flavor-box" style="flex:1;min-width:180px;margin:0">${escapeHtml(m.blurb)}${has ? "<br><br><b>Ticket punched — enjoy the show!</b>" : "<br><br>Buy a ticket at Nora's booth to claim your seat."}</div>
+      <p class="modal-sub">${escapeHtml(m.genre)} · ${escapeHtml(m.rating)} · ${escapeHtml(m.runtime)}</p>
+      <div class="cinema-hub">
+        <div style="display:flex;gap:0.85rem;align-items:flex-start;flex-wrap:wrap">
+          <div style="width:150px;flex:0 0 150px">${moviePosterHtml(m, 210)}</div>
+          <div class="flavor-box" style="flex:1;min-width:180px;margin:0;background:rgba(247,233,210,0.78)">
+            <div class="field-label" style="margin-bottom:0.35rem">Synopsis</div>
+            <p style="margin:0;line-height:1.5">${escapeHtml(m.blurb)}</p>
+          </div>
+        </div>
       </div>
-      <div class="action-row" style="flex-wrap:wrap;gap:0.5rem">
-        <a class="action-btn" href="${m.trailer}" target="_blank" rel="noopener" id="trailer-link" style="text-decoration:none;display:inline-flex;align-items:center">Watch trailer</a>
-        ${has ? "" : `<button class="action-btn" data-buy-ticket-detail="${m.id}">Buy ticket $${m.price||8}</button>`}
+      <div class="action-row" style="flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem">
         <button class="action-btn ghost" id="movie-back">Back to booth</button>
       </div>
     `);
     document.getElementById("movie-back").addEventListener("click", () => openCinemaHub());
-    const link = document.getElementById("trailer-link");
-    if(link) link.addEventListener("click", () => SFX.enterZone());
-    const buy = document.querySelector("[data-buy-ticket-detail]");
-    if(buy) buy.addEventListener("click", () => {
-      const mid = buy.dataset.buyTicketDetail;
-      const movie = NOW_SHOWING.find(x => x.id === mid);
-      if(!movie) return;
-      if(!state.cinemaTickets) state.cinemaTickets = {};
-      const price = movie.price || 8;
-      if(state.money < price){ toast("Need $"+price); return; }
-      state.money -= price;
-      state.cinemaTickets[mid] = true;
-      SFX.purchase(); toast("Ticket punched!");
-      saveState(true); updateHud();
-      openMovieDetail(mid);
-    });
   }
 
   /* ---------- Concert event board (Bangkok) ---------- */
   function openConcertBoard(){
+    const track = getConcertTrack();
     const rows = BANGKOK_EVENTS.map(e => `
       <div style="padding:0.65rem 0.75rem;border-radius:12px;background:rgba(255,255,255,0.55);border:1px solid rgba(58,44,34,0.12);margin-bottom:0.45rem">
         <div style="font-size:0.75rem;opacity:0.7;letter-spacing:0.04em">${escapeHtml(e.date)} · ${escapeHtml(e.venue)}</div>
@@ -15079,13 +15775,18 @@ const BREEDS = {
       </div>`).join("");
     openModal(`
       <h3>Festival Event Board</h3>
-      <p class="modal-sub">Coming up in Bangkok — Lisa pins the latest tour stops.</p>
-      <div style="max-height:280px;overflow:auto;margin-bottom:0.75rem">${rows}</div>
+      <p class="modal-sub">Pick a BLACKPINK or LISA track, then cheer through the rhythm show.</p>
+      <div class="field-label">Setlist · Now playing</div>
+      <p class="match-status" id="concert-now-playing" style="margin:0.2rem 0 0.35rem"><b>${escapeHtml(track.title)}</b> · ${escapeHtml(track.artist)}</p>
+      ${concertPlaylistHtml(track.id)}
+      <div class="field-label">Bangkok pinboard</div>
+      <div style="max-height:180px;overflow:auto;margin-bottom:0.75rem">${rows}</div>
       <div class="action-row" style="flex-wrap:wrap;gap:0.5rem">
         <button class="action-btn" id="concert-play">Play rhythm show (−12⚡)</button>
         <button class="action-btn ghost" id="concert-board-done">Leave</button>
       </div>
     `);
+    bindConcertSongPicks(modalBody);
     document.getElementById("concert-board-done").addEventListener("click", closeModal);
     document.getElementById("concert-play").addEventListener("click", () => {
       closeModal();
@@ -15098,14 +15799,17 @@ const BREEDS = {
       openModal(`<h3>Concert Festival</h3><div class="flavor-box">You're too tired to cheer tonight. Head home and sleep to restore energy.</div>`);
       return;
     }
+    const track = getConcertTrack();
     openModal(`
       <h3>Concert Festival - Lisa Live</h3>
-      <p class="modal-sub">Lisa is hosting! Now playing: <b>${CONCERT_TRACK.title}</b> by ${CONCERT_TRACK.artist}. Hit the notes as they reach the glow bar.</p>
+      <p class="modal-sub">Now playing: <span id="concert-now-playing"><b>${escapeHtml(track.title)}</b> · ${escapeHtml(track.artist)}</span>. Hit the notes as they reach the glow bar.</p>
+      ${concertPlaylistHtml(track.id)}
       <div class="race-wrap">
         <canvas id="concert-canvas" width="${CONCERT_W}" height="${CONCERT_H}"></canvas>
       </div>
-      <div class="hint" style="margin-top:0.6rem;">A/← · W/↑ · D/→ - hit when notes reach the bar · 30-second Apple Music preview</div>
+      <div class="hint" style="margin-top:0.6rem;">Tap a song anytime to switch · A/← · W/↑ · D/→ · 30-second Apple Music preview</div>
     `);
+    bindConcertSongPicks(modalBody);
     startConcertMusic();
     startConcertShow();
   }
@@ -15938,6 +16642,46 @@ const BREEDS = {
     const rgb = parseHexColor(hex);
     if(!rgb) return 0.5;
     return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+  }
+
+  function buildLocalDogMatchFromPhoto(dataUrl){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 160;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        const scale = Math.max(size / img.width, size / img.height);
+        const dw = img.width * scale, dh = img.height * scale;
+        ctx.drawImage(img, (size - dw) / 2, (size - dh) / 2, dw, dh);
+
+        const faceHex = averageCanvasRegion(ctx, size * 0.28, size * 0.22, size * 0.44, size * 0.36);
+        const outfitHex = averageCanvasRegion(ctx, size * 0.22, size * 0.62, size * 0.56, size * 0.28);
+        const face = parseHexColor(faceHex) || { r:180, g:140, b:110 };
+        const outfit = parseHexColor(outfitHex) || { r:100, g:120, b:140 };
+        const lum = luminanceOf(faceHex);
+        const warm = face.r - face.b;
+        const ids = Object.keys(BREEDS);
+        let score = Math.round(face.r * 3 + face.g * 5 + face.b * 7);
+        score += Math.round(outfit.r + outfit.g * 2 + outfit.b * 3);
+        if(warm > 20) score += 11;
+        if(lum < 0.28) score += 17;
+        else if(lum > 0.62) score += 23;
+        const breedId = ids[Math.abs(score) % ids.length];
+        const breed = BREEDS[breedId];
+        const vibe = 70 + (Math.abs(score) % 23);
+        resolve({
+          breedId,
+          score: vibe,
+          message: (breed && breed.name ? breed.name : "This pup") + " vibes with your photo colors (offline match while AI model access is unavailable).",
+          local: true,
+        });
+      };
+      img.onerror = () => reject(new Error("Could not read that photo."));
+      img.src = dataUrl;
+    });
   }
 
   function buildLocalCharacterFromPhoto(dataUrl){
@@ -16801,6 +17545,7 @@ const BREEDS = {
     updateHud();
     SFX.enterZone();
     toast("Welcome to Willow Isle, " + state.playerName + "!");
+    if(!state.tutorialSeen) setTimeout(()=>openFirstDayTutorial(0),650);
   }
 
   function resetToNewGame(){

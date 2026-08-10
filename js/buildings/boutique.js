@@ -30,7 +30,7 @@
         ctx.fillStyle = "#FBF0DE";
         ctx.font = "700 8px ui-rounded, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("ABLE", 0, -2);
+        ctx.fillText("WILLOW", 0, -2);
         // white door with oval glass
         ctx.fillStyle = "#F5F0E4";
         roundRect(-11, 20, 22, 32, 4); ctx.fill();
@@ -99,6 +99,50 @@
 
         drawBuildingPlant(HOUSE.x + 220, HOUSE.y + 210);
         drawBuildingPlant(HOUSE.x + HOUSE.w - 220, HOUSE.y + 210);
+
+        // Walk-up poster for the daily Style Photo Hunt.
+        // Keep the challenge poster in its own right-wall nook, clear of racks.
+        const posterX = HOUSE.x + HOUSE.w - 145, posterY = HOUSE.y + 190;
+        ctx.fillStyle = "#FBF0DE";
+        roundRect(posterX, posterY, 72, 92, 7); ctx.fill();
+        ctx.strokeStyle = "#C45A7A"; ctx.lineWidth = 3;
+        roundRect(posterX, posterY, 72, 92, 7); ctx.stroke();
+        ctx.fillStyle = "#C45A7A";
+        ctx.font = "700 9px ui-rounded, sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("STYLE", posterX + 36, posterY + 17);
+        ctx.fillText("CHALLENGE", posterX + 36, posterY + 29);
+        ctx.fillStyle = "#8A6BAE";
+        ctx.beginPath(); ctx.moveTo(posterX+20,posterY+72); ctx.lineTo(posterX+36,posterY+40); ctx.lineTo(posterX+52,posterY+72); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = `rgba(255,255,255,${0.4 + Math.sin(t/300)*0.25})`;
+        ctx.beginPath(); ctx.arc(posterX+57, posterY+42, 3, 0, Math.PI*2); ctx.fill();
+
+        // Willow's signature fitting platform and two seasonal mannequins.
+        ctx.fillStyle = "rgba(196,90,122,0.16)";
+        ctx.beginPath(); ctx.ellipse(cx, cy + 62, 86, 30, 0, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = "rgba(196,90,122,0.42)"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(cx, cy + 62, 72, 23, 0, 0, Math.PI*2); ctx.stroke();
+
+        const child = (state && state.child) || {};
+        [[cx-105, cy+20, child.outfit || "#D9705C"],[cx+105, cy+20, "#8A6BAE"]].forEach(([mx,my,color], i) => {
+          ctx.fillStyle = "#C4895A";
+          ctx.fillRect(mx-2, my+28, 4, 35);
+          ctx.beginPath(); ctx.arc(mx, my, 7, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(mx-18, my+16); ctx.lineTo(mx+18, my+16);
+          ctx.lineTo(mx+(i ? 24 : 20), my+48); ctx.lineTo(mx-(i ? 24 : 20), my+48);
+          ctx.closePath(); ctx.fill();
+          ctx.fillStyle = "rgba(255,255,255,0.38)";
+          ctx.beginPath(); ctx.arc(mx+10, my+23, 2.2, 0, Math.PI*2); ctx.fill();
+        });
+
+        ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.sin(t/360)*0.18})`;
+        [[cx-67,cy+22],[cx+65,cy+5],[cx+8,cy+43]].forEach(([sx,sy]) => {
+          ctx.beginPath();
+          ctx.moveTo(sx,sy-5); ctx.lineTo(sx+1.5,sy-1.5); ctx.lineTo(sx+5,sy);
+          ctx.lineTo(sx+1.5,sy+1.5); ctx.lineTo(sx,sy+5); ctx.lineTo(sx-1.5,sy+1.5);
+          ctx.lineTo(sx-5,sy); ctx.lineTo(sx-1.5,sy-1.5); ctx.closePath(); ctx.fill();
+        });
 
         drawBuildingPatron(cx - 25, cy - 28, "#F0C08A", "#C45A7A", "#6B4423", Math.sin(t/540)*1.1);
         drawNpcNameTag(cx - 25, cy - 52, "Lila");

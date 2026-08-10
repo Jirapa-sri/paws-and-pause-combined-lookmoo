@@ -560,9 +560,8 @@ NEWS_FEEDS = [
 ]
 
 
-def fetch_real_world_headline() -> dict:
-    """Pick one real headline from a public news RSS feed."""
-    import random
+def fetch_real_world_headlines(limit: int = 3) -> list:
+    """Fetch up to three recent real headlines from a public news RSS feed."""
     import xml.etree.ElementTree as ET
 
     errors = []
@@ -586,33 +585,75 @@ def fetch_real_world_headline() -> dict:
                 if title:
                     items.append({"title": title, "url": link, "blurb": desc[:280]})
             if items:
-                pick = random.choice(items[:12])
                 source = "BBC" if "bbc" in url else ("NYT" if "nytimes" in url else "Reuters")
-                return {
-                    "title": pick["title"][:140],
-                    "url": pick.get("url") or "",
-                    "blurb": pick.get("blurb") or pick["title"],
+                return [{
+                    "title": item["title"][:140],
+                    "url": item.get("url") or "",
+                    "blurb": item.get("blurb") or item["title"],
                     "source": source,
-                }
+                } for item in items[:max(1, min(int(limit or 3), 3))]]
         except Exception as err:
             errors.append(f"{url}: {err}")
             continue
-    return {
+    return [{
         "title": "Islanders pause for a quiet morning",
         "url": "",
         "blurb": "Could not reach live world news feeds, so Willow Isle shares a cozy placeholder headline.",
         "source": "Willow Isle Gazette",
         "offline": True,
         "errors": errors[:2],
-    }
+    }]
 
 
-def local_morning_brief(day: int, player_name: str, headline: dict) -> dict:
+def fetch_real_world_headline() -> dict:
+    """Backward-compatible single-headline helper."""
+    return fetch_real_world_headlines(1)[0]
+
+
+def fetch_real_weather(location: str):
+    """Fetch current weather from Open-Meteo; return None for blank/offline input."""
+    location = (location or "").strip()[:80]
+    if not location:
+        return None
+    try:
+        geo_url = "https://geocoding-api.open-meteo.com/v1/search?" + urllib.parse.urlencode({
+            "name": location, "count": 1, "language": "en", "format": "json",
+        })
+        req = urllib.request.Request(geo_url, headers={"User-Agent": "PawsPauseWeather/1.0"})
+        with openai_urlopen(req, timeout=12) as resp:
+            geo = json.loads(resp.read().decode("utf-8"))
+        results = geo.get("results") or []
+        if not results:
+            return None
+        place = results[0]
+        forecast_url = "https://api.open-meteo.com/v1/forecast?" + urllib.parse.urlencode({
+            "latitude": place["latitude"], "longitude": place["longitude"],
+            "current": "temperature_2m,apparent_temperature,precipitation,weather_code",
+            "timezone": "auto",
+        })
+        req = urllib.request.Request(forecast_url, headers={"User-Agent": "PawsPauseWeather/1.0"})
+        with openai_urlopen(req, timeout=12) as resp:
+            current = json.loads(resp.read().decode("utf-8")).get("current") or {}
+        code = int(current.get("weather_code") or 0)
+        game_weather = "rain" if code >= 51 or float(current.get("precipitation") or 0) > 0 else ("soft" if code >= 2 else "clear")
+        return {
+            "location": ", ".join(filter(None, [place.get("name"), place.get("country")])),
+            "temperatureC": round(float(current.get("temperature_2m") or 0), 1),
+            "feelsLikeC": round(float(current.get("apparent_temperature") or 0), 1),
+            "weatherCode": code,
+            "gameWeather": game_weather,
+            "source": "Open-Meteo",
+        }
+    except Exception:
+        return None
+
+
+def local_morning_brief(day: int, player_name: str, headline: dict, real_weather=None) -> dict:
     import random
 
     card, vibe = random.choice(TAROT_DECK)
     upright = random.random() > 0.22
-    weather = random.choice(["clear", "soft", "rain"])
+    weather = real_weather.get("gameWeather") if real_weather else random.choice(["clear", "soft", "rain"])
     mood_map = {
         "clear": "bright and open-hearted",
         "soft": "gentle and contemplative",
@@ -657,10 +698,11 @@ def local_morning_brief(day: int, player_name: str, headline: dict) -> dict:
             "url": headline.get("url") or "",
         },
         "miniEvent": mini,
+        "realWeather": real_weather,
     }
 
 
-def openai_morning_brief(api_key: str, day: int, player_name: str, headline: dict) -> dict:
+def openai_morning_brief(api_key: str, day: int, player_name: str, headline: dict, real_weather=None) -> dict:
     import random
 
     card, vibe = random.choice(TAROT_DECK)
@@ -676,6 +718,9 @@ Title: {headline.get('title')}
 Source: {headline.get('source')}
 Blurb: {headline.get('blurb')}
 
+Verified current weather (use as truth; do not invent values):
+{json.dumps(real_weather, ensure_ascii=False) if real_weather else 'No location supplied; choose island weather normally.'}
+
 Return ONLY JSON:
 {{
   "weather": "clear" | "soft" | "rain",
@@ -687,7 +732,7 @@ Return ONLY JSON:
 }}
 
 Rules:
-- weather MUST be exactly clear, soft, or rain
+- weather MUST be exactly clear, soft, or rain; when verified weather is supplied, use its gameWeather value
 - Link tarot tone to weather (sun/star/clear often clear; moon/hermit often soft; wheel/cups can be rain)
 - miniEvent about 50% of the time; match id to weather (clear=balloon-tap, soft=petal-catch, rain=puddle-hop)
 - Keep language friendly, English, no emojis
@@ -733,19 +778,141 @@ Rules:
             "url": headline.get("url") or "",
         },
         "miniEvent": mini,
+        "realWeather": real_weather,
     }
 
 
-def build_morning_brief(api_key: str, day: int, player_name: str) -> dict:
-    headline = fetch_real_world_headline()
+def build_morning_brief(api_key: str, day: int, player_name: str, location: str = "") -> dict:
+    headlines = fetch_real_world_headlines(3)
+    headline = headlines[0]
+    real_weather = fetch_real_weather(location)
     if not api_key:
-        return local_morning_brief(day, player_name, headline)
+        brief = local_morning_brief(day, player_name, headline, real_weather)
+    else:
+        try:
+            brief = openai_morning_brief(api_key, day, player_name, headline, real_weather)
+        except Exception as err:
+            brief = local_morning_brief(day, player_name, headline, real_weather)
+            brief["aiError"] = friendly_error(err)
+    first_summary = (brief.get("worldNews") or {}).get("summary", "")
+    brief["worldNewsItems"] = [{
+        "title": item.get("title") or "World news",
+        "summary": first_summary if index == 0 and first_summary else (item.get("blurb") or item.get("title") or "")[:360],
+        "source": item.get("source") or "News",
+        "url": item.get("url") or "",
+    } for index, item in enumerate(headlines[:3])]
+    return brief
+
+
+STYLE_CHALLENGES = [
+    {"title": "Rainy-day Picnic", "brief": "Lila needs a sky-blue top, navy bottoms, and a sunny yellow accessory.", "target": {"top": "sky", "bottom": "navy", "accessory": "sunny"}},
+    {"title": "Festival Night", "brief": "Create a bright festival look with a coral top, lilac bottoms, and a gold accessory.", "target": {"top": "coral", "bottom": "lilac", "accessory": "gold"}},
+    {"title": "Lakeside Afternoon", "brief": "Choose a sage top, cream bottoms, and a sky-blue accessory for a breezy lake visit.", "target": {"top": "sage", "bottom": "cream", "accessory": "sky"}},
+    {"title": "Cozy Café Date", "brief": "Style a warm café outfit with a lilac top, rose bottoms, and a cream accessory.", "target": {"top": "lilac", "bottom": "rose", "accessory": "cream"}},
+    {"title": "School Presentation", "brief": "Build a confident look with a cream top, navy bottoms, and a coral accessory.", "target": {"top": "cream", "bottom": "navy", "accessory": "coral"}},
+]
+
+STORE_REQUESTS = [
+    {"customer":"Mara","request":"I'm refreshing my reading corner. I need something leafy and one soft piece for long afternoons.","targets":["plants","soft"],"praise":"Mara smiles — the corner feels calm and wonderfully cozy."},
+    {"customer":"Theo","request":"Harbour evenings are dark, and my desk feels unfinished. Find me a gentle light and a small finishing touch.","targets":["lamps","decor"],"praise":"Theo nods — practical, warm, and exactly right for the harbour."},
+    {"customer":"Pip","request":"I'm making a dreamy nap nook. It needs something soft and a little bit of nature.","targets":["soft","plants"],"praise":"Pip hugs the soft piece and puts the plant beside it immediately."},
+    {"customer":"Lila","request":"The Boutique window needs a warm glow and one decorative detail before opening.","targets":["lamps","decor"],"praise":"Lila loves the pairing — the whole display finally feels complete."},
+]
+
+def build_store_request(api_key: str) -> dict:
+    import random
+    result = dict(random.choice(STORE_REQUESTS))
+    result["aiGenerated"] = False
+    if not api_key:
+        return result
+    prompt = f"""Rewrite a cozy shop request for Paws & Pause. The two correct categories are fixed as {result['targets']}.
+Customer: {result['customer']}. Base request: {result['request']}
+Return ONLY JSON with request and praise. Do not name the category directly and do not change what the clue means."""
     try:
-        return openai_morning_brief(api_key, day, player_name, headline)
+        payload = openai_chat_json(api_key,[{"role":"user","content":prompt}],max_tokens=180,temperature=0.8)
+        parsed = parse_personality_json(payload["choices"][0]["message"]["content"])
+        result["request"] = str(parsed.get("request") or result["request"])[:220]
+        result["praise"] = str(parsed.get("praise") or result["praise"])[:160]
+        result["aiGenerated"] = True
     except Exception as err:
-        brief = local_morning_brief(day, player_name, headline)
-        brief["aiError"] = friendly_error(err)
-        return brief
+        result["aiError"] = friendly_error(err)
+    return result
+
+def build_fashion_critique(api_key: str, look: dict) -> dict:
+    top, bottom, accessory = (str(look.get(k) or "soft")[:40] for k in ("top","bottom","accessory"))
+    fallback = {"name":f"{top.title()} Island Look","critique":f"Lila loves how the {top} top works with {bottom} bottoms. The {accessory} detail gives it a playful Willow Isle finish!","occasion":"Perfect for a café visit or an afternoon in the plaza.","aiGenerated":False}
+    if not api_key:
+        return fallback
+    prompt=f"""You are Lila, a kind fashion critic in Paws & Pause. Review this outfit: top={top}, bottoms={bottom}, accessory={accessory}.
+Return ONLY JSON: name (creative outfit name), critique (2 warm specific sentences, never negative), occasion (one suitable island occasion)."""
+    try:
+        payload=openai_chat_json(api_key,[{"role":"user","content":prompt}],max_tokens=220,temperature=0.85)
+        parsed=parse_personality_json(payload["choices"][0]["message"]["content"])
+        return {"name":str(parsed.get("name") or fallback["name"])[:70],"critique":str(parsed.get("critique") or fallback["critique"])[:280],"occasion":str(parsed.get("occasion") or fallback["occasion"])[:160],"aiGenerated":True}
+    except Exception as err:
+        fallback["aiError"]=friendly_error(err); return fallback
+
+def build_checkers_move(api_key: str, board: list, legal_moves: list) -> dict:
+    """Let the model choose only among moves already validated by the game."""
+    if not api_key:
+        raise RuntimeError("AI opponent is offline")
+    safe_moves=[]
+    for move in legal_moves[:24]:
+        if not isinstance(move, dict):
+            continue
+        safe_moves.append({"id":str(move.get("id") or "")[:20],"from":int(move.get("from") or 0),"to":int(move.get("to") or 0),"capture":bool(move.get("capture")),"king":bool(move.get("king"))})
+    if not safe_moves:
+        raise ValueError("No legal moves supplied")
+    prompt=f"""You are Willow, a friendly but clever checkers opponent in Paws & Pause.
+Board is a 64-cell array: positive pieces are the player, negative pieces are yours, absolute value 2 means king:
+{json.dumps(board[:64])}
+The game engine has validated these legal moves:
+{json.dumps(safe_moves)}
+Return ONLY JSON with moveId (exactly one id from the list) and line (one short friendly sentence, no strategy spoilers). Prefer captures, kings, safety, and advancement."""
+    payload=openai_chat_json(api_key,[{"role":"user","content":prompt}],max_tokens=120,temperature=0.35)
+    parsed=parse_personality_json(payload["choices"][0]["message"]["content"])
+    move_id=str(parsed.get("moveId") or "")
+    if move_id not in {m["id"] for m in safe_moves}:
+        raise ValueError("AI selected a move outside the legal list")
+    return {"moveId":move_id,"line":str(parsed.get("line") or "Willow studies the board and moves.")[:120],"aiGenerated":True}
+
+
+def build_style_brief(api_key: str, difficulty: str) -> dict:
+    """Correct answers stay local; OpenAI only adds safe flavor text."""
+    import random
+
+    difficulty = difficulty if difficulty in ("easy", "normal", "hard") else "easy"
+    challenge = dict(random.choice(STYLE_CHALLENGES))
+    challenge["target"] = dict(challenge["target"])
+    challenge.update({
+        "difficulty": difficulty,
+        "successPraise": "Lila smiles: Every detail fits the brief beautifully!",
+        "tryAgain": "Lila says: Lovely idea — check the colors in the brief once more.",
+        "aiGenerated": False,
+    })
+    if not api_key:
+        return challenge
+    prompt = f"""You write tiny customer briefs for the cozy game Paws & Pause.
+Challenge title: {challenge['title']}
+Required outfit facts (do not change them): {json.dumps(challenge['target'])}
+Difficulty: {difficulty}
+Base brief: {challenge['brief']}
+
+Return ONLY JSON with keys brief, successPraise, tryAgain.
+- brief: 1-2 friendly sentences. For easy, state the required colors clearly. For normal, use a clear occasion plus color hints. For hard, be more poetic but still mention all required colors.
+- successPraise and tryAgain: one short sentence spoken by Lila.
+- Never add another required clothing item or change the required colors.
+"""
+    try:
+        payload = openai_chat_json(api_key, [{"role": "user", "content": prompt}], max_tokens=260, temperature=0.7)
+        parsed = parse_personality_json(payload["choices"][0]["message"]["content"])
+        challenge["brief"] = str(parsed.get("brief") or challenge["brief"]).strip()[:280]
+        challenge["successPraise"] = str(parsed.get("successPraise") or challenge["successPraise"]).strip()[:160]
+        challenge["tryAgain"] = str(parsed.get("tryAgain") or challenge["tryAgain"]).strip()[:160]
+        challenge["aiGenerated"] = True
+    except Exception as err:
+        challenge["aiError"] = friendly_error(err)
+    return challenge
 
 
 # ---------- Soi Dog Foundation adoption catalog (live scrape, cached) ----------
@@ -1376,7 +1543,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         path = self.path.rstrip("/")
-        if path not in ("/api/match-dog", "/api/create-character", "/api/morning-brief"):
+        if path not in ("/api/match-dog", "/api/create-character", "/api/morning-brief", "/api/style-brief", "/api/store-request", "/api/fashion-critique", "/api/checkers-move"):
             self.send_error(404)
             return
 
@@ -1392,13 +1559,40 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/morning-brief":
             day = int(payload.get("day") or 1)
             player_name = str(payload.get("playerName") or "Friend")[:24]
+            location = str(payload.get("location") or "")[:80]
             # Morning brief still works offline if the key is missing.
             key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
             try:
-                result = build_morning_brief("" if key_err else api_key, day, player_name)
+                result = build_morning_brief("" if key_err else api_key, day, player_name, location)
                 return self._json(200, result)
             except Exception as err:
                 return self._json(500, {"error": friendly_error(err)})
+
+        if path == "/api/style-brief":
+            difficulty = str(payload.get("difficulty") or "easy")[:12]
+            key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+            try:
+                result = build_style_brief("" if key_err else api_key, difficulty)
+                return self._json(200, result)
+            except Exception as err:
+                return self._json(500, {"error": friendly_error(err)})
+
+        if path == "/api/store-request":
+            key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+            return self._json(200, build_store_request("" if key_err else api_key))
+
+        if path == "/api/fashion-critique":
+            key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+            return self._json(200, build_fashion_critique("" if key_err else api_key, payload.get("look") or {}))
+
+        if path == "/api/checkers-move":
+            key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+            if key_err:
+                return self._json(503, {"error":"AI opponent offline","fallback":True})
+            try:
+                return self._json(200, build_checkers_move(api_key, payload.get("board") or [], payload.get("legalMoves") or []))
+            except Exception as err:
+                return self._json(502, {"error":friendly_error(err),"fallback":True})
 
         key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
         if key_err:

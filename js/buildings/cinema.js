@@ -6,7 +6,7 @@
   const B = window.PawsBuildings;
   B.register({
     id: "cinema",
-    info: {label:"Island Cinema", wall:"#2A2438", floor:"#3A3348", accent:"#E8A33D", activity:"Buy tickets", blurb:"Big lobby, ticket booth, and now showing." },
+    info: {label:"Island Cinema", wall:"#4A3428", floor:"#6E1824", accent:"#E8C57A", activity:"Buy tickets", blurb:"Cozy home theater — wood walls, red carpet, soft seats." },
     drawIcon(ctx, api, cx, cy) {
       const S = B.shared; S.bind(api);
       const roundRect = api.roundRect;
@@ -67,16 +67,16 @@
       const drawBuildingChair = api.drawBuildingChair;
       const drawGuestCottageInterior = api.drawGuestCottageInterior;
 
-      // Ticket seller Nora at the booth
-      drawBuildingPatron(cx + 55, cy + 8, "#F0C08A", "#E8A33D", "#3A2417", Math.sin(t/520)*1.2);
-      drawNpcNameTag(cx + 55, cy - 16, "Nora · Tickets");
-      // Ticket booth sign
-      ctx.fillStyle = "#E8A33D";
-      roundRect(cx - 70, cy - 48, 90, 22, 6); ctx.fill();
-      ctx.fillStyle = "#1A1524";
+      // Ticket seller Nora near concessions
+      drawBuildingPatron(cx - 260, cy + 40, "#F0C08A", "#C0483E", "#3A2417", Math.sin(t/520)*1.2);
+      drawNpcNameTag(cx - 260, cy + 16, "Nora · Tickets");
+      // Soft neon ticket glow
+      ctx.fillStyle = "rgba(232,197,122,0.85)";
+      roundRect(cx - 320, cy - 20, 100, 22, 6); ctx.fill();
+      ctx.fillStyle = "#3A2A1E";
       ctx.font = "700 11px ui-rounded, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("TICKETS", cx - 25, cy - 33);
+      ctx.fillText("TICKETS", cx - 270, cy - 5);
     },
   });
 })();
