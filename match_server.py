@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Local static + OpenAI vision proxy for Paws & Pause dog matching.
+"""Local static + AI proxy for Paws & Pause.
+
+Avatar + dog photo match can use a free Gemini key (GEMINI_API_KEY).
+Other AI features keep using OpenAI (OPENAI_API_KEY).
 
 Usage:
   source .venv/bin/activate
@@ -62,10 +65,30 @@ def model_candidates() -> list[str]:
 
 
 MODEL = model_candidates()[0]
+GEMINI_MODEL = os.getenv("GEMINI_MATCH_MODEL", "gemini-flash-latest").strip() or "gemini-flash-latest"
+
+
+def gemini_model_candidates() -> list[str]:
+    preferred = [
+        os.getenv("GEMINI_MATCH_MODEL", "").strip(),
+        "gemini-flash-latest",
+        "gemini-flash-lite-latest",
+        "gemini-3.6-flash",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+    ]
+    seen: set[str] = set()
+    out: list[str] = []
+    for name in preferred:
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        out.append(name)
+    return out
 
 
 def ssl_context() -> ssl.SSLContext:
-    """Use certifi CA bundle so macOS Python can verify api.openai.com."""
+    """Use certifi CA bundle so macOS Python can verify HTTPS APIs."""
     if certifi is not None:
         return ssl.create_default_context(cafile=certifi.where())
     return ssl.create_default_context()
@@ -81,29 +104,33 @@ def friendly_error(err: BaseException) -> str:
     if "insufficient permissions" in low or "missing scopes" in low or "model.request" in low:
         return (
             "This OpenAI API key cannot call models (missing model.request). "
-            "In platform.openai.com create a new secret key with model access, "
-            "or use an owner/writer key, put it in .env as OPENAI_API_KEY, then restart match_server.py."
+            "For avatar/dog match, set GEMINI_API_KEY in .env instead (free Gemini key), "
+            "or create an OpenAI key with model access and restart match_server.py."
         )
-    if "does not have access to model" in low or "model_not_found" in low:
+    if "api key not valid" in low or "api_key_invalid" in low or ("permission denied" in low and "gemini" in low):
+        return "Gemini API key is invalid. Check GEMINI_API_KEY in .env, then restart match_server.py."
+    if "does not have access to model" in low or "model_not_found" in low or "is not found" in low:
         return (
-            "Your OpenAI project cannot use that model. "
-            "Set OPENAI_MATCH_MODEL in .env to a model your project allows "
-            "(this project already uses OPENAI_LLM_MODEL), then restart match_server.py."
+            "That vision model is unavailable. "
+            "Set GEMINI_MATCH_MODEL (e.g. gemini-2.0-flash) or OPENAI_MATCH_MODEL in .env, "
+            "then restart match_server.py."
         )
+    if "quota" in low or "resource_exhausted" in low or "rate limit" in low:
+        return "AI quota/rate limit hit. Wait a minute and try again, or check your free-tier limits."
     if "certificate_verify_failed" in low or ("ssl" in low and "certificate" in low):
-        return "Could not securely connect to OpenAI. Restart match_server.py and try again."
+        return "Could not securely connect to the AI API. Restart match_server.py and try again."
     if "timed out" in low or "timeout" in low:
-        return "OpenAI took too long to reply. Check your internet and try again."
+        return "AI took too long to reply. Check your internet and try again."
     if "failed to resolve" in low or "nodename nor servname" in low or "name or service not known" in low:
-        return "No internet connection to OpenAI. Check your network and try again."
+        return "No internet connection to the AI API. Check your network and try again."
     if "tunnel connection failed" in low or "proxy" in low:
-        return "Network/proxy blocked the OpenAI request. Try again off VPN or another network."
+        return "Network/proxy blocked the AI request. Try again off VPN or another network."
     # Strip noisy urllib wrappers like <urlopen error ...>
     cleaned = re.sub(r"^<urlopen error\s+(.*)>$", r"\1", raw.strip(), flags=re.I)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     if len(cleaned) > 160:
         cleaned = cleaned[:157] + "..."
-    return cleaned or "OpenAI request failed. Please try again."
+    return cleaned or "AI request failed. Please try again."
 
 
 def is_model_access_error(message: str) -> bool:
@@ -184,6 +211,131 @@ def openai_chat_json(api_key: str, messages: list, *, max_tokens: int, temperatu
                 raise RuntimeError(friendly_error(err)) from err
     raise RuntimeError(friendly_error(RuntimeError(last_error)))
 
+
+def parse_data_url(url: str) -> tuple[str, str]:
+    """Return (mime_type, raw_base64) from a data: URL or bare base64 string."""
+    raw = (url or "").strip()
+    if not raw:
+        raise ValueError("Empty image")
+    if raw.startswith("data:"):
+        header, _, data = raw.partition(",")
+        if not data:
+            raise ValueError("Invalid data URL image")
+        mime = "image/jpeg"
+        m = re.match(r"data:([^;]+)", header)
+        if m:
+            mime = m.group(1).strip() or mime
+        if ";base64" not in header:
+            data = base64.b64encode(urllib.parse.unquote_to_bytes(data)).decode("ascii")
+        return mime, data
+    return "image/jpeg", raw
+
+
+def gemini_parts_from_openai_content(content: list) -> list[dict]:
+    parts: list[dict] = []
+    for item in content:
+        if not isinstance(item, dict):
+            continue
+        if item.get("type") == "text":
+            text = str(item.get("text") or "").strip()
+            if text:
+                parts.append({"text": text})
+        elif item.get("type") == "image_url":
+            image_url = (item.get("image_url") or {}).get("url") or ""
+            mime, data = parse_data_url(image_url)
+            parts.append({"inline_data": {"mime_type": mime, "data": data}})
+    if not parts:
+        raise ValueError("No content for Gemini request")
+    return parts
+
+
+def gemini_chat_json(api_key: str, messages: list, *, max_tokens: int, temperature: float) -> dict:
+    """Call Gemini generateContent and return an OpenAI-shaped chat payload."""
+    global GEMINI_MODEL
+    content = messages[0]["content"] if messages else []
+    parts = gemini_parts_from_openai_content(content)
+    last_error = "Gemini request failed"
+
+    for model in gemini_model_candidates():
+        body = {
+            "contents": [{"role": "user", "parts": parts}],
+            "generationConfig": {
+                "temperature": temperature,
+                "maxOutputTokens": max(max_tokens, 2048),
+                "responseMimeType": "application/json",
+            },
+        }
+        url = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{urllib.parse.quote(model, safe='')}:generateContent"
+            f"?key={urllib.parse.quote(api_key)}"
+        )
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(body).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with openai_urlopen(req, timeout=90) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            candidates = payload.get("candidates") or []
+            if not candidates:
+                feedback = payload.get("promptFeedback") or {}
+                raise RuntimeError(str(feedback.get("blockReason") or "Gemini returned no candidates"))
+            cand0 = candidates[0] or {}
+            parts_out = ((cand0.get("content") or {}).get("parts") or [])
+            text = "".join(str(p.get("text") or "") for p in parts_out if isinstance(p, dict)).strip()
+            if not text:
+                finish = cand0.get("finishReason") or cand0.get("finish_reason") or "unknown"
+                preview = json.dumps(cand0)[:240]
+                print(f"Gemini empty response model={model} finish={finish} cand={preview}")
+                raise RuntimeError(f"Gemini returned an empty response ({finish})")
+            GEMINI_MODEL = model
+            print(f"Gemini vision call OK with model={model} chars={len(text)}")
+            return {"choices": [{"message": {"content": text}}], "model": model}
+        except urllib.error.HTTPError as err:
+            detail = err.read().decode("utf-8", errors="replace")
+            try:
+                parsed_err = json.loads(detail)
+                msg = (
+                    parsed_err.get("error", {}).get("message")
+                    or parsed_err.get("error", {}).get("status")
+                    or detail
+                )
+            except Exception:
+                msg = detail or str(err)
+            last_error = msg
+            low = msg.lower()
+            if is_model_access_error(msg) or "not found" in low or "no longer available" in low:
+                print(f"Gemini model unavailable ({model}): {msg}")
+                continue
+            raise RuntimeError(friendly_error(RuntimeError(msg))) from err
+        except Exception as err:
+            last_error = str(err)
+            low = last_error.lower()
+            if is_model_access_error(last_error) or "no longer available" in low:
+                print(f"Gemini model unavailable ({model}): {last_error}")
+                continue
+            raise RuntimeError(friendly_error(err)) from err
+    raise RuntimeError(friendly_error(RuntimeError(last_error)))
+
+
+def match_vision_chat_json(messages: list, *, max_tokens: int, temperature: float) -> dict:
+    """Avatar/dog match: prefer Gemini, fall back to OpenAI."""
+    gemini_key = normalize_api_key(os.getenv("GEMINI_API_KEY"))
+    if gemini_key:
+        return gemini_chat_json(gemini_key, messages, max_tokens=max_tokens, temperature=temperature)
+    openai_key = normalize_api_key(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+    key_err = api_key_error(openai_key)
+    if key_err:
+        raise RuntimeError(
+            "Add GEMINI_API_KEY (recommended for free avatar/dog match) "
+            "or a working OPENAI_API_KEY to .env, then restart match_server.py."
+        )
+    return openai_chat_json(openai_key, messages, max_tokens=max_tokens, temperature=temperature)
+
+
 # Trait profiles for the game's adoptable breeds (adapted from my-app matching).
 GAME_BREEDS = [
     {"id": "corgi", "name": "Corgi", "energy": 8, "sociability": 9, "playfulness": 9, "calmness": 5, "outdoor": 7, "affection": 9, "patience": 6, "trainability": 8},
@@ -230,11 +382,34 @@ def api_key_error(raw: str | None) -> str | None:
     key = normalize_api_key(raw)
     if not key:
         return "Add OPENAI_API_KEY to .env, then restart match_server.py."
-    if "paste-your" in key or "your-key-here" in key or len(key) < 50:
+    if "paste-your" in key or "your-key-here" in key or "your-openai-api-key-here" in key or len(key) < 50:
         return "Your .env still has placeholder text. Use a full OpenAI API key."
     if not key.startswith("sk-"):
         return "API key should start with sk-."
     return None
+
+
+def gemini_key_error(raw: str | None) -> str | None:
+    key = normalize_api_key(raw)
+    if not key:
+        return "Add GEMINI_API_KEY to .env for avatar/dog match, then restart match_server.py."
+    if "your-gemini" in key or "your-key-here" in key or "paste-your" in key or len(key) < 20:
+        return "Your .env still has a Gemini placeholder. Paste a full Gemini API key."
+    return None
+
+
+def match_vision_key_error() -> str | None:
+    """Avatar/dog match may use Gemini; OpenAI is optional fallback for those two endpoints."""
+    gemini_err = gemini_key_error(os.getenv("GEMINI_API_KEY"))
+    if gemini_err is None:
+        return None
+    openai_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+    if openai_err is None:
+        return None
+    return (
+        "Avatar/dog match needs GEMINI_API_KEY (free) or a working OPENAI_API_KEY. "
+        "Add one to .env, then restart match_server.py."
+    )
 
 
 def get_top_match(personality: dict) -> dict:
@@ -289,7 +464,17 @@ def resolve_breed_name(ai_breed: str | None) -> dict:
 
 
 def parse_personality_json(text: str) -> dict:
-    match = re.search(r"\{[\s\S]*\}", text or "")
+    raw = (text or "").strip()
+    if not raw:
+        raise ValueError("Could not parse personality from AI response")
+    # Strip common markdown fences Gemini sometimes adds.
+    raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.I)
+    raw = re.sub(r"\s*```$", "", raw)
+    try:
+        return json.loads(raw)
+    except Exception:
+        pass
+    match = re.search(r"\{[\s\S]*\}", raw)
     if not match:
         raise ValueError("Could not parse personality from AI response")
     return json.loads(match.group(0))
@@ -349,8 +534,7 @@ Rules:
         content.append({"type": "text", "text": f"Individual frame {i + 1}:"})
         content.append({"type": "image_url", "image_url": {"url": frame, "detail": "high"}})
 
-    payload = openai_chat_json(
-        api_key,
+    payload = match_vision_chat_json(
         [{"role": "user", "content": content}],
         max_tokens=1800,
         temperature=0,
@@ -515,8 +699,7 @@ Return ONLY valid JSON:
         content.append({"type": "text", "text": f"Individual frame {i + 1}:"})
         content.append({"type": "image_url", "image_url": {"url": frame, "detail": "high"}})
 
-    payload = openai_chat_json(
-        api_key,
+    payload = match_vision_chat_json(
         [{"role": "user", "content": content}],
         max_tokens=900,
         temperature=0.2,
@@ -1594,7 +1777,7 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as err:
                 return self._json(502, {"error":friendly_error(err),"fallback":True})
 
-        key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+        key_err = match_vision_key_error()
         if key_err:
             return self._json(500, {"error": key_err})
 
@@ -1629,12 +1812,17 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main():
     key_err = api_key_error(os.getenv("OPENAI_API_KEY") or os.getenv("VITE_OPENAI_API_KEY"))
+    gemini_err = gemini_key_error(os.getenv("GEMINI_API_KEY"))
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     print(f"Paws & Pause match server on http://{HOST}:{PORT}/game_demo.html")
-    if key_err:
-        print("Warning:", key_err)
+    if gemini_err is None:
+        print("Gemini key loaded for avatar/dog match. Trying models:", ", ".join(gemini_model_candidates()[:4]), "...")
     else:
-        print("OpenAI key loaded. Trying models:", ", ".join(model_candidates()[:5]), "...")
+        print("Gemini avatar/dog match:", gemini_err)
+    if key_err:
+        print("OpenAI warning:", key_err)
+    else:
+        print("OpenAI key loaded for other AI features. Trying models:", ", ".join(model_candidates()[:5]), "...")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

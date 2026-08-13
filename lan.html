@@ -12,14 +12,24 @@
   img { width:min(72vw,320px); background:#fff; padding:12px; border-radius:12px;
     box-shadow:0 18px 40px -18px rgba(42,30,18,.45); }
   a { color:#3E7C74; word-break:break-all; font-weight:700; }
+  code { background:rgba(58,44,34,.08); padding:.15rem .4rem; border-radius:4px; }
 </style>
 </head>
 <body>
   <div>
     <h1>Paws &amp; Pause</h1>
-    <p>Scan to play on any phone or computer (works even when Wi‑Fi blocks device-to-device).</p>
-    <img src="/assets/lan-play-qr.png" alt="QR code for the game">
-    <p style="margin-top:1.25rem"><a href="https://wars-rarely-networking-disclose.trycloudflare.com/game_demo.html">https://wars-rarely-networking-disclose.trycloudflare.com/game_demo.html</a></p>
+    <p>Same Wi‑Fi as this Mac? Scan the QR code or open the link on your phone or laptop.</p>
+    <img id="qr" alt="QR code to play Paws and Pause">
+    <p style="margin-top:1.25rem"><a id="play-link" href="#"></a></p>
+    <p style="font-size:.9rem">Keep <code>match_server.py</code> running on the host Mac.</p>
   </div>
+  <script>
+    const url = location.origin + "/game_demo.html";
+    const link = document.getElementById("play-link");
+    link.href = url;
+    link.textContent = url;
+    document.getElementById("qr").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=" + encodeURIComponent(url);
+  </script>
 </body>
 </html>

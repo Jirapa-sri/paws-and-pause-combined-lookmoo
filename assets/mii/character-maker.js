@@ -642,12 +642,15 @@
       this.shadowRoot.querySelector(".panel").addEventListener("input", (e) => this.onPanelInput(e));
     }
 
-    async refreshPreview() {
+    async refreshPreview(opts = {}) {
       if (!this._canvas || this._busy) return;
       this._busy = true;
       try {
         await compose(this._cfg, this._canvas);
-        this.dispatchEvent(new CustomEvent("change", { detail: this.value, bubbles: true, composed: true }));
+        if (opts.emit) {
+          const detail = Object.assign({}, this.value);
+          this.dispatchEvent(new CustomEvent("change", { detail, bubbles: true, composed: true }));
+        }
       } finally {
         this._busy = false;
       }
@@ -808,7 +811,7 @@
         this._cfg.hair = 0;
         cache.tinted.clear();
         this.render();
-        this.refreshPreview();
+        this.refreshPreview({ emit: true });
         return;
       }
       const none = e.target.closest("[data-none]");
@@ -823,19 +826,19 @@
       if (none) {
         this._cfg[idxKey] = -1;
         this.render();
-        this.refreshPreview();
+        this.refreshPreview({ emit: true });
         return;
       }
       if (mouthBtn) {
         this._cfg.mouth = mouthBtn.dataset.mouth;
         this.render();
-        this.refreshPreview();
+        this.refreshPreview({ emit: true });
         return;
       }
       if (noseBtn) {
         this._cfg.nose = noseBtn.dataset.nose;
         this.render();
-        this.refreshPreview();
+        this.refreshPreview({ emit: true });
         return;
       }
       if (thumb) {
@@ -845,7 +848,7 @@
           this._cfg.dresses = -1;
         }
         this.render();
-        this.refreshPreview();
+        this.refreshPreview({ emit: true });
         return;
       }
       if (sw && meta.colorKey) {
@@ -853,7 +856,7 @@
         cache.tinted.clear();
         drawCache.clear();
         this.render();
-        this.refreshPreview();
+        this.refreshPreview({ emit: true });
       }
     }
 
@@ -866,7 +869,7 @@
       cache.tinted.clear();
       drawCache.clear();
       this.render();
-      this.refreshPreview();
+      this.refreshPreview({ emit: true });
     }
   }
 
